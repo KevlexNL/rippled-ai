@@ -12,6 +12,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+!build/     # Our build protocol folder (not Python build artifacts)
 .eggs/
 .venv/
 venv/
