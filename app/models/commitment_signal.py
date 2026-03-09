@@ -26,7 +26,7 @@ class CommitmentSignal(Base):
             "commitment_id", "source_item_id", "signal_role",
             name="uq_commitment_signals_commitment_item_role",
         ),
-        CheckConstraint("confidence BETWEEN 0 AND 1", name="ck_commitment_signals_confidence"),
+        CheckConstraint("confidence BETWEEN 0 AND 1", name="confidence"),
         Index("ix_commitment_signals_commitment_id", "commitment_id"),
         Index("ix_commitment_signals_source_item_id", "source_item_id"),
     )

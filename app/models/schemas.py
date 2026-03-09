@@ -3,7 +3,7 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
-from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.enums import (
     SourceType,
@@ -22,7 +22,11 @@ from app.models.enums import (
 # ---------------------------------------------------------------------------
 
 class _Base(BaseModel):
-    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        use_enum_values=True,
+        populate_by_name=True,  # allow both alias and field name on input
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -61,13 +65,14 @@ class SourceCreate(_Base):
     source_type: SourceType
     provider_account_id: str | None = None
     display_name: str | None = None
-    metadata_: dict | None = None
+    # Field alias: API clients send {"metadata": ...}, stored as metadata_ in Python to avoid reserved name
+    metadata_: dict | None = Field(None, alias="metadata")
 
 
 class SourceUpdate(_Base):
     display_name: str | None = None
     is_active: bool | None = None
-    metadata_: dict | None = None
+    metadata_: dict | None = Field(None, alias="metadata")
 
 
 # ---------------------------------------------------------------------------
@@ -110,7 +115,7 @@ class SourceItemCreate(_Base):
     recipients: list[dict] | None = None
     source_url: str | None = None
     occurred_at: datetime
-    metadata_: dict | None = None
+    metadata_: dict | None = Field(None, alias="metadata")
     is_quoted_content: bool = False
 
 
@@ -152,6 +157,10 @@ class CommitmentRead(_Base):
     is_surfaced: bool
     surfaced_at: datetime | None
     observe_until: datetime | None
+    observation_window_hours: Decimal | None
+    # JSONB candidate arrays (read-only; included for surfacing/UI context)
+    owner_candidates: list[Any] | None
+    deadline_candidates: list[Any] | None
     created_at: datetime
     updated_at: datetime
 
@@ -227,6 +236,7 @@ class CommitmentAmbiguityRead(_Base):
     ambiguity_type: AmbiguityType
     description: str | None
     is_resolved: bool
+    resolved_by_item_id: str | None  # source_item that resolved this ambiguity (null if unresolved)
     resolved_at: datetime | None
     created_at: datetime
 
@@ -245,6 +255,35 @@ class LifecycleTransitionRead(_Base):
     commitment_id: str
     from_state: LifecycleState | None
     to_state: LifecycleState
+    trigger_source_item_id: str | None  # source_item that drove the transition (null if SET NULL on delete)
     trigger_reason: str | None
     confidence_at_transition: Decimal | None
     created_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# CommitmentCandidate
+# ---------------------------------------------------------------------------
+
+class CommitmentCandidateRead(_Base):
+    id: str
+    user_id: str
+    originating_item_id: str | None  # nullable only if originating source_item was deleted
+    commitment_id: str | None        # set once promoted to a commitment
+    raw_text: str | None
+    detection_explanation: str | None
+    confidence_score: Decimal | None
+    was_promoted: bool
+    was_discarded: bool
+    discard_reason: str | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class CommitmentCandidateCreate(_Base):
+    # originating_item_id is required on create — DB is nullable only for FK SET NULL on delete.
+    # Never pass null from application code.
+    originating_item_id: str
+    raw_text: str | None = None
+    detection_explanation: str | None = None
+    confidence_score: Decimal | None = None

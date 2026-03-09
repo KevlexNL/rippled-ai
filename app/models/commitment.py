@@ -56,13 +56,15 @@ class Commitment(Base):
     __tablename__ = "commitments"
 
     __table_args__ = (
-        CheckConstraint("confidence_commitment BETWEEN 0 AND 1", name="ck_commitments_conf_commitment"),
-        CheckConstraint("confidence_owner BETWEEN 0 AND 1", name="ck_commitments_conf_owner"),
-        CheckConstraint("confidence_deadline BETWEEN 0 AND 1", name="ck_commitments_conf_deadline"),
-        CheckConstraint("confidence_delivery BETWEEN 0 AND 1", name="ck_commitments_conf_delivery"),
-        CheckConstraint("confidence_closure BETWEEN 0 AND 1", name="ck_commitments_conf_closure"),
-        CheckConstraint("confidence_actionability BETWEEN 0 AND 1", name="ck_commitments_conf_actionability"),
-        CheckConstraint("context_type IN ('internal', 'external', 'mixed')", name="ck_commitments_context_type"),
+        # Note: naming convention "ck_%(table_name)s_%(constraint_name)s" is applied automatically.
+        # Use only the suffix as the name — convention produces the full ck_commitments_<suffix> in DB.
+        CheckConstraint("confidence_commitment BETWEEN 0 AND 1", name="conf_commitment"),
+        CheckConstraint("confidence_owner BETWEEN 0 AND 1", name="conf_owner"),
+        CheckConstraint("confidence_deadline BETWEEN 0 AND 1", name="conf_deadline"),
+        CheckConstraint("confidence_delivery BETWEEN 0 AND 1", name="conf_delivery"),
+        CheckConstraint("confidence_closure BETWEEN 0 AND 1", name="conf_closure"),
+        CheckConstraint("confidence_actionability BETWEEN 0 AND 1", name="conf_actionability"),
+        CheckConstraint("context_type IN ('internal', 'external', 'mixed')", name="context_type"),
         Index("ix_commitments_user_id", "user_id"),
         Index("ix_commitments_lifecycle_state", "lifecycle_state"),
         Index("ix_commitments_is_surfaced", "is_surfaced"),

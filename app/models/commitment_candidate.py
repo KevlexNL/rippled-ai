@@ -11,7 +11,7 @@ class CommitmentCandidate(Base):
     __tablename__ = "commitment_candidates"
 
     __table_args__ = (
-        CheckConstraint("confidence_score BETWEEN 0 AND 1", name="ck_commitment_candidates_confidence"),
+        CheckConstraint("confidence_score BETWEEN 0 AND 1", name="confidence"),
         Index("ix_commitment_candidates_user_id", "user_id"),
         Index("ix_commitment_candidates_commitment_id", "commitment_id"),
     )
@@ -29,7 +29,9 @@ class CommitmentCandidate(Base):
     originating_item_id: Mapped[str | None] = mapped_column(
         UUID(as_uuid=False),
         ForeignKey("source_items.id", ondelete="SET NULL"),
-        nullable=True,  # SET NULL on source_item delete — candidate history preserved, origin link nulled
+        nullable=True,  # NULLABLE ONLY for FK SET NULL on source_item deletion.
+        # Application rule: never INSERT with null — use CommitmentCandidateCreate which requires this field.
+        # A null value in production means the originating source_item was deleted (rare/admin operation only).
         index=True,
     )
     # Set when promoted — nullable FK with SET NULL on commitment delete

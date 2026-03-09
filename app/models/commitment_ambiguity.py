@@ -41,10 +41,10 @@ class CommitmentAmbiguity(Base):
     ambiguity_type: Mapped[AmbiguityType] = mapped_column(ambiguity_type_enum, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_resolved: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
-    resolved_by_signal_id: Mapped[str | None] = mapped_column(
+    resolved_by_item_id: Mapped[str | None] = mapped_column(
         UUID(as_uuid=False),
         ForeignKey("source_items.id", ondelete="SET NULL"),
-        nullable=True,
+        nullable=True,  # Points to source_items (the signal that resolved the ambiguity)
     )
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
@@ -54,7 +54,7 @@ class CommitmentAmbiguity(Base):
     # Relationships
     commitment = relationship("Commitment", back_populates="ambiguities")
     user = relationship("User", back_populates="commitment_ambiguities")
-    resolved_by_signal = relationship(
+    resolved_by_item = relationship(
         "SourceItem",
-        foreign_keys=[resolved_by_signal_id],
+        foreign_keys="CommitmentAmbiguity.resolved_by_item_id",
     )

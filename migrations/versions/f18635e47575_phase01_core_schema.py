@@ -247,11 +247,11 @@ def upgrade() -> None:
         sa.Column('ambiguity_type', ambiguity_type_enum, nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
         sa.Column('is_resolved', sa.Boolean(), server_default=sa.text('false'), nullable=False),
-        sa.Column('resolved_by_signal_id', postgresql.UUID(as_uuid=False), nullable=True),
+        sa.Column('resolved_by_item_id', postgresql.UUID(as_uuid=False), nullable=True),
         sa.Column('resolved_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
         sa.ForeignKeyConstraint(['commitment_id'], ['commitments.id'], name=op.f('fk_commitment_ambiguities_commitment_id_commitments'), ondelete='CASCADE'),
-        sa.ForeignKeyConstraint(['resolved_by_signal_id'], ['source_items.id'], name=op.f('fk_commitment_ambiguities_resolved_by_signal_id_source_items'), ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(['resolved_by_item_id'], ['source_items.id'], name=op.f('fk_commitment_ambiguities_resolved_by_item_id_source_items'), ondelete='SET NULL'),
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_commitment_ambiguities_user_id_users')),
         sa.PrimaryKeyConstraint('id', name=op.f('pk_commitment_ambiguities')),
     )

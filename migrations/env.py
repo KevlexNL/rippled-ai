@@ -24,10 +24,15 @@ config = context.config
 
 # Override sqlalchemy.url with DATABASE_URL from environment
 database_url = os.environ.get("DATABASE_URL")
-if database_url:
-    # Supabase returns postgres:// — SQLAlchemy requires postgresql://
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
-    config.set_main_option("sqlalchemy.url", database_url)
+if not database_url:
+    raise RuntimeError(
+        "DATABASE_URL environment variable is not set. "
+        "Ensure it is defined in .env (local) or Railway environment variables (production) "
+        "before running migrations."
+    )
+# Supabase returns postgres:// — SQLAlchemy requires postgresql://
+database_url = database_url.replace("postgres://", "postgresql://", 1)
+config.set_main_option("sqlalchemy.url", database_url)
 
 # Interpret the config file for Python logging
 if config.config_file_name is not None:

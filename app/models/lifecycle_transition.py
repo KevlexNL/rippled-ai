@@ -14,7 +14,7 @@ class LifecycleTransition(Base):
     __table_args__ = (
         CheckConstraint(
             "confidence_at_transition BETWEEN 0 AND 1",
-            name="ck_lifecycle_transitions_confidence",
+            name="confidence",
         ),
         Index("ix_lifecycle_transitions_commitment_id", "commitment_id"),
         Index("ix_lifecycle_transitions_user_id", "user_id"),
