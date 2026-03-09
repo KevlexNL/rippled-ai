@@ -73,10 +73,10 @@ class CommitmentClass(str, enum.Enum):
     small_commitment = "small_commitment"
 
 
-# REVIEW SCHEDULED: ~2026-03-30
-# Query commitments where commitment_type = 'other' and review what real usage
-# patterns have emerged. Promote frequent patterns to dedicated enum values via migration.
-# See: build/phases/01-schema/qa-decisions.md Q4
+# @REVIEW_LATER(2026-03-30)
+# Action: Query `SELECT commitment_type, COUNT(*) FROM commitments WHERE commitment_type = 'other' GROUP BY 1 ORDER BY 2 DESC`
+#         and review what real usage patterns have emerged. Promote frequent patterns to dedicated enum values via migration.
+# Context: See build/phases/01-schema/qa-decisions.md Q4 — 'other' is intentional fallback; this review ensures it doesn't become a permanent catch-all.
 class CommitmentType(str, enum.Enum):
     send = "send"
     review = "review"
