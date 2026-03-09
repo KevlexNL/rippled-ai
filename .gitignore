@@ -11,8 +11,8 @@ __pycache__/
 .Python
 *.egg-info/
 dist/
-build/
-!build/     # Our build protocol folder (not Python build artifacts)
+# Note: We use build/ for our protocol folder, so don't ignore it
+# Python build artifacts go in dist/ anyway
 .eggs/
 .venv/
 venv/
