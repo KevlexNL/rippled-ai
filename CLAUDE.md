@@ -10,6 +10,8 @@ Commitment intelligence engine. Observes meetings/Slack/email, detects commitmen
 - Celery + Redis for background jobs
 - Deployed on Railway
 
+---
+
 ## Critical Rules
 
 ### 1. Fresh Start
@@ -32,6 +34,59 @@ The `briefs/` folder contains the product specification.
 - Never modify them
 - They are the source of truth for product behavior
 
+---
+
+## Working Style
+
+### Plan Mode Default
+- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
+- If something goes sideways, STOP and re-plan immediately — don't keep pushing
+- Use plan mode for verification steps, not just building
+- Write detailed specs upfront to reduce ambiguity
+
+### Self-Improvement Loop
+- After ANY correction from Kevin: update `build/lessons.md` with the pattern
+- Write rules for yourself that prevent the same mistake
+- Ruthlessly iterate on these lessons until mistake rate drops
+- Review lessons at session start
+
+### Verification Before Done
+- Never mark a task complete without proving it works
+- Diff behavior between main and your changes when relevant
+- Ask yourself: "Would a staff engineer approve this?"
+- Run tests, check logs, demonstrate correctness
+
+### Demand Elegance (Balanced)
+- For non-trivial changes: pause and ask "is there a more elegant way?"
+- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
+- Skip this for simple, obvious fixes — don't over-engineer
+- Challenge your own work before presenting it
+
+### Autonomous Bug Fixing
+- When given a bug report: just fix it. Don't ask for hand-holding
+- Point at logs, errors, failing tests — then resolve them
+- Zero context switching required from Kevin
+- Go fix failing CI tests without being told how
+
+### Core Principles
+- **Simplicity First:** Make every change as simple as possible. Impact minimal code.
+- **No Laziness:** Find root causes. No temporary fixes. Senior developer standards.
+- **Minimal Impact:** Changes should only touch what's necessary. Avoid introducing bugs.
+
+---
+
+## Task Management
+
+When working on a phase:
+1. **Plan First:** Write plan to phase folder with checkable items
+2. **Verify Plans:** Check in before starting implementation (interpretation → approval)
+3. **Track Progress:** Mark items complete as you go
+4. **Explain Changes:** High-level summary at each step
+5. **Document Results:** Update `decisions.md` and `completed.md`
+6. **Capture Lessons:** Update `build/lessons.md` after corrections
+
+---
+
 ## Current Phase
 Check `build/current-phase.txt` for active phase.
 Check `workorders/` in the workspace for your Work Order.
@@ -47,52 +102,6 @@ Check `workorders/` in the workspace for your Work Order.
 - `.env` has all secrets (never commit)
 - Supabase connection via `app/db/client.py`
 - Config via `app/core/config.py`
-
-## Deferred Review Comments — @REVIEW_LATER
-
-Use `@REVIEW_LATER` comments to flag things that need human review after some real-world usage. These are scanned weekly by an automated cron and surfaced to Kevin.
-
-### Format
-```python
-# @REVIEW_LATER(YYYY-MM-DD): short title
-# Action: what to do / what to query when reviewing
-# Context: why this exists and what decision it feeds into
-```
-
-### Rules
-- Use `YYYY-MM-DD` for the target review date (when enough usage data should exist)
-- **Action** should be a concrete step — e.g. a SQL query, a grep, a specific check
-- **Context** should reference the decision doc or brief section it relates to
-- Once acted on (reviewed + resolved), **remove the comment** from the code
-- Do NOT leave resolved comments in place — they become noise
-
-### Example
-```python
-# @REVIEW_LATER(2026-03-30): commitment_type enum expansion
-# Action: SELECT commitment_type, COUNT(*) FROM commitments WHERE commitment_type = 'other' GROUP BY 1 ORDER BY 2 DESC
-# Context: Enum 'other' is a catch-all fallback. After ~3 weeks of real ingestion, promote frequent patterns to named values via migration. See build/phases/01-schema/qa-decisions.md Q4
-```
-
-### When to use
-- Decisions made before real usage data exists (enum values, thresholds, config defaults)
-- Architecture choices that should be revisited after scale/complexity increases
-- Anything described as "good enough for MVP, revisit later"
-
-### ⚠️ When NOT to use — the MVP viability rule
-`@REVIEW_LATER` is for **refinement**, not for deferring things that need to work.
-
-Do NOT use it to skip:
-- Core functionality the product depends on to be usable
-- Data integrity constraints (these must be right from the start)
-- Anything a user would hit in normal usage
-
-Ask yourself: **"If this is wrong or missing, does the product still work as intended?"**
-- Yes → safe to defer with `@REVIEW_LATER`
-- No → it must be built now, not tagged
-
-A viable MVP is one where the core loop works end-to-end. Deferred reviews are for polish, extensibility, and data-driven tuning — not for holes in the foundation.
-
----
 
 ## Commands
 ```bash
