@@ -1,4 +1,4 @@
-from sqlalchemy import text, DateTime, String, Boolean, ForeignKey, Text, Numeric, CheckConstraint, Index
+from sqlalchemy import text, DateTime, Boolean, ForeignKey, Text, Numeric, CheckConstraint, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
@@ -13,7 +13,6 @@ class CommitmentCandidate(Base):
     __table_args__ = (
         CheckConstraint("confidence_score BETWEEN 0 AND 1", name="confidence"),
         Index("ix_commitment_candidates_user_id", "user_id"),
-        Index("ix_commitment_candidates_commitment_id", "commitment_id"),
     )
 
     id: Mapped[str] = mapped_column(
@@ -33,12 +32,6 @@ class CommitmentCandidate(Base):
         # Application rule: never INSERT with null — use CommitmentCandidateCreate which requires this field.
         # A null value in production means the originating source_item was deleted (rare/admin operation only).
         index=True,
-    )
-    # Set when promoted — nullable FK with SET NULL on commitment delete
-    commitment_id: Mapped[str | None] = mapped_column(
-        UUID(as_uuid=False),
-        ForeignKey("commitments.id", ondelete="SET NULL"),
-        nullable=True,
     )
     raw_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     detection_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -63,8 +56,8 @@ class CommitmentCandidate(Base):
         foreign_keys=[originating_item_id],
         back_populates="commitment_candidates",
     )
-    commitment = relationship(
-        "Commitment",
-        foreign_keys=[commitment_id],
-        back_populates="candidates",
+    candidate_commitments = relationship(
+        "CandidateCommitment",
+        back_populates="candidate",
+        cascade="all, delete-orphan",
     )

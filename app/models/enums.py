@@ -71,3 +71,22 @@ class DeliverableAmbiguityType(str, enum.Enum):
 class CommitmentClass(str, enum.Enum):
     big_promise = "big_promise"
     small_commitment = "small_commitment"
+
+
+# REVIEW SCHEDULED: ~2026-03-30
+# Query commitments where commitment_type = 'other' and review what real usage
+# patterns have emerged. Promote frequent patterns to dedicated enum values via migration.
+# See: build/phases/01-schema/qa-decisions.md Q4
+class CommitmentType(str, enum.Enum):
+    send = "send"
+    review = "review"
+    follow_up = "follow_up"
+    deliver = "deliver"
+    investigate = "investigate"
+    introduce = "introduce"
+    coordinate = "coordinate"
+    update = "update"
+    delegate = "delegate"
+    schedule = "schedule"
+    confirm = "confirm"
+    other = "other"

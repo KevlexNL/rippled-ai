@@ -9,6 +9,7 @@ from app.models.enums import (
     SourceType,
     LifecycleState,
     CommitmentClass,
+    CommitmentType,
     OwnershipAmbiguityType,
     TimingAmbiguityType,
     DeliverableAmbiguityType,
@@ -130,7 +131,7 @@ class CommitmentRead(_Base):
     title: str
     description: str | None
     commitment_text: str | None
-    commitment_type: str | None
+    commitment_type: CommitmentType | None
     priority_class: CommitmentClass | None
     context_type: str | None
     resolved_owner: str | None
@@ -169,7 +170,7 @@ class CommitmentCreate(_Base):
     title: str
     description: str | None = None
     commitment_text: str | None = None
-    commitment_type: str | None = None
+    commitment_type: CommitmentType | None = None
     priority_class: CommitmentClass | None = None
     context_type: str | None = None
     owner_candidates: list[Any] | None = None
@@ -269,7 +270,6 @@ class CommitmentCandidateRead(_Base):
     id: str
     user_id: str
     originating_item_id: str | None  # nullable only if originating source_item was deleted
-    commitment_id: str | None        # set once promoted to a commitment
     raw_text: str | None
     detection_explanation: str | None
     confidence_score: Decimal | None
@@ -287,3 +287,19 @@ class CommitmentCandidateCreate(_Base):
     raw_text: str | None = None
     detection_explanation: str | None = None
     confidence_score: Decimal | None = None
+
+
+# ---------------------------------------------------------------------------
+# CandidateCommitment (N:M join table)
+# ---------------------------------------------------------------------------
+
+class CandidateCommitmentCreate(_Base):
+    candidate_id: str
+    commitment_id: str
+
+
+class CandidateCommitmentRead(_Base):
+    id: str
+    candidate_id: str
+    commitment_id: str
+    created_at: datetime

@@ -15,6 +15,7 @@ import app.models.source  # noqa: F401
 import app.models.source_item  # noqa: F401
 import app.models.commitment  # noqa: F401
 import app.models.commitment_candidate  # noqa: F401
+import app.models.candidate_commitment  # noqa: F401
 import app.models.commitment_signal  # noqa: F401
 import app.models.commitment_ambiguity  # noqa: F401
 import app.models.lifecycle_transition  # noqa: F401

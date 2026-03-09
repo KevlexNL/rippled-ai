@@ -11,6 +11,7 @@ from app.models.base import Base
 from app.models.enums import (
     LifecycleState,
     CommitmentClass,
+    CommitmentType,
     OwnershipAmbiguityType,
     TimingAmbiguityType,
     DeliverableAmbiguityType,
@@ -51,6 +52,13 @@ deliverable_ambiguity_enum = SAEnum(
     values_callable=lambda e: [m.value for m in e],
 )
 
+commitment_type_enum = SAEnum(
+    CommitmentType,
+    name="commitment_type_enum",
+    create_type=True,
+    values_callable=lambda e: [m.value for m in e],
+)
+
 
 class Commitment(Base):
     __tablename__ = "commitments"
@@ -64,7 +72,7 @@ class Commitment(Base):
         CheckConstraint("confidence_delivery BETWEEN 0 AND 1", name="conf_delivery"),
         CheckConstraint("confidence_closure BETWEEN 0 AND 1", name="conf_closure"),
         CheckConstraint("confidence_actionability BETWEEN 0 AND 1", name="conf_actionability"),
-        CheckConstraint("context_type IN ('internal', 'external', 'mixed')", name="context_type"),
+        CheckConstraint("context_type IN ('internal', 'external')", name="context_type"),
         Index("ix_commitments_user_id", "user_id"),
         Index("ix_commitments_lifecycle_state", "lifecycle_state"),
         Index("ix_commitments_is_surfaced", "is_surfaced"),
@@ -89,7 +97,7 @@ class Commitment(Base):
     title: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     commitment_text: Mapped[str | None] = mapped_column(Text, nullable=True)
-    commitment_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    commitment_type: Mapped[CommitmentType | None] = mapped_column(commitment_type_enum, nullable=True)
     priority_class: Mapped[CommitmentClass | None] = mapped_column(commitment_class_enum, nullable=True)
     context_type: Mapped[str | None] = mapped_column(String, nullable=True)
 
@@ -163,10 +171,10 @@ class Commitment(Base):
 
     # Relationships
     user = relationship("User", back_populates="commitments")
-    candidates = relationship(
-        "CommitmentCandidate",
+    candidate_commitments = relationship(
+        "CandidateCommitment",
         back_populates="commitment",
-        foreign_keys="CommitmentCandidate.commitment_id",
+        cascade="all, delete-orphan",
     )
     signals = relationship(
         "CommitmentSignal", back_populates="commitment", cascade="all, delete-orphan"
