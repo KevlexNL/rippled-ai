@@ -1,6 +1,47 @@
 # Trinity — Phase 3: Commitment Detection
 
-## Context
+## FIRST: Review Phases 1 & 2 with New Skills
+
+Before building Phase 3, review the completed work using the newly installed Claude Code skills.
+
+### Phase 1 Review (Schema)
+
+Use these skills to audit `migrations/versions/` and `app/models/`:
+
+1. **postgres-best-practices** — Review schema design, indexes, constraints
+2. **static-analysis** — Run CodeQL/Semgrep on ORM models
+3. **insecure-defaults** — Check for any hardcoded values or weak defaults
+
+Write findings to `build/phases/01-schema/skill-review.md`:
+- Issues found (critical/warning/info)
+- Recommended fixes
+- What's already good
+
+### Phase 2 Review (API Scaffold)
+
+Use these skills to audit `app/api/routes/` and `app/core/`:
+
+1. **modern-python** — Check for modern patterns (ruff, type hints, async best practices)
+2. **static-analysis** — Security scan on API routes
+3. **insecure-defaults** — Check auth patterns, input validation
+4. **property-based-testing** — Identify areas that would benefit from property tests
+
+Write findings to `build/phases/02-api-scaffold/skill-review.md`:
+- Issues found (critical/warning/info)
+- Recommended fixes
+- What's already good
+
+### Review Gate
+
+**STOP after completing both reviews.** 
+
+Present findings to Kevin. If critical issues exist, fix them before proceeding to Phase 3. If only warnings/info, note them and proceed.
+
+---
+
+## THEN: Phase 3 — Detection Pipeline
+
+### Context
 
 You've completed:
 - **Phase 1:** Database schema (migrations applied, ORM models in place)
@@ -8,11 +49,11 @@ You've completed:
 
 Now you're building the **detection layer** — the intelligence that identifies commitment signals from source content.
 
-## Your Assignment
+### Your Assignment
 
 Build the commitment detection pipeline based on `briefs/Rippled - 8. Commitment Detection Brief.md`.
 
-## Key Brief Points (Summary)
+### Key Brief Points (Summary)
 
 Detection should:
 - Cast a **broad but disciplined net** — capture more than we ultimately surface
@@ -28,7 +69,7 @@ Detection outputs a `commitment_candidate` with:
 - initial confidence hint
 - context window (surrounding text for later analysis)
 
-## Files to Read
+### Files to Read
 
 1. `briefs/Rippled - 8. Commitment Detection Brief.md` — full spec
 2. `briefs/Rippled - 4. Source Model Brief.md` — source types
@@ -36,7 +77,7 @@ Detection outputs a `commitment_candidate` with:
 4. `build/phases/01-schema/decisions.md` — schema decisions
 5. `build/phases/02-api-scaffold/interpretation.md` — API structure
 
-## Deliverables
+### Deliverables
 
 1. **Detection service** in `app/services/detection/`
    - `detector.py` — main detection orchestration
@@ -57,31 +98,31 @@ Detection outputs a `commitment_candidate` with:
    - Test source-specific patterns
    - Test context window extraction
 
-## New Capabilities
+### Skills to Use for Phase 3
 
-You now have Claude Code skills installed:
-- **superpowers** — Use for TDD workflow (`/test-driven-development`)
+- **superpowers** — TDD workflow (write tests first, implement to pass, refactor)
 - **postgres-best-practices** — For any query optimization
 - **static-analysis** — Run security checks before completing
-- **modern-python** — Follow modern Python patterns (ruff, pytest)
+- **modern-python** — Follow modern Python patterns
+- **property-based-testing** — For detection edge cases
 
-**Leverage superpowers for this phase:** Write tests first, implement to pass, refactor.
+### Build Protocol
 
-## Build Protocol
+1. Complete Phase 1 & 2 reviews first (see above)
+2. Write Phase 3 interpretation to `build/phases/03-detection/interpretation.md`
+3. **STOP** — Wait for Kevin's approval
+4. After approval: implement with TDD, document decisions
+5. Run `static-analysis` before marking complete
+6. Update `build/phases/03-detection/completed.md`
 
-1. Write your interpretation to `build/phases/03-detection/interpretation.md`
-2. **STOP** — Wait for Kevin's approval
-3. After approval: implement with TDD, document decisions
-4. Run `static-analysis` before marking complete
-5. Update `build/phases/03-detection/completed.md`
-
-## Do NOT
+### Do NOT
 
 - Reference any OpenAgency OS code
+- Skip the Phase 1 & 2 reviews
 - Skip writing tests
 - Make detection too aggressive (avoid noise)
 - Make final commitment decisions in this layer
 
-## Questions?
+### Questions?
 
-If anything in Brief 8 is unclear, write questions in your interpretation and stop. Don't guess on ambiguous requirements.
+If anything is unclear, write questions in your interpretation and stop. Don't guess on ambiguous requirements.
