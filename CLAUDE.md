@@ -22,11 +22,12 @@ This is a **NEW** project. Do not reference or build on:
 - Any code in `projects/_archive/`
 
 ### 2. Build Protocol
-Follow `build/BUILD_PROTOCOL.md` strictly:
+Follow `build/BUILD_PROTOCOL.md`. Key principle: **interpret then build immediately**.
 - Read ONLY files listed in your Work Order
-- Write interpretation FIRST, then STOP
-- Wait for approval before implementing
+- Write interpretation to `build/phases/XX/interpretation.md`
+- **Proceed to implementation without waiting for approval**
 - Document all decisions
+- Only stop if you hit a genuine blocker (see BUILD_PROTOCOL for the full list)
 
 ### 3. Briefs Are Read-Only
 The `briefs/` folder contains the product specification.
@@ -79,11 +80,12 @@ The `briefs/` folder contains the product specification.
 
 When working on a phase:
 1. **Plan First:** Write plan to phase folder with checkable items
-2. **Verify Plans:** Check in before starting implementation (interpretation → approval)
+2. **Build immediately** after interpretation — no waiting for approval
 3. **Track Progress:** Mark items complete as you go
 4. **Explain Changes:** High-level summary at each step
 5. **Document Results:** Update `decisions.md` and `completed.md`
 6. **Capture Lessons:** Update `build/lessons.md` after corrections
+7. **Report to Kevin** via Telegram when phase completes
 
 ---
 
