@@ -8,22 +8,25 @@
 - **NEVER** assume context from previous sessions — each WO is a fresh start
 - The `briefs/` folder is **READ-ONLY** — never modify brief files
 
-### Continuous Build Workflow
+### Build Workflow
 1. Read the files listed in your WO
 2. Write your understanding to `build/phases/XX/interpretation.md`
-3. **Proceed immediately to implementation** — do not wait for approval
-4. Document decisions in `build/phases/XX/decisions.md`
-5. List all created/modified files in `build/phases/XX/completed.md`
-6. Report completion to Kevin via Telegram
+3. **Immediately notify Kevin via Telegram** that interpretation is ready for evaluation
+4. Wait for Kevin's evaluation (approval or changes) before implementing
+5. After approval: implement, document decisions in `decisions.md`, list files in `completed.md`
+6. Commit and report completion to Kevin via Telegram
 
 ### When to STOP and ask Kevin
-Only stop if:
-- A decision would be **irreversible and destructive** (e.g. dropping tables with live data)
-- A change **conflicts with agreed architecture** in ways that affect other phases
-- You are **genuinely blocked** and cannot proceed without a missing input (credential, spec gap, etc.)
-- You hit a **scope change** that belongs to another agent's domain
+- **Always:** After writing interpretation — notify Kevin immediately, wait for evaluation
+- **Always:** If a decision would be irreversible and destructive (e.g. dropping tables with live user data)
+- **Always:** If a scope change conflicts with agreed architecture and affects other phases
+- **Always:** If you are genuinely blocked on a missing input (credential, spec gap) you cannot resolve
 
-Do NOT stop for: interpretation steps, production deploys, test failures you can fix, style/approach choices.
+### No approval needed for
+- Production deploys (project is not yet live)
+- Test failures you can fix yourself
+- Style/approach choices within an approved interpretation
+- Refactoring within the agreed scope
 
 ### File Naming
 - `interpretation.md` — Your understanding of what needs to be built
