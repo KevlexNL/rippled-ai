@@ -270,9 +270,18 @@ class CommitmentCandidateRead(_Base):
     id: str
     user_id: str
     originating_item_id: str | None  # nullable only if originating source_item was deleted
+    source_type: str | None
     raw_text: str | None
+    trigger_class: str | None
+    is_explicit: bool | None
     detection_explanation: str | None
     confidence_score: Decimal | None
+    priority_hint: str | None
+    commitment_class_hint: str | None
+    context_window: dict | None
+    linked_entities: dict | None
+    observe_until: datetime | None
+    flag_reanalysis: bool
     was_promoted: bool
     was_discarded: bool
     discard_reason: str | None
@@ -284,9 +293,18 @@ class CommitmentCandidateCreate(_Base):
     # originating_item_id is required on create — DB is nullable only for FK SET NULL on delete.
     # Never pass null from application code.
     originating_item_id: str
+    source_type: str | None = None
     raw_text: str | None = None
+    trigger_class: str | None = None
+    is_explicit: bool | None = None
     detection_explanation: str | None = None
     confidence_score: Decimal | None = None
+    priority_hint: str | None = None
+    commitment_class_hint: str | None = None
+    context_window: dict | None = None
+    linked_entities: dict | None = None
+    observe_until: datetime | None = None
+    flag_reanalysis: bool = False
 
 
 # ---------------------------------------------------------------------------

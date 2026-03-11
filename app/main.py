@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
+from app.api.routes import sources, source_items, commitments, surface, candidates
 
 settings = get_settings()
 
@@ -26,6 +27,8 @@ async def health():
     return {"status": "ok", "env": settings.app_env}
 
 
-# TODO: Register route modules here as they're built
-# from app.api.routes import commitments, sources, clarifications
-# app.include_router(commitments.router, prefix=settings.api_prefix)
+app.include_router(sources.router, prefix=settings.api_prefix, tags=["sources"])
+app.include_router(source_items.router, prefix=settings.api_prefix, tags=["ingestion"])
+app.include_router(commitments.router, prefix=settings.api_prefix, tags=["commitments"])
+app.include_router(surface.router, prefix=settings.api_prefix, tags=["surfacing"])
+app.include_router(candidates.router, prefix=settings.api_prefix, tags=["candidates"])

@@ -374,3 +374,21 @@ All three return `list[CommitmentRead]`. The frontend decides how to render Main
 ### Q7: asyncpg vs psycopg3 for async driver
 **Issue:** `asyncpg` is the standard async PostgreSQL driver for SQLAlchemy. `psycopg3` (psycopg[async]) is newer and supports more features.
 **Leaning:** `asyncpg` — more battle-tested with SQLAlchemy async, better documented.
+
+---
+
+## 8. Kevin's Decisions (2026-03-10)
+
+| Q | Decision |
+|---|----------|
+| Q1 | Soft delete (`is_active = false`) |
+| Q2 | Partial success allowed — `207 Multi-Status`. **Post-MVP TODO:** build process to pull partial failures and fix automatically |
+| Q3 | Write ORM models in Phase 02 now |
+| Q4 | `is_surfaced` defaults `false`; manually PATCH in tests |
+| Q5 | Enforce valid lifecycle transitions (state machine dict, 400 on invalid) |
+| Q6 | Pagination now. **5 items max** on all user-facing surfaces. Admin/triage layer gets separate deeper pagination later. The rule: be strict on what gets shown and why — don't create another list for users to manage |
+| Q7 | `asyncpg` — lower friction for launch; swap to psycopg3 later if needed |
+| Supabase REST | Retire `client.py` for data access. Keep Supabase as Postgres host. Connect directly via SQLAlchemy + asyncpg. Supabase's security/infra benefits are in the hosting layer — untouched |
+
+## 9. Standing Rule (set 2026-03-10)
+**Low-friction default:** When a technical choice can be easily replaced later, always choose the option with least friction for the current stage. Optimize for launch speed, not future perfection — unless the choice actively blocks the short-to-mid-term vision.

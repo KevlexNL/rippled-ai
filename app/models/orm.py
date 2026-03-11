@@ -1,0 +1,198 @@
+"""SQLAlchemy 2.0 ORM models for Rippled.ai — Phase 02.
+
+These mirror the Alembic-managed tables exactly. Used for DB queries only.
+Always convert to Pydantic schemas at the API boundary.
+UUIDs stored as String (as_uuid=False, matching migration setup).
+"""
+
+from datetime import datetime
+from decimal import Decimal
+from typing import Any
+
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    func,
+)
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
+    email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    display_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class Source(Base):
+    __tablename__ = "sources"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    source_type: Mapped[str] = mapped_column(String, nullable=False)
+    provider_account_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    display_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, server_default="true", nullable=False)
+    credentials: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class SourceItem(Base):
+    __tablename__ = "source_items"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
+    source_id: Mapped[str] = mapped_column(String, ForeignKey("sources.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    source_type: Mapped[str] = mapped_column(String, nullable=False)
+    external_id: Mapped[str] = mapped_column(String, nullable=False)
+    thread_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    direction: Mapped[str | None] = mapped_column(String, nullable=True)
+    sender_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    sender_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    sender_email: Mapped[str | None] = mapped_column(String, nullable=True)
+    is_external_participant: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    content: Mapped[str | None] = mapped_column(Text, nullable=True)
+    content_normalized: Mapped[str | None] = mapped_column(Text, nullable=True)
+    has_attachment: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    attachment_metadata: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    recipients: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    source_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    ingested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, nullable=True)
+    is_quoted_content: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+
+
+class Commitment(Base):
+    __tablename__ = "commitments"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    version: Mapped[int] = mapped_column(Integer, server_default="1", nullable=False)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    commitment_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    commitment_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    priority_class: Mapped[str | None] = mapped_column(String, nullable=True)
+    context_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    owner_candidates: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    resolved_owner: Mapped[str | None] = mapped_column(String, nullable=True)
+    suggested_owner: Mapped[str | None] = mapped_column(String, nullable=True)
+    ownership_ambiguity: Mapped[str | None] = mapped_column(String, nullable=True)
+    deadline_candidates: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    resolved_deadline: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    vague_time_phrase: Mapped[str | None] = mapped_column(String, nullable=True)
+    suggested_due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    timing_ambiguity: Mapped[str | None] = mapped_column(String, nullable=True)
+    deliverable: Mapped[str | None] = mapped_column(Text, nullable=True)
+    target_entity: Mapped[str | None] = mapped_column(String, nullable=True)
+    suggested_next_step: Mapped[str | None] = mapped_column(Text, nullable=True)
+    deliverable_ambiguity: Mapped[str | None] = mapped_column(String, nullable=True)
+    lifecycle_state: Mapped[str] = mapped_column(String, server_default="proposed", nullable=False, index=True)
+    state_changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    confidence_commitment: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    confidence_owner: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    confidence_deadline: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    confidence_delivery: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    confidence_closure: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    confidence_actionability: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True, index=True)
+    commitment_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    missing_pieces_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    delivery_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    closure_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    observe_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    observation_window_hours: Mapped[Decimal | None] = mapped_column(Numeric, nullable=True)
+    is_surfaced: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False, index=True)
+    surfaced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class CommitmentSignal(Base):
+    __tablename__ = "commitment_signals"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
+    commitment_id: Mapped[str] = mapped_column(String, ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
+    source_item_id: Mapped[str] = mapped_column(String, ForeignKey("source_items.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False, index=True)
+    signal_role: Mapped[str] = mapped_column(String, nullable=False)
+    confidence: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    interpretation_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class CommitmentAmbiguity(Base):
+    __tablename__ = "commitment_ambiguities"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
+    commitment_id: Mapped[str] = mapped_column(String, ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False, index=True)
+    ambiguity_type: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_resolved: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False, index=True)
+    resolved_by_item_id: Mapped[str | None] = mapped_column(String, ForeignKey("source_items.id", ondelete="SET NULL"), nullable=True)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class LifecycleTransition(Base):
+    __tablename__ = "lifecycle_transitions"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
+    commitment_id: Mapped[str] = mapped_column(String, ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False, index=True)
+    from_state: Mapped[str | None] = mapped_column(String, nullable=True)
+    to_state: Mapped[str] = mapped_column(String, nullable=False)
+    trigger_source_item_id: Mapped[str | None] = mapped_column(String, ForeignKey("source_items.id", ondelete="SET NULL"), nullable=True, index=True)
+    trigger_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    confidence_at_transition: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class CommitmentCandidate(Base):
+    __tablename__ = "commitment_candidates"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    originating_item_id: Mapped[str | None] = mapped_column(String, ForeignKey("source_items.id", ondelete="SET NULL"), nullable=True, index=True)
+    source_type: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    raw_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    trigger_class: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_explicit: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    detection_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    confidence_score: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    priority_hint: Mapped[str | None] = mapped_column(Text, nullable=True)
+    commitment_class_hint: Mapped[str | None] = mapped_column(Text, nullable=True)
+    context_window: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    linked_entities: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    observe_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    flag_reanalysis: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    was_promoted: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    was_discarded: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    discard_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class CandidateCommitment(Base):
+    __tablename__ = "candidate_commitments"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
+    candidate_id: Mapped[str] = mapped_column(String, ForeignKey("commitment_candidates.id", ondelete="CASCADE"), nullable=False, index=True)
+    commitment_id: Mapped[str] = mapped_column(String, ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
