@@ -2,50 +2,65 @@
 
 ## The Build Cycle
 
-Every phase follows this exact cycle. No skipping. No merging stages.
-At the start of each stage, state explicitly which stage you are in.
+Every phase follows this exact 6-stage cycle. No skipping. No merging stages.
+At the start of each stage, state explicitly which stage you are entering.
+
+**Division of labour:** Claude Code thinks (analysis, interpretation, implementation, testing). Trinity decides (reviews output, approves direction, moves to next stage).
 
 ---
 
 ### STAGE 1 — INTAKE
-**What:** Read everything needed before writing a single line of code or interpretation.
+**Who:** Trinity
+**What:** Read everything needed before spawning Claude Code.
 
 Checklist:
 - [ ] Read the WO in full
 - [ ] Read all context files listed in the WO
 - [ ] Read the relevant brief(s) from `briefs/`
 - [ ] Read prior phase `decisions.md` files if referenced
-- [ ] Read existing models/routes relevant to this phase
+- [ ] Confirm current phase in `build/current-phase.txt` and `build/state.json`
 
-**Exit condition:** All listed files read. Nothing left to load.
+**Exit condition:** All listed files read. Full context loaded.
 **Next:** Move to STAGE 2 — INTERPRET
 
 ---
 
 ### STAGE 2 — INTERPRET
-**What:** Write your understanding of what needs to be built.
+**Who:** Claude Code thinks → Trinity decides
+**What:** Claude Code analyses the brief and produces an interpretation. Trinity reviews it against the brief and directive, then decides whether to proceed.
 
 Checklist:
-- [ ] Write `build/phases/XX-name/interpretation.md`
+- [ ] Spawn Claude Code with: brief, prior decisions, relevant models/routes, skills (`modern-python`, `postgres-best-practices`, `static-analysis`)
+- [ ] Claude Code writes `build/phases/XX-name/interpretation.md`:
   - What the phase does and why
-  - How you plan to implement it (architecture, patterns, key decisions)
-  - Open questions or ambiguities
-- [ ] **Immediately notify Kevin via Telegram** that interpretation is ready
-  - Message: "Phase XX interpretation ready for evaluation — [one-line summary]. Awaiting your go-ahead."
+  - Proposed implementation (architecture, patterns, key decisions)
+  - Open questions with Claude Code's recommended answers
+- [ ] Trinity reviews interpretation against:
+  - The relevant brief in `briefs/`
+  - The phased build directive
+  - Existing schema/API decisions
+- [ ] If interpretation meets the standard: Trinity approves and proceeds immediately
+- [ ] If interpretation has issues: Trinity steers Claude Code, regenerate, re-review
+- [ ] Trinity documents the approved direction in `build/state.json` (`last_action`)
 
-**Exit condition:** interpretation.md written. Kevin notified. Response received.
-**Next:** If approved → STAGE 3. If changes requested → revise and re-notify.
+**Self-approval rule:** Trinity does not wait for Kevin. Claude Code recommends, Trinity decides. If it meets the brief and doesn't break existing work, it's approved.
+
+**Exit condition:** interpretation.md written, reviewed by Trinity, decision made.
+**Next:** Move to STAGE 3 — BUILD
 
 ---
 
 ### STAGE 3 — BUILD
-**What:** Implement. Use TDD — write failing tests first, implement to pass, refactor.
+**Who:** Claude Code implements → Trinity reviews
+**What:** Claude Code implements using TDD. Trinity reviews commits and output.
 
 Checklist:
-- [ ] Write failing tests first (`tests/`)
+- [ ] Spawn Claude Code with approved interpretation + TDD instruction
+- [ ] Claude Code uses skills: `superpowers` (TDD), `modern-python`, `property-based-testing`
+- [ ] Write failing tests first
 - [ ] Implement to pass tests
-- [ ] Refactor for clarity and correctness
-- [ ] Update `build/phases/XX-name/decisions.md` with every non-obvious choice and why
+- [ ] Refactor for clarity
+- [ ] Claude Code updates `build/phases/XX-name/decisions.md` — every non-obvious choice
 
 **Exit condition:** All planned deliverables implemented. All tests passing.
 **Next:** Move to STAGE 4 — VERIFY
@@ -53,6 +68,7 @@ Checklist:
 ---
 
 ### STAGE 4 — VERIFY
+**Who:** Claude Code runs checks → Trinity confirms
 **What:** Prove it works before calling it done.
 
 Checklist:
@@ -67,45 +83,48 @@ Checklist:
 ---
 
 ### STAGE 5 — COMMIT
+**Who:** Trinity (or Claude Code under Trinity direction)
 **What:** Package the work cleanly.
 
 Checklist:
-- [ ] Write `build/phases/XX-name/completed.md` — list every file created/modified with one-line descriptions
-- [ ] `git add` only relevant files (never commit `.env`, `__pycache__`, etc.)
-- [ ] Commit with message: `feat: phase XX — [short description]`
+- [ ] Write `build/phases/XX-name/completed.md` — list every file created/modified
+- [ ] Write `build/phases/XX-name/completed.flag` — empty marker file
+- [ ] `git add` only relevant files (never `.env`, `__pycache__`, etc.)
+- [ ] Commit: `feat: phase XX — [short description]`
 - [ ] Push to main
+- [ ] Update `build/state.json` — advance phase, set next action
 
-**Exit condition:** Clean commit pushed.
+**Exit condition:** Clean commit pushed. State updated.
 **Next:** Move to STAGE 6 — REPORT
 
 ---
 
 ### STAGE 6 — REPORT
-**What:** Close the loop with Kevin. Set up the next cycle.
+**Who:** Trinity
+**What:** Close the loop. Set up the next cycle.
 
 Checklist:
-- [ ] Send Kevin a completion summary via Telegram:
+- [ ] Update `build/current-phase.txt` to next phase
+- [ ] Create next phase WO if not already present
+- [ ] Write Morpheus completion signal (see WO template)
+- [ ] Notify Kevin via Telegram with completion summary:
   - What was built
   - Key decisions made
-  - Any follow-up items or watch-outs
-  - What phase is next
-- [ ] Update `build/current-phase.txt` to next phase
-- [ ] Create or update the next phase WO if needed
-- [ ] Write Morpheus completion signal (see WO)
+  - What's next
 
-**Exit condition:** Kevin notified. Next phase WO ready. Current WO marked complete.
+**Exit condition:** Kevin notified. Next phase queued. WO closed.
 **Next:** INTAKE on next phase.
 
 ---
 
 ## Hard Rules
 
-- **Never** proceed to the next stage without completing the current stage's checklist
-- **Intake before interpret.** Interpret before build. Always.
-- **Kevin evaluates interpretation** — this is not optional and is not negotiable
-- After writing interpretation, **notify Kevin immediately** — do not wait passively
-- Production deploys: no approval needed (project not yet live)
-- Mid-build stops: only for destructive/irreversible actions, scope conflicts, or genuine blockers
+- **Never** proceed to the next stage without completing the current checklist
+- **Claude Code thinks. Trinity decides.** Never bypass this — Claude Code does the analysis, Trinity makes the call
+- **Self-approval at Stage 2** — Trinity reviews against the brief. No waiting for Kevin
+- **Only stop mid-build for:** destructive/irreversible actions on live data, scope conflicts with other phases, or genuine blockers with no resolution path
+- **Production deploys:** no approval needed (Rippled is not yet live)
+- **Document every decision** — `decisions.md` is the record that survives session resets
 
 ## Context Boundaries
 

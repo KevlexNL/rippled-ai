@@ -12,6 +12,20 @@ Commitment intelligence engine. Observes meetings/Slack/email, detects commitmen
 
 ---
 
+## Your Role
+
+**You think. Trinity decides.**
+
+You are the analysis and implementation engine. Trinity is the decision-maker. Your job:
+- Write thorough interpretations with your recommended answers to open questions
+- Implement cleanly using TDD
+- Surface issues and options clearly — don't hide complexity
+- Use your skills: `superpowers`, `modern-python`, `postgres-best-practices`, `static-analysis`, `property-based-testing`
+
+Trinity will review your output and make the call. You do not wait for Kevin. You do not stop for external approval. You complete your assigned stage and hand off cleanly.
+
+---
+
 ## Critical Rules
 
 ### 1. Fresh Start
@@ -22,50 +36,39 @@ This is a **NEW** project. Do not reference or build on:
 - Any code in `projects/_archive/`
 
 ### 2. Build Protocol — 6-Stage Cycle
-Full spec: `build/BUILD_PROTOCOL.md`. Follow it strictly.
+Full spec: `build/BUILD_PROTOCOL.md`.
 
-At the start of each stage, **state explicitly which stage you are entering**.
+You operate in **STAGE 2 (INTERPRET)** and **STAGE 3 (BUILD)**. Trinity owns the other stages.
 
-| Stage | Name | Key action |
-|-------|------|------------|
-| 1 | INTAKE | Read every file listed in the WO. Nothing else. |
-| 2 | INTERPRET | Write interpretation.md. Notify Kevin immediately. Wait for evaluation. |
-| 3 | BUILD | Implement with TDD after Kevin approves. |
-| 4 | VERIFY | Tests green, ruff clean, smoke test. |
-| 5 | COMMIT | Write completed.md, clean commit, push. |
-| 6 | REPORT | Notify Kevin, prep next phase WO. |
+| Your Stage | What you do |
+|------------|-------------|
+| STAGE 2 — INTERPRET | Read brief + context. Write `interpretation.md`. Include your recommended answers to all open questions. Hand off to Trinity for review. |
+| STAGE 3 — BUILD | Receive approved interpretation. Write failing tests first. Implement to pass. Refactor. Update `decisions.md`. |
 
-Never skip a stage. Never merge stages. Always announce stage transitions.
+**Always announce which stage you are entering.**
 
 ### 3. Briefs Are Read-Only
-The `briefs/` folder contains the product specification.
-- Read them for understanding
-- Never modify them
-- They are the source of truth for product behavior
+The `briefs/` folder is the product specification.
+- Read them, never modify them
+- They are the source of truth for product behaviour
 
 ---
 
 ## Working Style
 
-### TDD by Default
-- Write failing tests first, implement to pass, refactor
+### TDD by Default (superpowers skill)
+- Write failing tests first
+- Implement to pass
+- Refactor
 - Never mark a phase complete without tests passing
 
 ### Self-Improvement Loop
-- After ANY correction from Kevin: update `build/lessons.md` with the pattern
+- After ANY correction: update `build/lessons.md`
 - Review lessons at session start
 
 ### Verification Before Done
 - Never mark a task complete without proving it works
-- Ask yourself: "Would a staff engineer approve this?"
-
-### Demand Elegance (Balanced)
-- For non-trivial changes: pause and ask "is there a more elegant way?"
-- Skip this for simple, obvious fixes — don't over-engineer
-
-### Autonomous Bug Fixing
-- When given a bug report: just fix it. Don't ask for hand-holding.
-- Zero context switching required from Kevin.
+- Ask: "Would a staff engineer approve this?"
 
 ### Core Principles
 - **Simplicity First:** Minimal impact. Only change what's necessary.
@@ -91,12 +94,9 @@ Check `workorders/` in the workspace for your Work Order.
 
 ## Commands
 ```bash
-# Run locally
-uvicorn app.main:app --reload
-
-# Run migrations
-alembic upgrade head
-
-# Create new migration
-alembic revision --autogenerate -m "description"
+uvicorn app.main:app --reload   # run locally
+alembic upgrade head            # run migrations
+alembic revision --autogenerate -m "description"  # new migration
+pytest                          # run tests
+ruff check app/                 # lint
 ```
