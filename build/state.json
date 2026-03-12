@@ -1,16 +1,17 @@
 {
   "current_cycle": "A",
-  "current_phase": "05-completion",
+  "current_phase": "06-surfacing",
   "phase_step": "A1-intake",
-  "phase_queue": ["05-completion", "06-surfacing"],
-  "phases_completed": ["01-schema", "02-api-scaffold", "03-detection", "04-clarification"],
-  "last_action": "Trinity: Phase 04 complete — 62 tests passing, committed (1238fc8), pushed. current-phase.txt → 05-completion. Phase 05 WO created (WO_PHASE05_202603121815). Kevin notified.",
-  "last_action_time": "2026-03-12T18:15:00Z",
-  "next_action": "Phase 05 INTAKE: read Brief 10 (Completion Detection), prior decisions, current schema. Then INTERPRET → BUILD.",
+  "phase_queue": ["06-surfacing"],
+  "phases_completed": ["01-schema", "02-api-scaffold", "03-detection", "04-clarification", "05-completion"],
+  "last_action": "Claude Code: Phase 05 completion detection built, 178 tests passing, committed and pushed.",
+  "last_action_time": "2026-03-12T21:20:00Z",
+  "next_action": "Trinity: review Phase 05 output, write Phase 06 brief if not exists, spawn Stage 2 (interpret) for 06-surfacing.",
   "claude_code_session": null,
+  "claude_code_pid": null,
   "blockers_for_kevin": [],
-  "decisions_made_this_week": 18,
+  "decisions_made_this_week": 21,
   "sunday_report_sent": false,
   "week_start": "2026-03-10",
-  "notes": "Phase 04 recovery: prior session built services (10:52 UTC), never committed. Trinity resumed at 18:00 UTC, wrote 62 tests, ran verification, fixed ruff (6 issues), committed and pushed. All 146 tests passing."
+  "notes": "Phase 05 complete: matcher/scorer/updater/detector + Celery sweep. Alembic migration b5c6d7e8f9a0 adds delivered_at + auto_close_after_hours. 32 new tests."
 }

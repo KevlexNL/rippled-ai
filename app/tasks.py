@@ -1,7 +1,8 @@
-"""Celery application and tasks — Phase 03 + Phase 04.
+"""Celery application and tasks — Phase 03 + Phase 04 + Phase 05.
 
 Detection task: orchestrates detection service (Phase 03).
 Clarification task: orchestrates clarification pipeline (Phase 04).
+Completion sweep: evidence sweep + auto-close sweep (Phase 05).
 """
 
 from celery import Celery
@@ -9,6 +10,7 @@ from app.core.config import get_settings
 from app.db.session import get_sync_session
 from app.services.detection import run_detection
 from app.services.clarification import run_clarification
+from app.services.completion import run_auto_close_sweep, run_completion_detection
 
 settings = get_settings()
 
@@ -28,6 +30,10 @@ celery_app.conf.update(
         "clarification-sweep": {
             "task": "app.tasks.run_clarification_batch",
             "schedule": 300.0,  # 5 minutes
+        },
+        "completion-sweep": {
+            "task": "app.tasks.run_completion_sweep",
+            "schedule": 600.0,  # 10 minutes
         },
     },
 )
@@ -112,3 +118,52 @@ def run_clarification_batch() -> dict:
         enqueued += 1
 
     return {"enqueued": enqueued}
+
+
+@celery_app.task(name="app.tasks.run_completion_sweep")
+def run_completion_sweep() -> dict:
+    """Completion detection sweep — Phase 05.
+
+    Sweep A: Processes source_items ingested in the last 30 minutes (with overlap
+    for beat jitter). Idempotency is guaranteed by the CommitmentSignal UniqueConstraint.
+
+    Sweep B: Auto-closes delivered commitments that have exceeded their
+    auto_close_after_hours threshold and meet the closure confidence requirement.
+
+    Returns:
+        Dict with 'sweep_a' (evidence sweep results) and 'sweep_b' (auto-close results).
+    """
+    from datetime import datetime, timezone, timedelta
+    from sqlalchemy import select, and_
+    from app.models.orm import SourceItem
+
+    sweep_a_total: dict = {"transitions_made": 0, "signals_written": 0, "items_processed": 0}
+
+    with get_sync_session() as session:
+        now = datetime.now(timezone.utc)
+        window_start = now - timedelta(minutes=30)
+
+        recent_item_ids = session.execute(
+            select(SourceItem.id).where(
+                and_(
+                    SourceItem.ingested_at >= window_start,
+                    SourceItem.is_quoted_content.is_(False),
+                )
+            ).order_by(SourceItem.ingested_at.desc())
+        ).scalars().all()
+
+    for item_id in recent_item_ids:
+        with get_sync_session() as session:
+            result = run_completion_detection(str(item_id), session)
+            sweep_a_total["transitions_made"] += result.get("transitions_made", 0)
+            sweep_a_total["signals_written"] += result.get("signals_written", 0)
+            sweep_a_total["items_processed"] += 1
+
+    sweep_b_result: dict = {}
+    with get_sync_session() as session:
+        sweep_b_result = run_auto_close_sweep(session)
+
+    return {
+        "sweep_a": sweep_a_total,
+        "sweep_b": sweep_b_result,
+    }

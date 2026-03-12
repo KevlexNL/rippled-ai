@@ -114,6 +114,8 @@ class Commitment(Base):
     missing_pieces_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
     delivery_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
     closure_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    auto_close_after_hours: Mapped[int] = mapped_column(Integer, server_default="48", nullable=False)
     observe_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     observation_window_hours: Mapped[Decimal | None] = mapped_column(Numeric, nullable=True)
     is_surfaced: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False, index=True)
