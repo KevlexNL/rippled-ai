@@ -5,7 +5,7 @@
 Every phase follows this exact 6-stage cycle. No skipping. No merging stages.
 At the start of each stage, state explicitly which stage you are entering.
 
-**Division of labour:** Claude Code thinks (analysis, interpretation, implementation, testing). Trinity decides (reviews output, approves direction, moves to next stage).
+**Division of labour:** Claude Code does all the work — analysis, interpretation, coding, testing, linting, committing. Trinity orchestrates and decides — loads context, spawns Claude Code with the right brief and skills, reviews output against the directive, approves or redirects, advances stages.
 
 ---
 
@@ -26,7 +26,7 @@ Checklist:
 ---
 
 ### STAGE 2 — INTERPRET
-**Who:** Claude Code thinks → Trinity decides
+**Who:** Claude Code does the work → Trinity reviews and decides
 **What:** Claude Code analyses the brief and produces an interpretation. Trinity reviews it against the brief and directive, then decides whether to proceed.
 
 Checklist:
@@ -51,7 +51,7 @@ Checklist:
 ---
 
 ### STAGE 3 — BUILD
-**Who:** Claude Code implements → Trinity reviews
+**Who:** Claude Code implements and tests → Trinity reviews
 **What:** Claude Code implements using TDD. Trinity reviews commits and output.
 
 Checklist:
@@ -68,7 +68,7 @@ Checklist:
 ---
 
 ### STAGE 4 — VERIFY
-**Who:** Claude Code runs checks → Trinity confirms
+**Who:** Claude Code runs all checks → Trinity confirms
 **What:** Prove it works before calling it done.
 
 Checklist:
@@ -120,7 +120,7 @@ Checklist:
 ## Hard Rules
 
 - **Never** proceed to the next stage without completing the current checklist
-- **Claude Code thinks. Trinity decides.** Never bypass this — Claude Code does the analysis, Trinity makes the call
+- **Claude Code does all the work. Trinity orchestrates and decides.** Never bypass this — Claude Code handles analysis, coding, testing, linting, committing. Trinity loads context, spawns CC with precise prompts, reviews output against the brief, makes the call
 - **Self-approval at Stage 2** — Trinity reviews against the brief. No waiting for Kevin
 - **Only stop mid-build for:** destructive/irreversible actions on live data, scope conflicts with other phases, or genuine blockers with no resolution path
 - **Production deploys:** no approval needed (Rippled is not yet live)
