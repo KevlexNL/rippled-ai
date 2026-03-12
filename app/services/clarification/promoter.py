@@ -1,0 +1,171 @@
+"""Commitment promoter — Phase 04.
+
+Promotes a CommitmentCandidate to a full Commitment, creating the join
+record and per-issue CommitmentAmbiguity rows.
+
+Public API:
+    promote_candidate(candidate, db, analysis) -> Commitment
+"""
+from __future__ import annotations
+
+import re
+import uuid
+from typing import Any
+
+from sqlalchemy.orm import Session
+
+from app.models.enums import AmbiguityType
+from app.models.orm import (
+    CandidateCommitment,
+    Commitment,
+    CommitmentAmbiguity,
+)
+from app.services.clarification.analyzer import AnalysisResult
+
+
+# ---------------------------------------------------------------------------
+# Title derivation
+# ---------------------------------------------------------------------------
+
+_TITLE_PREFIX_PATTERN = re.compile(
+    r"^(?:I'll\s+|I will\s+|We'll\s+|We will\s+|I'm going to\s+)",
+    re.IGNORECASE,
+)
+
+
+def _derive_title(raw_text: str) -> str:
+    """Normalize raw_text to an action phrase for use as commitment title.
+
+    Strips first-person prefixes and capitalizes. Falls back to raw_text[:200].
+    """
+    text = (raw_text or "").strip()
+    if not text:
+        return "Untitled commitment"
+
+    stripped = _TITLE_PREFIX_PATTERN.sub("", text)
+    if stripped and stripped != text:
+        # Capitalize first char
+        title = stripped[0].upper() + stripped[1:]
+    else:
+        title = text
+
+    return title[:200]
+
+
+# ---------------------------------------------------------------------------
+# Context type derivation
+# ---------------------------------------------------------------------------
+
+def _derive_context_type(candidate: Any) -> str:
+    ctx = candidate.context_window or {}
+    if ctx.get("has_external_recipient"):
+        return "external"
+    return "internal"
+
+
+# ---------------------------------------------------------------------------
+# Ambiguity field derivation
+# ---------------------------------------------------------------------------
+
+_OWNERSHIP_ISSUES = {AmbiguityType.owner_missing, AmbiguityType.owner_vague_collective}
+_TIMING_ISSUES = {
+    AmbiguityType.timing_missing,
+    AmbiguityType.timing_vague,
+    AmbiguityType.timing_conflicting,
+}
+_DELIVERABLE_ISSUES = {AmbiguityType.deliverable_unclear, AmbiguityType.target_unclear}
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+def promote_candidate(
+    candidate: Any,
+    db: Session,
+    analysis: AnalysisResult,
+) -> Commitment:
+    """Promote a CommitmentCandidate to a Commitment.
+
+    Creates the Commitment, CandidateCommitment join record, and one
+    CommitmentAmbiguity row per issue type. Marks candidate.was_promoted = True.
+
+    Does NOT flush — caller owns the transaction.
+
+    Args:
+        candidate: CommitmentCandidate ORM object.
+        db: Synchronous SQLAlchemy Session.
+        analysis: AnalysisResult from analyze_candidate().
+
+    Returns:
+        The newly created Commitment (not yet flushed).
+
+    Raises:
+        ValueError: If candidate is already promoted or discarded.
+    """
+    if candidate.was_promoted:
+        raise ValueError(
+            f"Candidate {candidate.id!r} is already promoted"
+        )
+    if candidate.was_discarded:
+        raise ValueError(
+            f"Candidate {candidate.id!r} is already discarded"
+        )
+
+    issue_types = analysis.issue_types
+    context_type = _derive_context_type(candidate)
+
+    # Derive title from raw_text
+    title = _derive_title(candidate.raw_text or "")
+
+    # Ambiguity flags
+    ownership_ambiguity = any(i in _OWNERSHIP_ISSUES for i in issue_types)
+    timing_ambiguity = any(i in _TIMING_ISSUES for i in issue_types)
+    deliverable_ambiguity = any(i in _DELIVERABLE_ISSUES for i in issue_types)
+
+
+    # Lifecycle state
+    lifecycle_state = "needs_clarification" if issue_types else "proposed"
+
+    commitment_id = str(uuid.uuid4())
+
+    commitment = Commitment(
+        id=commitment_id,
+        user_id=candidate.user_id,
+        title=title,
+        commitment_text=candidate.raw_text,
+        context_type=context_type,
+        ownership_ambiguity="missing" if ownership_ambiguity else None,
+        timing_ambiguity="missing" if timing_ambiguity else None,
+        deliverable_ambiguity="unclear" if deliverable_ambiguity else None,
+        suggested_owner=None,
+        suggested_due_date=None,  # Phase 04 does not parse date strings to datetime
+        suggested_next_step=None,
+        confidence_commitment=candidate.confidence_score,
+        observe_until=candidate.observe_until,
+        lifecycle_state=lifecycle_state,
+    )
+    db.add(commitment)
+
+    # CandidateCommitment join
+    join_record = CandidateCommitment(
+        id=str(uuid.uuid4()),
+        candidate_id=candidate.id,
+        commitment_id=commitment_id,
+    )
+    db.add(join_record)
+
+    # CommitmentAmbiguity per issue type
+    for issue in issue_types:
+        ambiguity = CommitmentAmbiguity(
+            id=str(uuid.uuid4()),
+            commitment_id=commitment_id,
+            user_id=candidate.user_id,
+            ambiguity_type=issue.value,
+        )
+        db.add(ambiguity)
+
+    # Mark candidate as promoted
+    candidate.was_promoted = True
+
+    return commitment

@@ -21,6 +21,7 @@ from app.models.candidate_commitment import CandidateCommitment
 from app.models.commitment_signal import CommitmentSignal
 from app.models.commitment_ambiguity import CommitmentAmbiguity
 from app.models.lifecycle_transition import LifecycleTransition
+from app.models.clarification import Clarification
 
 __all__ = [
     "Base",
@@ -44,4 +45,5 @@ __all__ = [
     "CommitmentSignal",
     "CommitmentAmbiguity",
     "LifecycleTransition",
+    "Clarification",
 ]

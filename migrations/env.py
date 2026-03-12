@@ -19,6 +19,7 @@ import app.models.candidate_commitment  # noqa: F401
 import app.models.commitment_signal  # noqa: F401
 import app.models.commitment_ambiguity  # noqa: F401
 import app.models.lifecycle_transition  # noqa: F401
+import app.models.clarification  # noqa: F401
 
 # Alembic Config object
 config = context.config

@@ -21,7 +21,7 @@ Pattern sets:
 8. Email suppression            — email only (strip quoted chains)
 """
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 ALL_SOURCES = ("meeting", "slack", "email")
