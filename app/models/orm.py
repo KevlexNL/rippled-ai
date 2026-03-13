@@ -2,7 +2,8 @@
 
 These mirror the Alembic-managed tables exactly. Used for DB queries only.
 Always convert to Pydantic schemas at the API boundary.
-UUIDs stored as String (as_uuid=False, matching migration setup).
+UUIDs use postgresql.UUID(as_uuid=False) so Python works with strings
+while asyncpg correctly types them as UUID at the wire level.
 """
 
 from datetime import datetime
@@ -18,8 +19,13 @@ from sqlalchemy import (
     Text,
     func,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+def _uuid(**kwargs):
+    """Shorthand: PostgreSQL UUID stored/returned as Python str."""
+    return UUID(as_uuid=False)
 
 
 class Base(DeclarativeBase):
@@ -29,7 +35,7 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     display_name: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -39,8 +45,8 @@ class User(Base):
 class Source(Base):
     __tablename__ = "sources"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
-    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     source_type: Mapped[str] = mapped_column(String, nullable=False)
     provider_account_id: Mapped[str | None] = mapped_column(String, nullable=True)
     display_name: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -54,9 +60,9 @@ class Source(Base):
 class SourceItem(Base):
     __tablename__ = "source_items"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
-    source_id: Mapped[str] = mapped_column(String, ForeignKey("sources.id", ondelete="CASCADE"), nullable=False, index=True)
-    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    source_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("sources.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     source_type: Mapped[str] = mapped_column(String, nullable=False)
     external_id: Mapped[str] = mapped_column(String, nullable=False)
     thread_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
@@ -80,8 +86,8 @@ class SourceItem(Base):
 class Commitment(Base):
     __tablename__ = "commitments"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
-    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     version: Mapped[int] = mapped_column(Integer, server_default="1", nullable=False)
     title: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -135,10 +141,10 @@ class Commitment(Base):
 class CommitmentSignal(Base):
     __tablename__ = "commitment_signals"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
-    commitment_id: Mapped[str] = mapped_column(String, ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
-    source_item_id: Mapped[str] = mapped_column(String, ForeignKey("source_items.id", ondelete="CASCADE"), nullable=False, index=True)
-    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False, index=True)
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    commitment_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
+    source_item_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("source_items.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id"), nullable=False, index=True)
     signal_role: Mapped[str] = mapped_column(String, nullable=False)
     confidence: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
     interpretation_note: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -148,13 +154,13 @@ class CommitmentSignal(Base):
 class CommitmentAmbiguity(Base):
     __tablename__ = "commitment_ambiguities"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
-    commitment_id: Mapped[str] = mapped_column(String, ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
-    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False, index=True)
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    commitment_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id"), nullable=False, index=True)
     ambiguity_type: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_resolved: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False, index=True)
-    resolved_by_item_id: Mapped[str | None] = mapped_column(String, ForeignKey("source_items.id", ondelete="SET NULL"), nullable=True)
+    resolved_by_item_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("source_items.id", ondelete="SET NULL"), nullable=True)
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
@@ -162,12 +168,12 @@ class CommitmentAmbiguity(Base):
 class LifecycleTransition(Base):
     __tablename__ = "lifecycle_transitions"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
-    commitment_id: Mapped[str] = mapped_column(String, ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
-    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False, index=True)
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    commitment_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id"), nullable=False, index=True)
     from_state: Mapped[str | None] = mapped_column(String, nullable=True)
     to_state: Mapped[str] = mapped_column(String, nullable=False)
-    trigger_source_item_id: Mapped[str | None] = mapped_column(String, ForeignKey("source_items.id", ondelete="SET NULL"), nullable=True, index=True)
+    trigger_source_item_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("source_items.id", ondelete="SET NULL"), nullable=True, index=True)
     trigger_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     confidence_at_transition: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -176,9 +182,9 @@ class LifecycleTransition(Base):
 class CommitmentCandidate(Base):
     __tablename__ = "commitment_candidates"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
-    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    originating_item_id: Mapped[str | None] = mapped_column(String, ForeignKey("source_items.id", ondelete="SET NULL"), nullable=True, index=True)
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    originating_item_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("source_items.id", ondelete="SET NULL"), nullable=True, index=True)
     source_type: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     raw_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     trigger_class: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -201,18 +207,18 @@ class CommitmentCandidate(Base):
 class CandidateCommitment(Base):
     __tablename__ = "candidate_commitments"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
-    candidate_id: Mapped[str] = mapped_column(String, ForeignKey("commitment_candidates.id", ondelete="CASCADE"), nullable=False, index=True)
-    commitment_id: Mapped[str] = mapped_column(String, ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    candidate_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("commitment_candidates.id", ondelete="CASCADE"), nullable=False, index=True)
+    commitment_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class Clarification(Base):
     __tablename__ = "clarifications"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, server_default=func.gen_random_uuid())
-    commitment_id: Mapped[str] = mapped_column(String, ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
-    user_id: Mapped[str | None] = mapped_column(String, ForeignKey("users.id"), nullable=True)
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    commitment_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("users.id"), nullable=True)
     issue_types: Mapped[list] = mapped_column(ARRAY(Text), nullable=False)
     issue_severity: Mapped[str] = mapped_column(String, nullable=False)
     why_this_matters: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -230,7 +236,7 @@ class SurfacingAudit(Base):
     __tablename__ = "surfacing_audit"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    commitment_id: Mapped[str] = mapped_column(String, ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
+    commitment_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
     old_surfaced_as: Mapped[str | None] = mapped_column(String(20), nullable=True)
     new_surfaced_as: Mapped[str | None] = mapped_column(String(20), nullable=True)
     priority_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
