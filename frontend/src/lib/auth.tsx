@@ -47,7 +47,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signUp = async (email: string, password: string): Promise<void> => {
-    const { error } = await supabase.auth.signUp({ email, password })
+    // Explicitly pass emailRedirectTo so confirmation links always point
+    // to the current origin — not whatever Supabase has as Site URL.
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    })
     if (error) throw error
   }
 
