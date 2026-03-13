@@ -11,8 +11,9 @@ one-time warning logged.
 import base64
 import hashlib
 import logging
+from functools import lru_cache
 
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 
 from app.core.config import get_settings
 
@@ -27,8 +28,12 @@ _SENSITIVE_KEYS = frozenset(
 _warned_no_key = False
 
 
+@lru_cache(maxsize=1)
 def _get_cipher() -> Fernet | None:
-    """Return a Fernet instance derived from ENCRYPTION_KEY, or None if unset."""
+    """Return a Fernet instance derived from ENCRYPTION_KEY, or None if unset.
+
+    Result is cached at module level — key derivation runs at most once per process.
+    """
     key_str = get_settings().encryption_key
     if not key_str:
         return None
@@ -79,13 +84,14 @@ def decrypt_credentials(data: dict) -> dict:
         if key in _SENSITIVE_KEYS and isinstance(value, str):
             try:
                 result[key] = cipher.decrypt(value.encode()).decode()
-            except Exception:
-                # Value may be unencrypted (e.g. stored before key was set)
+            except InvalidToken:
                 logger.warning(
-                    "Failed to decrypt field '%s' — returning value as-is. "
-                    "This may indicate a key rotation or unencrypted legacy value.",
+                    "Failed to decrypt field '%s' — possibly unencrypted legacy value, returning as-is.",
                     key,
                 )
+                result[key] = value
+            except Exception as e:
+                logger.error("Unexpected error decrypting field '%s': %s", key, e)
                 result[key] = value
         else:
             result[key] = value

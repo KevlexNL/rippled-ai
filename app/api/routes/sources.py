@@ -101,6 +101,9 @@ async def update_source(
         source.is_active = body.is_active
     if body.metadata_ is not None:
         source.metadata_ = body.metadata_
+    if body.credentials is not None:
+        from app.connectors.shared.credentials_utils import encrypt_credentials
+        source.credentials = encrypt_credentials(body.credentials)
 
     source.updated_at = datetime.now(timezone.utc)
     await db.flush()

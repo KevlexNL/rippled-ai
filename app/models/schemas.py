@@ -76,6 +76,7 @@ class SourceUpdate(_Base):
     display_name: str | None = None
     is_active: bool | None = None
     metadata_: dict | None = Field(None, alias="metadata")
+    credentials: dict | None = None
 
 
 # ---------------------------------------------------------------------------
