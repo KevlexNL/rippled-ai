@@ -9,6 +9,8 @@ import SignUpScreen from './screens/SignUpScreen'
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen'
 import ResetPasswordScreen from './screens/ResetPasswordScreen'
 import OnboardingScreen from './screens/OnboardingScreen'
+import SourcesSettingsScreen from './screens/settings/SourcesSettingsScreen'
+import AccountSettingsScreen from './screens/settings/AccountSettingsScreen'
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -61,6 +63,22 @@ export default function App() {
         element={
           <AuthGuard>
             <CommitmentDetail />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/settings/sources"
+        element={
+          <AuthGuard>
+            <SourcesSettingsScreen />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/settings/account"
+        element={
+          <AuthGuard>
+            <AccountSettingsScreen />
           </AuthGuard>
         }
       />

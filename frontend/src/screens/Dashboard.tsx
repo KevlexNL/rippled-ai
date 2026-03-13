@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { getSurface } from '../api/surface'
 import { postCommitment, patchCommitment } from '../api/commitments'
@@ -113,7 +113,18 @@ export default function Dashboard() {
       {/* Source groups */}
       <div className="px-4">
         {sourceTypes.length === 0 && (
-          <p className="text-sm text-gray-400 text-center py-12">No commitments surfaced yet.</p>
+          <div className="mt-4 p-6 rounded-2xl border border-gray-100 bg-gray-50 text-center">
+            <p className="text-sm font-medium text-black mb-1">Rippled has no signals yet.</p>
+            <p className="text-sm text-gray-500 mb-4">
+              Connect your first source to start capturing commitments.
+            </p>
+            <Link
+              to="/settings/sources"
+              className="inline-block px-4 py-2 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900 transition-colors"
+            >
+              Connect a source →
+            </Link>
+          </div>
         )}
         {sourceTypes.map((st) => {
           const groupCommitments = groups[st]
