@@ -160,54 +160,61 @@ def _poll_source(source: Source) -> dict:
     user_id = source.user_id
     source_id = source.id
 
-    if ssl:
-        conn = imaplib.IMAP4_SSL(host, port)
-    else:
-        conn = imaplib.IMAP4(host, port)
+    conn = None
+    try:
+        if ssl:
+            conn = imaplib.IMAP4_SSL(host, port)
+        else:
+            conn = imaplib.IMAP4(host, port)
 
-    conn.login(user, password)
+        conn.login(user, password)
 
-    folders = [("INBOX", "inbound"), (sent_folder, "outbound")]
+        folders = [("INBOX", "inbound"), (sent_folder, "outbound")]
 
-    for folder, direction in folders:
-        try:
-            status, _ = conn.select(folder, readonly=True)
-            if status != "OK":
-                logger.warning("IMAP folder %s not found for source %s — skipping", folder, source_id)
-                continue
+        for folder, direction in folders:
+            try:
+                status, _ = conn.select(folder, readonly=True)
+                if status != "OK":
+                    logger.warning("IMAP folder %s not found for source %s — skipping", folder, source_id)
+                    continue
 
-            _, data = conn.search(None, "UNSEEN")
-            message_nums = data[0].split() if data[0] else []
+                _, data = conn.search(None, "UNSEEN")
+                message_nums = data[0].split() if data[0] else []
 
-            for num in message_nums:
-                try:
-                    _, msg_data = conn.fetch(num, "(RFC822)")
-                    if not msg_data or not msg_data[0]:
-                        continue
-                    raw = msg_data[0][1]
-                    if not isinstance(raw, bytes):
-                        continue
+                for num in message_nums:
+                    try:
+                        _, msg_data = conn.fetch(num, "(RFC822)")
+                        if not msg_data or not msg_data[0]:
+                            continue
+                        raw = msg_data[0][1]
+                        if not isinstance(raw, bytes):
+                            continue
 
-                    payload = _parse_email_message(raw, direction)
-                    if not payload:
-                        continue
+                        payload = _parse_email_message(raw, direction)
+                        if not payload:
+                            continue
 
-                    with get_sync_session() as db:
-                        item = normalise_email(payload, source_id)
-                        _, created = ingest_item(item, user_id, db)
-                        if created:
-                            ingested += 1
-                        else:
-                            duplicates += 1
+                        with get_sync_session() as db:
+                            item = normalise_email(payload, source_id)
+                            _, created = ingest_item(item, user_id, db)
+                            if created:
+                                ingested += 1
+                            else:
+                                duplicates += 1
 
-                except Exception as e:
-                    logger.error("Error processing IMAP message %s for source %s: %s", num, source_id, e)
-                    errors += 1
+                    except Exception as e:
+                        logger.error("Error processing IMAP message %s for source %s: %s", num, source_id, e)
+                        errors += 1
 
-        except Exception as e:
-            logger.error("Error accessing IMAP folder %s for source %s: %s", folder, source_id, e)
+            except Exception as e:
+                logger.error("Error accessing IMAP folder %s for source %s: %s", folder, source_id, e)
 
-    conn.logout()
+    finally:
+        if conn:
+            try:
+                conn.logout()
+            except Exception:
+                pass
 
     return {"ingested": ingested, "duplicates": duplicates, "errors": errors}
 

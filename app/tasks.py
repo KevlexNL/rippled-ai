@@ -215,6 +215,7 @@ def process_slack_event(self, payload: dict) -> dict:
     try:
         event = payload.get("event", {})
         team_id = payload.get("team_id") or settings.slack_team_id
+        user_id = None
 
         with get_sync_session() as db:
             source = None

@@ -37,6 +37,9 @@ async def slack_events(
     settings = get_settings()
 
     # Peek at team_id from body to resolve per-source signing secret
+    # NOTE: team_id is parsed before signature verification to enable per-source secret lookup.
+    # This creates a low-severity oracle: an attacker can infer whether a team_id is registered
+    # by timing the response. Accepted as an MVP tradeoff — fix in a later phase if needed.
     team_id: str | None = None
     try:
         peek = json_lib.loads(body)
