@@ -46,6 +46,21 @@ async def _ensure_user_exists(user_id: str, db: AsyncSession, email: str = "") -
     await db.execute(stmt)
     await db.flush()
 
+@router.get("/debug-db")
+async def debug_db(
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Temporary debug endpoint — remove after diagnosis."""
+    import traceback
+    try:
+        await _ensure_user_exists(user_id, db, email="debug@test.com")
+        return {"status": "ok", "user_id": user_id}
+    except Exception as e:
+        return {"status": "error", "error": str(e), "trace": traceback.format_exc()}
+
+
+
 
 def _imap_connect_test(
     host: str, port: int, ssl: bool, email: str, password: str
