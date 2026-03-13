@@ -1,7 +1,7 @@
 {
   "current_cycle": "A",
   "current_phase": "07-connectors",
-  "phase_step": "A1-interpretation",
+  "phase_step": "A3-build",
   "phase_queue": [
     "07-connectors"
   ],
@@ -13,14 +13,14 @@
     "05-completion",
     "06-surfacing"
   ],
-  "last_action": "Phase 06 validation complete. A5 confirmed: 255 tests passing, ruff clean, all code committed. Phase 06 → completed. Moving to Phase 07 A1 interpretation.",
-  "last_action_time": "2026-03-13T09:30:00Z",
-  "next_action": "Spawn Claude Code for Phase 07 interpretation.",
-  "claude_code_session": "142502-completed",
+  "last_action": "Phase 07 A1 interpretation approved. Brief created. Moving to A3 build. Spawning Claude Code.",
+  "last_action_time": "2026-03-13T09:31:00Z",
+  "next_action": "Claude Code: build Phase 07 (normalizers, connectors, webhooks, Celery tasks, ~47-53 tests)",
+  "claude_code_session": "active",
   "claude_code_pid": null,
   "blockers_for_kevin": [],
   "decisions_made_this_week": 22,
   "sunday_report_sent": false,
   "week_start": "2026-03-10",
-  "notes": "Phase 06 complete: surfacing + prioritization. 5 new services, ORM updates, migration, API endpoints, Celery tasks. 255 tests, all passing. Ready for Phase 07 (connectors)."
+  "notes": "Phase 07: Source connectors (email webhook + IMAP, Slack Events API, meeting transcripts). Auto-create Source on first use. IMAP as primary email path. One SourceItem per meeting. 47-53 tests. Spawning Claude Code for build."
 }
