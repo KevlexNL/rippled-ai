@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     # Credential encryption
     encryption_key: str = ""
 
+    # Public base URL for webhook URL generation (e.g. https://api.rippled.ai)
+    base_url: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = False

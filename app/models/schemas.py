@@ -95,6 +95,10 @@ class SlackSetupRequest(BaseModel):
     slack_user_id: str
 
 
+class SlackTestRequest(_Base):
+    bot_token: str
+
+
 class MeetingSetupRequest(BaseModel):
     platform: str
     display_name: str | None = None

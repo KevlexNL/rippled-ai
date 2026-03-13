@@ -1,3 +1,4 @@
+import asyncio
 import imaplib
 import secrets
 from datetime import datetime, timezone
@@ -19,12 +20,33 @@ from app.models.schemas import (
     EmailSetupRequest,
     MeetingSetupRequest,
     SlackSetupRequest,
+    SlackTestRequest,
     SourceCreate,
     SourceRead,
     SourceUpdate,
 )
 
 router = APIRouter(prefix="/sources", tags=["sources"])
+
+
+def _imap_connect_test(
+    host: str, port: int, ssl: bool, email: str, password: str
+) -> tuple[bool, str]:
+    """Sync IMAP connection test. Returns (success, message)."""
+    try:
+        if ssl:
+            conn = imaplib.IMAP4_SSL(host, port)
+        else:
+            conn = imaplib.IMAP4(host, port)
+        conn.login(email, password)
+        _, data = conn.select("INBOX", readonly=True)
+        count = len(conn.search(None, "ALL")[1][0].split()) if data else 0
+        conn.logout()
+        return True, f"Connected to {email} — {count} messages in INBOX"
+    except imaplib.IMAP4.error as e:
+        return False, str(e)
+    except Exception as e:
+        return False, str(e)
 
 
 def _to_schema(row: Source) -> SourceRead:
@@ -52,37 +74,30 @@ async def test_email_connection(
     user_id: str = Depends(get_current_user_id),
 ) -> dict:
     """Test IMAP connection without persisting anything."""
-    try:
-        if body.imap_ssl:
-            conn = imaplib.IMAP4_SSL(body.imap_host, body.imap_port)
-        else:
-            conn = imaplib.IMAP4(body.imap_host, body.imap_port)
-        conn.login(body.email, body.app_password)
-        status, data = conn.select("INBOX")
-        count = int(data[0]) if data and data[0] else 0
-        conn.logout()
-        return {
-            "success": True,
-            "message": f"Connected to {body.email} — {count} messages in INBOX",
-        }
-    except imaplib.IMAP4.error as exc:
-        return {"success": False, "error": str(exc)}
-    except Exception as exc:
-        return {"success": False, "error": str(exc)}
+    success, message = await asyncio.to_thread(
+        _imap_connect_test,
+        body.imap_host,
+        body.imap_port,
+        body.imap_ssl,
+        body.email,
+        body.app_password,
+    )
+    if success:
+        return {"success": True, "message": message}
+    return {"success": False, "error": message}
 
 
 @router.post("/test/slack")
 async def test_slack_token(
-    body: dict,
+    body: SlackTestRequest,
     user_id: str = Depends(get_current_user_id),
 ) -> dict:
     """Validate a Slack bot token via auth.test."""
-    bot_token = body.get("bot_token", "")
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.get(
                 "https://slack.com/api/auth.test",
-                headers={"Authorization": f"Bearer {bot_token}"},
+                headers={"Authorization": f"Bearer {body.bot_token}"},
             )
         data = resp.json()
         if data.get("ok"):
@@ -135,15 +150,16 @@ async def setup_email_source(
     db: AsyncSession = Depends(get_db),
 ) -> SourceRead:
     # Test connection first
-    try:
-        if body.imap_ssl:
-            conn = imaplib.IMAP4_SSL(body.imap_host, body.imap_port)
-        else:
-            conn = imaplib.IMAP4(body.imap_host, body.imap_port)
-        conn.login(body.email, body.app_password)
-        conn.logout()
-    except Exception as exc:
-        raise HTTPException(status_code=422, detail=f"IMAP connection failed: {exc}")
+    success, message = await asyncio.to_thread(
+        _imap_connect_test,
+        body.imap_host,
+        body.imap_port,
+        body.imap_ssl,
+        body.email,
+        body.app_password,
+    )
+    if not success:
+        raise HTTPException(status_code=422, detail=f"IMAP connection failed: {message}")
 
     credentials = encrypt_credentials(
         {
@@ -191,7 +207,7 @@ async def setup_slack_source(
     team_id = None
     workspace_name = None
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.get(
                 "https://slack.com/api/auth.test",
                 headers={"Authorization": f"Bearer {body.bot_token}"},
@@ -250,13 +266,8 @@ async def setup_meeting_source(
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    webhook_secret = secrets.token_urlsafe(32)
-
     settings = get_settings()
-    base_url = getattr(settings, "base_url", None) or ""
-    webhook_url = f"{base_url}{settings.api_prefix}/webhooks/meeting/events"
-
-    credentials = encrypt_credentials({"webhook_secret": webhook_secret})
+    webhook_url = f"{settings.base_url}{settings.api_prefix}/webhooks/meeting/events"
 
     # Upsert: find existing meeting source for this user + platform
     result = await db.execute(
@@ -267,15 +278,23 @@ async def setup_meeting_source(
         )
     )
     source = result.scalar_one_or_none()
+    is_new = source is None
 
-    if source is None:
+    if is_new:
+        webhook_secret = secrets.token_urlsafe(32)
         source = Source(user_id=user_id, source_type="meeting")
         db.add(source)
+    else:
+        # Preserve the existing secret; do not regenerate on update
+        existing_creds = decrypt_credentials(source.credentials or {})
+        webhook_secret = existing_creds.get("webhook_secret")
 
     source.provider_account_id = body.platform
     source.display_name = body.display_name or body.platform
     source.is_active = True
-    source.credentials = credentials
+    source.credentials = encrypt_credentials(
+        {"webhook_secret": webhook_secret} if webhook_secret else {}
+    )
     source.metadata_ = {"platform": body.platform}
     source.updated_at = datetime.now(timezone.utc)
 
@@ -284,7 +303,8 @@ async def setup_meeting_source(
     return {
         "source": _to_schema(source),
         "webhook_url": webhook_url,
-        "webhook_secret": webhook_secret,
+        # Only expose the secret on creation; on update it's null (use regenerate-secret)
+        "webhook_secret": webhook_secret if is_new else None,
     }
 
 
