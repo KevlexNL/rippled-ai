@@ -8,6 +8,7 @@ import LoginScreen from './screens/LoginScreen'
 import SignUpScreen from './screens/SignUpScreen'
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen'
 import ResetPasswordScreen from './screens/ResetPasswordScreen'
+import OnboardingScreen from './screens/OnboardingScreen'
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -23,6 +24,14 @@ export default function App() {
       <Route path="/signup" element={<SignUpScreen />} />
       <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
       <Route path="/reset-password" element={<ResetPasswordScreen />} />
+      <Route
+        path="/onboarding"
+        element={
+          <AuthGuard>
+            <OnboardingScreen />
+          </AuthGuard>
+        }
+      />
       <Route
         path="/"
         element={
