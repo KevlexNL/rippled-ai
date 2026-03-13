@@ -1,9 +1,8 @@
 {
   "current_cycle": "C",
-  "current_phase": "C1-model-detection",
+  "current_phase": "C2-daily-digest",
   "phase_step": "complete",
   "phase_queue": [
-    "C2-daily-digest",
     "C3-calendar-integration"
   ],
   "phases_completed": [
@@ -16,12 +15,13 @@
     "07-connectors",
     "08-frontend",
     "09-onboarding",
-    "C1-model-detection"
+    "C1-model-detection",
+    "C2-daily-digest"
   ],
-  "last_action": "Phase C1 complete: model-assisted detection live. ModelDetectionService (OpenAI GPT-4.1-mini), HybridDetectionService (pre-filter + model for ambiguous zone 0.35-0.75), Celery tasks, schema migration e9f0a1b2c3d4, API exposure on candidates endpoint. 40 new tests, 397 total passing.",
-  "last_action_time": "2026-03-13T21:00:00Z",
-  "next_action": "Awaiting next Cycle C phase directive from Trinity/Kevin. Next in queue: C2-daily-digest.",
+  "last_action": "Phase C2 complete: daily digest live. DigestAggregator + DigestFormatter + DigestDelivery (SMTP/SendGrid/stdout), Celery Beat crontab(hour=8), user_settings + digest_log tables (migration f0a1b2c3d4e5), 3 API endpoints (trigger/log/preview), 49 new tests, 412 total passing.",
+  "last_action_time": "2026-03-13T21:10:00Z",
+  "next_action": "Awaiting next Cycle C phase directive from Trinity/Kevin. Next in queue: C3-calendar-integration.",
   "claude_code_session": null,
   "blockers_for_kevin": [],
-  "notes": "C1 COMPLETE. Deterministic pipeline unchanged. Model only called for ambiguous zone. Graceful fallback on API failure. 5 new DB columns. Beat schedule updated."
+  "notes": "C2 COMPLETE. SMTP/SendGrid/stdout delivery. Idempotency guard in Celery task. API preview endpoint is read-only (no DigestLog write). User lookup via public users table (email match). User auth is X-User-ID header pattern — no auth.users dependency."
 }
