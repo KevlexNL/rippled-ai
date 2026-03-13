@@ -1,9 +1,10 @@
-"""Celery application and tasks — Phase 03 + Phase 04 + Phase 05 + Phase 06.
+"""Celery application and tasks — Phase 03 + Phase 04 + Phase 05 + Phase 06 + Phase C1.
 
 Detection task: orchestrates detection service (Phase 03).
 Clarification task: orchestrates clarification pipeline (Phase 04).
 Completion sweep: evidence sweep + auto-close sweep (Phase 05).
 Surfacing sweep: recompute surfacing state for all active commitments (Phase 06).
+Model detection: model-assisted re-classification of ambiguous candidates (Phase C1).
 """
 
 from celery import Celery
@@ -44,6 +45,10 @@ celery_app.conf.update(
         "email-imap-poll": {
             "task": "app.tasks.poll_email_imap",
             "schedule": 300.0,  # 5 minutes
+        },
+        "model-detection-sweep": {
+            "task": "app.tasks.run_model_detection_batch",
+            "schedule": 600.0,  # 10 minutes
         },
     },
 )
@@ -272,3 +277,117 @@ def poll_email_imap() -> dict:
     """
     from app.connectors.email.imap_poller import poll_all_email_sources
     return poll_all_email_sources()
+
+
+@celery_app.task(bind=True, max_retries=3, default_retry_delay=60, name="app.tasks.run_model_detection_pass")
+def run_model_detection_pass(self, candidate_id: str) -> dict:
+    """Run model-assisted detection for a single candidate — Phase C1.
+
+    Calls the hybrid detection pipeline for the given candidate.
+    Updates model_confidence, model_classification, model_explanation,
+    model_called_at, detection_method, and was_discarded on the candidate row.
+
+    Args:
+        candidate_id: UUID of the CommitmentCandidate to classify.
+
+    Returns:
+        Status dict with candidate_id, detection_method, model_called.
+    """
+    from app.models.orm import CommitmentCandidate
+    from app.services.model_detection import ModelDetectionService
+    from app.services.hybrid_detection import HybridDetectionService
+
+    try:
+        if not settings.model_detection_enabled:
+            return {"status": "skipped", "reason": "model_detection_enabled=false"}
+
+        model_service = None
+        if settings.openai_api_key:
+            model_service = ModelDetectionService(
+                api_key=settings.openai_api_key,
+                model=settings.openai_model,
+            )
+        hybrid = HybridDetectionService(model_service=model_service)
+
+        with get_sync_session() as db:
+            candidate = db.get(CommitmentCandidate, candidate_id)
+            if candidate is None:
+                return {"status": "not_found", "candidate_id": candidate_id}
+
+            # Skip already-processed or already-decided candidates
+            if candidate.model_called_at is not None:
+                return {"status": "already_processed", "candidate_id": candidate_id}
+            if candidate.was_promoted or candidate.was_discarded:
+                return {"status": "skipped", "reason": "already_decided"}
+
+            result = hybrid.process(candidate)
+
+            # Apply model detection results to candidate
+            candidate.model_confidence = result["model_confidence"]
+            candidate.model_classification = result["model_classification"]
+            candidate.model_explanation = result["model_explanation"]
+            candidate.model_called_at = result["model_called_at"]
+            candidate.detection_method = result["detection_method"]
+            if result["was_discarded"]:
+                candidate.was_discarded = True
+                candidate.discard_reason = result["discard_reason"]
+
+        return {
+            "status": "complete",
+            "candidate_id": candidate_id,
+            "detection_method": result["detection_method"],
+            "model_called": result["model_called"],
+        }
+    except Exception as exc:
+        raise self.retry(exc=exc)
+
+
+@celery_app.task(name="app.tasks.run_model_detection_batch")
+def run_model_detection_batch(limit: int = 50) -> dict:
+    """Batch model detection sweep — Phase C1.
+
+    Queries unclassified candidates in the ambiguous confidence zone
+    (0.35 <= confidence_score < 0.75) that have not yet been model-processed,
+    and enqueues run_model_detection_pass for each.
+
+    Scheduled every 10 minutes via Celery Beat.
+
+    Args:
+        limit: Maximum number of candidates to enqueue per sweep.
+
+    Returns:
+        Dict with 'enqueued' count.
+    """
+    from decimal import Decimal as D
+    from sqlalchemy import select, and_
+    from app.models.orm import CommitmentCandidate
+
+    if not settings.model_detection_enabled:
+        return {"enqueued": 0, "reason": "model_detection_enabled=false"}
+
+    AMBIGUOUS_LOWER = D("0.35")
+    AMBIGUOUS_UPPER = D("0.75")
+
+    enqueued = 0
+    with get_sync_session() as db:
+        stmt = (
+            select(CommitmentCandidate.id)
+            .where(
+                and_(
+                    CommitmentCandidate.confidence_score >= AMBIGUOUS_LOWER,
+                    CommitmentCandidate.confidence_score < AMBIGUOUS_UPPER,
+                    CommitmentCandidate.model_called_at.is_(None),
+                    CommitmentCandidate.was_promoted.is_(False),
+                    CommitmentCandidate.was_discarded.is_(False),
+                )
+            )
+            .order_by(CommitmentCandidate.created_at.asc())
+            .limit(limit)
+        )
+        candidate_ids = db.execute(stmt).scalars().all()
+
+    for cid in candidate_ids:
+        run_model_detection_pass.delay(str(cid))
+        enqueued += 1
+
+    return {"enqueued": enqueued}

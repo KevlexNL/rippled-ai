@@ -321,6 +321,12 @@ class CommitmentCandidateRead(_Base):
     was_promoted: bool
     was_discarded: bool
     discard_reason: str | None
+    # Phase C1 — model detection fields
+    model_confidence: Decimal | None = None
+    model_classification: str | None = None
+    model_explanation: str | None = None
+    model_called_at: datetime | None = None
+    detection_method: str | None = None  # deterministic | model-assisted | model-overridden
     created_at: datetime
     updated_at: datetime
 

@@ -20,6 +20,7 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, ENUM, JSONB, UUID
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 # Mirror the PostgreSQL enum types created in the Phase 01 migration.
 # create_type=False tells SQLAlchemy not to CREATE TYPE (they already exist in the DB).
@@ -54,7 +55,6 @@ _commitment_class = ENUM(
     'big_promise', 'small_commitment',
     name='commitment_class', create_type=False,
 )
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 def _uuid(**kwargs):
@@ -234,6 +234,12 @@ class CommitmentCandidate(Base):
     was_promoted: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
     was_discarded: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
     discard_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Phase C1 — model detection columns
+    model_confidence: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    model_classification: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    model_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    model_called_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    detection_method: Mapped[str | None] = mapped_column(String(20), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

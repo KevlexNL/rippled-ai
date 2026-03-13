@@ -17,8 +17,10 @@ class Settings(BaseSettings):
     # Redis / Celery
     redis_url: str = "redis://localhost:6379/0"
 
-    # OpenAI (detection pipeline)
+    # OpenAI (model detection pipeline)
     openai_api_key: str = ""
+    openai_model: str = "gpt-4.1-mini"
+    model_detection_enabled: bool = True
 
     # Email connector (IMAP)
     imap_host: str = ""
