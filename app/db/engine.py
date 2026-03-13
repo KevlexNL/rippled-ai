@@ -15,6 +15,9 @@ engine = create_async_engine(
     pool_size=10,
     max_overflow=20,
     echo=settings.app_env == "development",
+    # Required for PgBouncer / Supabase session pooler compatibility.
+    # asyncpg's prepared statement cache conflicts with connection poolers.
+    connect_args={"statement_cache_size": 0},
 )
 
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)

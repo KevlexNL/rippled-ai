@@ -91,6 +91,21 @@ const PLATFORM_INSTRUCTIONS: Record<MeetingPlatform, string> = {
   custom: 'Configure your transcript tool to POST to this webhook URL.',
 }
 
+
+function StepLayout({
+  children,
+  maxWidth = 'max-w-lg',
+}: {
+  children: React.ReactNode
+  maxWidth?: string
+}) {
+  return (
+    <div className="min-h-screen bg-white flex items-start justify-center px-4 pt-16 pb-16">
+      <div className={`w-full ${maxWidth}`}>{children}</div>
+    </div>
+  )
+}
+
 export default function OnboardingScreen() {
   const navigate = useNavigate()
 
@@ -258,21 +273,6 @@ export default function OnboardingScreen() {
       setDoneLoading(false)
       navigate('/')
     }
-  }
-
-  // Shared layout wrapper
-  function StepLayout({
-    children,
-    maxWidth = 'max-w-lg',
-  }: {
-    children: React.ReactNode
-    maxWidth?: string
-  }) {
-    return (
-      <div className="min-h-screen bg-white flex items-start justify-center px-4 pt-16 pb-16">
-        <div className={`w-full ${maxWidth}`}>{children}</div>
-      </div>
-    )
   }
 
   // Step 0 — Welcome
