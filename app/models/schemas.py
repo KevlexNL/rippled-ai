@@ -79,6 +79,27 @@ class SourceUpdate(_Base):
     credentials: dict | None = None
 
 
+class EmailSetupRequest(BaseModel):
+    email: str
+    imap_host: str
+    imap_port: int = 993
+    imap_ssl: bool = True
+    imap_sent_folder: str = "Sent"
+    app_password: str
+    internal_domains: list[str] = []
+
+
+class SlackSetupRequest(BaseModel):
+    bot_token: str
+    signing_secret: str
+    slack_user_id: str
+
+
+class MeetingSetupRequest(BaseModel):
+    platform: str
+    display_name: str | None = None
+
+
 # ---------------------------------------------------------------------------
 # SourceItem
 # ---------------------------------------------------------------------------

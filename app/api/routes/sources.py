@@ -1,14 +1,28 @@
+import imaplib
+import secrets
 from datetime import datetime, timezone
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.connectors.shared.credentials_utils import encrypt_credentials
+from app.connectors.shared.credentials_utils import (
+    decrypt_credentials,
+    encrypt_credentials,
+)
+from app.core.config import get_settings
 from app.core.dependencies import get_current_user_id
 from app.db.deps import get_db
 from app.models.orm import Source
-from app.models.schemas import SourceCreate, SourceRead, SourceUpdate
+from app.models.schemas import (
+    EmailSetupRequest,
+    MeetingSetupRequest,
+    SlackSetupRequest,
+    SourceCreate,
+    SourceRead,
+    SourceUpdate,
+)
 
 router = APIRouter(prefix="/sources", tags=["sources"])
 
@@ -25,6 +39,290 @@ def _to_schema(row: Source) -> SourceRead:
         created_at=row.created_at,
         updated_at=row.updated_at,
     )
+
+
+# ---------------------------------------------------------------------------
+# Test endpoints (must appear before /{source_id})
+# ---------------------------------------------------------------------------
+
+
+@router.post("/test/email")
+async def test_email_connection(
+    body: EmailSetupRequest,
+    user_id: str = Depends(get_current_user_id),
+) -> dict:
+    """Test IMAP connection without persisting anything."""
+    try:
+        if body.imap_ssl:
+            conn = imaplib.IMAP4_SSL(body.imap_host, body.imap_port)
+        else:
+            conn = imaplib.IMAP4(body.imap_host, body.imap_port)
+        conn.login(body.email, body.app_password)
+        status, data = conn.select("INBOX")
+        count = int(data[0]) if data and data[0] else 0
+        conn.logout()
+        return {
+            "success": True,
+            "message": f"Connected to {body.email} — {count} messages in INBOX",
+        }
+    except imaplib.IMAP4.error as exc:
+        return {"success": False, "error": str(exc)}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
+
+
+@router.post("/test/slack")
+async def test_slack_token(
+    body: dict,
+    user_id: str = Depends(get_current_user_id),
+) -> dict:
+    """Validate a Slack bot token via auth.test."""
+    bot_token = body.get("bot_token", "")
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                "https://slack.com/api/auth.test",
+                headers={"Authorization": f"Bearer {bot_token}"},
+            )
+        data = resp.json()
+        if data.get("ok"):
+            return {
+                "success": True,
+                "workspace": data.get("team"),
+                "bot_user": data.get("user"),
+            }
+        return {"success": False, "error": data.get("error", "Invalid token")}
+    except Exception as exc:
+        return {"success": False, "error": str(exc)}
+
+
+# ---------------------------------------------------------------------------
+# Onboarding status (must appear before /{source_id})
+# ---------------------------------------------------------------------------
+
+
+@router.get("/onboarding-status")
+async def get_onboarding_status(
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    result = await db.execute(
+        select(Source).where(Source.user_id == user_id, Source.is_active.is_(True))
+    )
+    active_sources = result.scalars().all()
+    return {
+        "has_sources": len(active_sources) > 0,
+        "sources": [
+            {
+                "source_type": s.source_type,
+                "display_name": s.display_name,
+                "is_active": s.is_active,
+            }
+            for s in active_sources
+        ],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Setup endpoints (must appear before /{source_id})
+# ---------------------------------------------------------------------------
+
+
+@router.post("/setup/email", response_model=SourceRead)
+async def setup_email_source(
+    body: EmailSetupRequest,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> SourceRead:
+    # Test connection first
+    try:
+        if body.imap_ssl:
+            conn = imaplib.IMAP4_SSL(body.imap_host, body.imap_port)
+        else:
+            conn = imaplib.IMAP4(body.imap_host, body.imap_port)
+        conn.login(body.email, body.app_password)
+        conn.logout()
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=f"IMAP connection failed: {exc}")
+
+    credentials = encrypt_credentials(
+        {
+            "imap_host": body.imap_host,
+            "imap_port": body.imap_port,
+            "imap_ssl": body.imap_ssl,
+            "imap_sent_folder": body.imap_sent_folder,
+            "imap_password": body.app_password,
+            "imap_user": body.email,
+            "internal_domains": body.internal_domains,
+        }
+    )
+
+    # Upsert: find existing email source for this user
+    result = await db.execute(
+        select(Source).where(
+            Source.user_id == user_id,
+            Source.source_type == "email",
+        )
+    )
+    source = result.scalar_one_or_none()
+
+    if source is None:
+        source = Source(user_id=user_id, source_type="email")
+        db.add(source)
+
+    source.provider_account_id = body.email
+    source.display_name = body.email
+    source.is_active = True
+    source.credentials = credentials
+    source.updated_at = datetime.now(timezone.utc)
+
+    await db.flush()
+    await db.refresh(source)
+    return _to_schema(source)
+
+
+@router.post("/setup/slack", response_model=SourceRead)
+async def setup_slack_source(
+    body: SlackSetupRequest,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> SourceRead:
+    # Validate token
+    team_id = None
+    workspace_name = None
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                "https://slack.com/api/auth.test",
+                headers={"Authorization": f"Bearer {body.bot_token}"},
+            )
+        data = resp.json()
+        if not data.get("ok"):
+            raise HTTPException(
+                status_code=422,
+                detail=f"Slack token validation failed: {data.get('error', 'unknown')}",
+            )
+        team_id = data.get("team_id")
+        workspace_name = data.get("team")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=422, detail=f"Failed to validate Slack token: {exc}"
+        )
+
+    credentials = encrypt_credentials(
+        {
+            "bot_token": body.bot_token,
+            "signing_secret": body.signing_secret,
+            "slack_user_id": body.slack_user_id,
+            "team_id": team_id,
+        }
+    )
+
+    # Upsert: find existing slack source for this user
+    result = await db.execute(
+        select(Source).where(
+            Source.user_id == user_id,
+            Source.source_type == "slack",
+        )
+    )
+    source = result.scalar_one_or_none()
+
+    if source is None:
+        source = Source(user_id=user_id, source_type="slack")
+        db.add(source)
+
+    source.provider_account_id = team_id
+    source.display_name = workspace_name
+    source.is_active = True
+    source.credentials = credentials
+    source.updated_at = datetime.now(timezone.utc)
+
+    await db.flush()
+    await db.refresh(source)
+    return _to_schema(source)
+
+
+@router.post("/setup/meeting")
+async def setup_meeting_source(
+    body: MeetingSetupRequest,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    webhook_secret = secrets.token_urlsafe(32)
+
+    settings = get_settings()
+    base_url = getattr(settings, "base_url", None) or ""
+    webhook_url = f"{base_url}{settings.api_prefix}/webhooks/meeting/events"
+
+    credentials = encrypt_credentials({"webhook_secret": webhook_secret})
+
+    # Upsert: find existing meeting source for this user + platform
+    result = await db.execute(
+        select(Source).where(
+            Source.user_id == user_id,
+            Source.source_type == "meeting",
+            Source.provider_account_id == body.platform,
+        )
+    )
+    source = result.scalar_one_or_none()
+
+    if source is None:
+        source = Source(user_id=user_id, source_type="meeting")
+        db.add(source)
+
+    source.provider_account_id = body.platform
+    source.display_name = body.display_name or body.platform
+    source.is_active = True
+    source.credentials = credentials
+    source.metadata_ = {"platform": body.platform}
+    source.updated_at = datetime.now(timezone.utc)
+
+    await db.flush()
+    await db.refresh(source)
+    return {
+        "source": _to_schema(source),
+        "webhook_url": webhook_url,
+        "webhook_secret": webhook_secret,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Regenerate meeting webhook secret (must appear before /{source_id})
+# ---------------------------------------------------------------------------
+
+
+@router.post("/{source_id}/regenerate-secret")
+async def regenerate_meeting_secret(
+    source_id: str,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    result = await db.execute(
+        select(Source).where(Source.id == source_id, Source.user_id == user_id)
+    )
+    source = result.scalar_one_or_none()
+    if not source:
+        raise HTTPException(status_code=404, detail="Source not found")
+    if source.source_type != "meeting":
+        raise HTTPException(
+            status_code=422, detail="Secret regeneration only valid for meeting sources"
+        )
+
+    new_secret = secrets.token_urlsafe(32)
+    existing = decrypt_credentials(source.credentials) if source.credentials else {}
+    existing["webhook_secret"] = new_secret
+    source.credentials = encrypt_credentials(existing)
+    source.updated_at = datetime.now(timezone.utc)
+
+    await db.flush()
+    return {"webhook_secret": new_secret}
+
+
+# ---------------------------------------------------------------------------
+# Standard CRUD routes
+# ---------------------------------------------------------------------------
 
 
 @router.post("", response_model=SourceRead, status_code=201)
@@ -102,7 +400,6 @@ async def update_source(
     if body.metadata_ is not None:
         source.metadata_ = body.metadata_
     if body.credentials is not None:
-        from app.connectors.shared.credentials_utils import encrypt_credentials
         source.credentials = encrypt_credentials(body.credentials)
 
     source.updated_at = datetime.now(timezone.utc)
