@@ -159,6 +159,14 @@ class CommitmentRead(_Base):
     surfaced_at: datetime | None
     observe_until: datetime | None
     observation_window_hours: Decimal | None
+    # Phase 06 surfacing fields
+    surfaced_as: str | None
+    priority_score: Decimal | None
+    timing_strength: int | None
+    business_consequence: int | None
+    cognitive_burden: int | None
+    confidence_for_surfacing: Decimal | None
+    surfacing_reason: str | None
     # JSONB candidate arrays (read-only; included for surfacing/UI context)
     owner_candidates: list[Any] | None
     deadline_candidates: list[Any] | None

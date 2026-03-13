@@ -1,8 +1,9 @@
-"""Celery application and tasks — Phase 03 + Phase 04 + Phase 05.
+"""Celery application and tasks — Phase 03 + Phase 04 + Phase 05 + Phase 06.
 
 Detection task: orchestrates detection service (Phase 03).
 Clarification task: orchestrates clarification pipeline (Phase 04).
 Completion sweep: evidence sweep + auto-close sweep (Phase 05).
+Surfacing sweep: recompute surfacing state for all active commitments (Phase 06).
 """
 
 from celery import Celery
@@ -11,6 +12,7 @@ from app.db.session import get_sync_session
 from app.services.detection import run_detection
 from app.services.clarification import run_clarification
 from app.services.completion import run_auto_close_sweep, run_completion_detection
+from app.services.surfacing_runner import run_surfacing_sweep
 
 settings = get_settings()
 
@@ -34,6 +36,10 @@ celery_app.conf.update(
         "completion-sweep": {
             "task": "app.tasks.run_completion_sweep",
             "schedule": 600.0,  # 10 minutes
+        },
+        "surfacing-sweep": {
+            "task": "app.tasks.recompute_surfacing",
+            "schedule": 1800.0,  # 30 minutes
         },
     },
 )
@@ -167,3 +173,22 @@ def run_completion_sweep() -> dict:
         "sweep_a": sweep_a_total,
         "sweep_b": sweep_b_result,
     }
+
+
+@celery_app.task(name="app.tasks.recompute_surfacing")
+def recompute_surfacing() -> dict:
+    """Recompute surfacing state for all active commitments — Phase 06.
+
+    Runs the surfacing sweep which:
+    - Classifies each active/proposed/needs_clarification commitment
+    - Computes priority_score + dimension scores
+    - Routes each to main / shortlist / clarifications / None
+    - Updates commitment fields and writes SurfacingAudit rows for changes
+
+    Scheduled every 30 minutes via Celery Beat.
+
+    Returns:
+        Summary dict with 'evaluated', 'changed', 'surfaced', 'held' counts.
+    """
+    with get_sync_session() as session:
+        return run_surfacing_sweep(session)

@@ -120,6 +120,14 @@ class Commitment(Base):
     observation_window_hours: Mapped[Decimal | None] = mapped_column(Numeric, nullable=True)
     is_surfaced: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False, index=True)
     surfaced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Phase 06 surfacing columns
+    surfaced_as: Mapped[str | None] = mapped_column(String(20), nullable=True, index=True)
+    priority_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
+    timing_strength: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    business_consequence: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cognitive_burden: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    confidence_for_surfacing: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    surfacing_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
@@ -216,3 +224,15 @@ class Clarification(Base):
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class SurfacingAudit(Base):
+    __tablename__ = "surfacing_audit"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    commitment_id: Mapped[str] = mapped_column(String, ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
+    old_surfaced_as: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    new_surfaced_as: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    priority_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
+    reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
