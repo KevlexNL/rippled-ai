@@ -32,17 +32,28 @@ router = APIRouter(prefix="/sources", tags=["sources"])
 
 async def _ensure_user_exists(user_id: str, db: AsyncSession, email: str = "") -> None:
     """Auto-provision a user row on first API call.
-    
+
     Supabase creates records in auth.users on signup, but our app's users
     table needs a corresponding row (FK constraint). This upserts it silently.
+
+    When a real email is known (e.g. email setup flow) we update the row so
+    the stored address stays current.  When no email is available we only
+    insert if the row doesn't already exist — ON CONFLICT DO NOTHING avoids
+    the SQLAlchemy/Postgres error caused by an empty SET clause.
     """
-    stmt = pg_insert(User).values(
-        id=user_id,
-        email=email or f"user_{user_id[:8]}@rippled.internal",
-    ).on_conflict_do_update(
-        index_elements=["id"],
-        set_={"email": email} if email else {},
-    )
+    if email:
+        stmt = pg_insert(User).values(
+            id=user_id,
+            email=email,
+        ).on_conflict_do_update(
+            index_elements=["id"],
+            set_={"email": email},
+        )
+    else:
+        stmt = pg_insert(User).values(
+            id=user_id,
+            email=f"user_{user_id[:8]}@rippled.internal",
+        ).on_conflict_do_nothing()
     await db.execute(stmt)
     await db.flush()
 
