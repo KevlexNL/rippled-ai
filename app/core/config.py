@@ -47,6 +47,16 @@ class Settings(BaseSettings):
     # Public base URL for webhook URL generation (e.g. https://api.rippled.ai)
     base_url: str = ""
 
+    # Daily digest / email delivery
+    digest_enabled: bool = True
+    digest_smtp_host: str = ""
+    digest_smtp_port: int = 587
+    digest_smtp_user: str = ""
+    digest_smtp_pass: str = ""
+    digest_from_email: str = "digest@rippled.ai"
+    digest_to_email: str = ""
+    sendgrid_api_key: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = False

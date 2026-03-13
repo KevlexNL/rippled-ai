@@ -1,19 +1,22 @@
-"""Celery application and tasks — Phase 03 + Phase 04 + Phase 05 + Phase 06 + Phase C1.
+"""Celery application and tasks — Phase 03 + Phase 04 + Phase 05 + Phase 06 + Phase C1 + Phase C2.
 
 Detection task: orchestrates detection service (Phase 03).
 Clarification task: orchestrates clarification pipeline (Phase 04).
 Completion sweep: evidence sweep + auto-close sweep (Phase 05).
 Surfacing sweep: recompute surfacing state for all active commitments (Phase 06).
 Model detection: model-assisted re-classification of ambiguous candidates (Phase C1).
+Daily digest: morning summary of surfaced commitments via email (Phase C2).
 """
 
 from celery import Celery
+from celery.schedules import crontab
 from app.core.config import get_settings
 from app.db.session import get_sync_session
 from app.services.detection import run_detection
 from app.services.clarification import run_clarification
 from app.services.completion import run_auto_close_sweep, run_completion_detection
 from app.services.surfacing_runner import run_surfacing_sweep
+from app.services.digest import DigestAggregator, DigestFormatter, DigestDelivery
 
 settings = get_settings()
 
@@ -49,6 +52,10 @@ celery_app.conf.update(
         "model-detection-sweep": {
             "task": "app.tasks.run_model_detection_batch",
             "schedule": 600.0,  # 10 minutes
+        },
+        "daily-digest": {
+            "task": "app.tasks.send_daily_digest",
+            "schedule": crontab(hour=8, minute=0),
         },
     },
 )
@@ -391,3 +398,122 @@ def run_model_detection_batch(limit: int = 50) -> dict:
         enqueued += 1
 
     return {"enqueued": enqueued}
+
+
+@celery_app.task(name="app.tasks.send_daily_digest")
+def send_daily_digest() -> dict:
+    """Build and send the daily digest — Phase C2.
+
+    Guard clauses (checked in order):
+    1. settings.digest_enabled is False → skip
+    2. settings.digest_to_email is empty → skip
+    3. User not found in public users table → skip
+    4. UserSettings.digest_enabled is False → skip
+    5. last_digest_sent_at is today (UTC) → skip (idempotency)
+    6. Digest is empty → skip
+
+    On success: writes DigestLog row, updates last_digest_sent_at.
+    On failure: writes DigestLog row with status=failed.
+
+    Returns:
+        Dict with status (sent|skipped|failed), reason (if skipped), commitment_count.
+    """
+    from datetime import datetime, timezone
+    from sqlalchemy import select
+    from app.models.orm import User, UserSettings, DigestLog
+
+    # Guard 1: global feature flag
+    if not settings.digest_enabled:
+        return {"status": "skipped", "reason": "digest disabled in settings"}
+
+    # Guard 2: no recipient configured
+    if not settings.digest_to_email:
+        return {"status": "skipped", "reason": "digest_to_email not configured"}
+
+    with get_sync_session() as db:
+        # Guard 3: look up user by email in the public users table
+        user = db.execute(
+            select(User).where(User.email == settings.digest_to_email)
+        ).scalar_one_or_none()
+
+        if user is None:
+            return {"status": "skipped", "reason": "user not found for digest_to_email"}
+
+        # Load or default UserSettings
+        user_settings = db.execute(
+            select(UserSettings).where(UserSettings.user_id == user.id)
+        ).scalar_one_or_none()
+
+        # Guard 4: per-user digest toggle
+        if user_settings is not None and not user_settings.digest_enabled:
+            return {"status": "skipped", "reason": "digest disabled in user settings"}
+
+        # Guard 5: idempotency — already sent today
+        now_utc = datetime.now(timezone.utc)
+        if user_settings is not None and user_settings.last_digest_sent_at is not None:
+            if user_settings.last_digest_sent_at.date() == now_utc.date():
+                return {"status": "skipped", "reason": "digest already sent today"}
+
+        # Aggregate
+        agg = DigestAggregator()
+        digest = agg.aggregate_sync(db, user_id=user.id)
+
+        # Guard 6: empty digest — don't email an empty message
+        if digest.is_empty:
+            return {"status": "skipped", "reason": "empty digest — nothing to send"}
+
+        # Format
+        fmt = DigestFormatter()
+        formatted = fmt.format(digest)
+
+        # Build digest_content snapshot for audit
+        def _snap(commitment) -> dict:
+            return {
+                "id": commitment.id,
+                "title": commitment.title,
+                "deadline": str(commitment.resolved_deadline) if commitment.resolved_deadline else None,
+            }
+
+        digest_content = {
+            "main": [_snap(c) for c in digest.main],
+            "shortlist": [_snap(c) for c in digest.shortlist],
+            "clarifications": [_snap(c) for c in digest.clarifications],
+            "subject": formatted.subject,
+        }
+        commitment_count = len(digest.main) + len(digest.shortlist) + len(digest.clarifications)
+
+        # Deliver
+        delivery = DigestDelivery(settings=settings)
+        result = delivery.send(formatted.subject, formatted.plain_text, formatted.html)
+
+        # Write audit log
+        log_status = "sent" if result.success else "failed"
+        log_row = DigestLog(
+            sent_at=now_utc,
+            commitment_count=commitment_count,
+            delivery_method=result.method,
+            status=log_status,
+            error_message=result.error,
+            digest_content=digest_content,
+        )
+        db.add(log_row)
+
+        # Update last_digest_sent_at
+        if result.success:
+            if user_settings is None:
+                user_settings = UserSettings(user_id=user.id)
+                db.add(user_settings)
+            user_settings.last_digest_sent_at = now_utc
+
+    if not result.success:
+        return {
+            "status": "failed",
+            "reason": result.error,
+            "commitment_count": commitment_count,
+        }
+
+    return {
+        "status": "sent",
+        "commitment_count": commitment_count,
+        "delivery_method": result.method,
+    }

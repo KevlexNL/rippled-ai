@@ -282,3 +282,26 @@ class SurfacingAudit(Base):
     priority_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
     reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
+
+
+class UserSettings(Base):
+    __tablename__ = "user_settings"
+
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    digest_enabled: Mapped[bool] = mapped_column(Boolean, server_default="true", nullable=False)
+    digest_time: Mapped[str] = mapped_column(String(5), server_default="08:00", nullable=False)
+    last_digest_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class DigestLog(Base):
+    __tablename__ = "digest_log"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    sent_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    commitment_count: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
+    delivery_method: Mapped[str] = mapped_column(String(20), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    digest_content: Mapped[dict | None] = mapped_column(JSONB, nullable=True)

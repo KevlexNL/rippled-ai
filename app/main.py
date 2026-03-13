@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
-from app.api.routes import sources, source_items, commitments, surface, candidates
+from app.api.routes import sources, source_items, commitments, surface, candidates, digest as digest_routes
 from app.api.routes.webhooks import email as webhook_email, slack as webhook_slack, meetings as webhook_meetings
 
 settings = get_settings()
@@ -41,6 +41,7 @@ app.include_router(candidates.router, prefix=settings.api_prefix, tags=["candida
 app.include_router(webhook_email.router, prefix=settings.api_prefix, tags=["webhooks"])
 app.include_router(webhook_slack.router, prefix=settings.api_prefix, tags=["webhooks"])
 app.include_router(webhook_meetings.router, prefix=settings.api_prefix, tags=["webhooks"])
+app.include_router(digest_routes.router, prefix=settings.api_prefix, tags=["digest"])
 
 # Serve frontend SPA
 _PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "..", "api", "public")
