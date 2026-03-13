@@ -10,11 +10,15 @@ from datetime import datetime, timezone
 from email.header import decode_header
 from email.utils import parseaddr, parsedate_to_datetime
 
+from sqlalchemy import select
+
 from app.connectors.email.normalizer import normalise_email
 from app.connectors.email.schemas import RawEmailPayload
+from app.connectors.shared.credentials_utils import decrypt_credentials
 from app.connectors.shared.ingestor import get_or_create_source_sync, ingest_item
 from app.core.config import get_settings
 from app.db.session import get_sync_session
+from app.models.orm import Source
 
 logger = logging.getLogger(__name__)
 
@@ -125,8 +129,129 @@ def _parse_email_message(
     )
 
 
+def _poll_source(source: Source) -> dict:
+    """Poll a single email Source. Returns {ingested, duplicates, errors}.
+
+    Reads credentials from source.credentials (with env-var fallback for
+    backward compatibility), then connects via IMAP and ingests unseen messages.
+    """
+    settings = get_settings()
+
+    creds: dict = {}
+    if source.credentials:
+        creds = decrypt_credentials(source.credentials)
+
+    host = creds.get("imap_host") or settings.imap_host
+    port = int(creds.get("imap_port") or settings.imap_port or 993)
+    ssl = creds.get("imap_ssl", None)
+    if ssl is None:
+        ssl = settings.imap_ssl if settings.imap_ssl is not None else True
+    user = creds.get("imap_user") or settings.imap_user
+    password = creds.get("imap_password") or settings.imap_password
+    sent_folder = creds.get("imap_sent_folder") or settings.imap_sent_folder or "Sent"
+
+    if not host or not user:
+        logger.info("Email source %s has no IMAP host/user — skipping", source.id)
+        return {"ingested": 0, "duplicates": 0, "errors": 0, "skipped": True}
+
+    ingested = 0
+    duplicates = 0
+    errors = 0
+    user_id = source.user_id
+    source_id = source.id
+
+    if ssl:
+        conn = imaplib.IMAP4_SSL(host, port)
+    else:
+        conn = imaplib.IMAP4(host, port)
+
+    conn.login(user, password)
+
+    folders = [("INBOX", "inbound"), (sent_folder, "outbound")]
+
+    for folder, direction in folders:
+        try:
+            status, _ = conn.select(folder, readonly=True)
+            if status != "OK":
+                logger.warning("IMAP folder %s not found for source %s — skipping", folder, source_id)
+                continue
+
+            _, data = conn.search(None, "UNSEEN")
+            message_nums = data[0].split() if data[0] else []
+
+            for num in message_nums:
+                try:
+                    _, msg_data = conn.fetch(num, "(RFC822)")
+                    if not msg_data or not msg_data[0]:
+                        continue
+                    raw = msg_data[0][1]
+                    if not isinstance(raw, bytes):
+                        continue
+
+                    payload = _parse_email_message(raw, direction)
+                    if not payload:
+                        continue
+
+                    with get_sync_session() as db:
+                        item = normalise_email(payload, source_id)
+                        _, created = ingest_item(item, user_id, db)
+                        if created:
+                            ingested += 1
+                        else:
+                            duplicates += 1
+
+                except Exception as e:
+                    logger.error("Error processing IMAP message %s for source %s: %s", num, source_id, e)
+                    errors += 1
+
+        except Exception as e:
+            logger.error("Error accessing IMAP folder %s for source %s: %s", folder, source_id, e)
+
+    conn.logout()
+
+    return {"ingested": ingested, "duplicates": duplicates, "errors": errors}
+
+
+def poll_all_email_sources() -> dict:
+    """Poll all active email Sources, using per-source credentials.
+
+    Returns summary: {total_ingested, total_duplicates, total_errors, sources_polled, sources_failed}
+    """
+    with get_sync_session() as db:
+        sources = db.execute(
+            select(Source).where(
+                Source.source_type == "email",
+                Source.is_active.is_(True),
+            )
+        ).scalars().all()
+
+    total: dict = {
+        "ingested": 0,
+        "duplicates": 0,
+        "errors": 0,
+        "sources_polled": 0,
+        "sources_failed": 0,
+    }
+
+    for source in sources:
+        try:
+            result = _poll_source(source)
+            total["ingested"] += result.get("ingested", 0)
+            total["duplicates"] += result.get("duplicates", 0)
+            total["errors"] += result.get("errors", 0)
+            total["sources_polled"] += 1
+        except Exception as e:
+            logger.error("Email source %s failed: %s", source.id, e)
+            total["sources_failed"] += 1
+
+    return total
+
+
 def poll_new_messages(user_id: str) -> dict:
     """Connect to IMAP, fetch unseen messages, normalise, and ingest.
+
+    DEPRECATED: backward-compat wrapper using global env-var config.
+    Use poll_all_email_sources() for multi-user operation.
 
     Returns a summary dict with counts of processed messages.
     """

@@ -202,29 +202,54 @@ def recompute_surfacing() -> dict:
 def process_slack_event(self, payload: dict) -> dict:
     """Process a Slack event payload from the Events API.
 
-    Normalises the event and ingests it as a SourceItem.
+    Looks up the Slack Source by team_id to get per-source user_id and
+    slack_user_id from credentials. Falls back to global env-var config
+    when no matching Source exists.
     """
     from app.connectors.slack.normalizer import normalise_slack_event
+    from app.connectors.shared.credentials_utils import decrypt_credentials
     from app.connectors.shared.ingestor import get_or_create_source_sync, ingest_item
+    from app.models.orm import Source
+    from sqlalchemy import select
 
     try:
         event = payload.get("event", {})
         team_id = payload.get("team_id") or settings.slack_team_id
-        user_id = settings.slack_user_id
-
-        if not user_id:
-            return {"status": "skipped", "reason": "SLACK_USER_ID not configured"}
 
         with get_sync_session() as db:
-            source = get_or_create_source_sync(
-                user_id=user_id,
-                source_type="slack",
-                provider_account_id=team_id or "slack",
-                db=db,
-            )
-            source_id = source.id
+            source = None
+            if team_id:
+                source = db.execute(
+                    select(Source).where(
+                        Source.source_type == "slack",
+                        Source.provider_account_id == team_id,
+                        Source.is_active.is_(True),
+                    )
+                ).scalar_one_or_none()
 
-        item = normalise_slack_event(event, source_id)
+            if source:
+                user_id = source.user_id
+                creds = decrypt_credentials(source.credentials or {})
+                slack_user_id = creds.get("slack_user_id") or settings.slack_user_id
+                source_id = source.id
+            else:
+                # Fallback: use global config and get/create a default source
+                user_id = settings.slack_user_id
+                slack_user_id = settings.slack_user_id
+                if not user_id:
+                    return {"status": "skipped", "reason": "no user configured for this team"}
+                source = get_or_create_source_sync(
+                    user_id=user_id,
+                    source_type="slack",
+                    provider_account_id=team_id or "slack",
+                    db=db,
+                )
+                source_id = source.id
+
+        if not user_id:
+            return {"status": "skipped", "reason": "no user configured for this team"}
+
+        item = normalise_slack_event(event, source_id, slack_user_id=slack_user_id or "")
         if item is None:
             return {"status": "filtered"}
 
@@ -238,14 +263,11 @@ def process_slack_event(self, payload: dict) -> dict:
 
 @celery_app.task(name="app.tasks.poll_email_imap")
 def poll_email_imap() -> dict:
-    """Poll IMAP mailbox for new emails and ingest them.
+    """Poll all active email Sources for new messages and ingest them.
 
     Scheduled every 5 minutes via Celery Beat.
-    Requires IMAP_HOST, IMAP_USER, IMAP_PASSWORD to be configured.
+    Per-source IMAP credentials are read from Source.credentials with
+    fallback to global env vars for backward compatibility.
     """
-    user_id = settings.slack_user_id  # reuse the single user ID for MVP
-    if not user_id:
-        return {"skipped": True, "reason": "no user configured"}
-
-    from app.connectors.email.imap_poller import poll_new_messages
-    return poll_new_messages(user_id)
+    from app.connectors.email.imap_poller import poll_all_email_sources
+    return poll_all_email_sources()

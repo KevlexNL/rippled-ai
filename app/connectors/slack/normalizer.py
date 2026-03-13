@@ -5,8 +5,15 @@ from app.models.schemas import SourceItemCreate
 def normalise_slack_event(
     event: dict,
     source_id: str,
+    slack_user_id: str = "",
 ) -> SourceItemCreate | None:
     """Translate a Slack event payload into a SourceItemCreate.
+
+    Args:
+        event: Slack event dict from Events API payload.
+        source_id: UUID of the Source record this event belongs to.
+        slack_user_id: The workspace user ID of the account owner (used for
+            future filtering; pass empty string if not applicable).
 
     Returns None if the event should be filtered (bot message, unsupported type, etc.).
     """
