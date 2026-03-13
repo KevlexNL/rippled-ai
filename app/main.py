@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.api.routes import sources, source_items, commitments, surface, candidates
+from app.api.routes.webhooks import email as webhook_email, slack as webhook_slack, meetings as webhook_meetings
 
 settings = get_settings()
 
@@ -32,3 +33,6 @@ app.include_router(source_items.router, prefix=settings.api_prefix, tags=["inges
 app.include_router(commitments.router, prefix=settings.api_prefix, tags=["commitments"])
 app.include_router(surface.router, prefix=settings.api_prefix, tags=["surfacing"])
 app.include_router(candidates.router, prefix=settings.api_prefix, tags=["candidates"])
+app.include_router(webhook_email.router, prefix=settings.api_prefix, tags=["webhooks"])
+app.include_router(webhook_slack.router, prefix=settings.api_prefix, tags=["webhooks"])
+app.include_router(webhook_meetings.router, prefix=settings.api_prefix, tags=["webhooks"])

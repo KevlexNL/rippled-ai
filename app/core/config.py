@@ -20,6 +20,25 @@ class Settings(BaseSettings):
     # OpenAI (detection pipeline)
     openai_api_key: str = ""
 
+    # Email connector (IMAP)
+    imap_host: str = ""
+    imap_port: int = 993
+    imap_user: str = ""
+    imap_password: str = ""
+    imap_ssl: bool = True
+    imap_sent_folder: str = "Sent"
+    email_webhook_secret: str = ""
+    internal_domains: str = ""  # comma-separated list
+
+    # Slack connector
+    slack_signing_secret: str = ""
+    slack_bot_token: str = ""
+    slack_team_id: str = ""
+    slack_user_id: str = ""  # the Rippled user's Slack user ID
+
+    # Meeting connector
+    meeting_webhook_secret: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = False

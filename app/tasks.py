@@ -41,6 +41,10 @@ celery_app.conf.update(
             "task": "app.tasks.recompute_surfacing",
             "schedule": 1800.0,  # 30 minutes
         },
+        "email-imap-poll": {
+            "task": "app.tasks.poll_email_imap",
+            "schedule": 300.0,  # 5 minutes
+        },
     },
 )
 
@@ -192,3 +196,56 @@ def recompute_surfacing() -> dict:
     """
     with get_sync_session() as session:
         return run_surfacing_sweep(session)
+
+
+@celery_app.task(bind=True, max_retries=3, default_retry_delay=30, name="app.tasks.process_slack_event")
+def process_slack_event(self, payload: dict) -> dict:
+    """Process a Slack event payload from the Events API.
+
+    Normalises the event and ingests it as a SourceItem.
+    """
+    from app.connectors.slack.normalizer import normalise_slack_event
+    from app.connectors.shared.ingestor import get_or_create_source_sync, ingest_item
+
+    try:
+        event = payload.get("event", {})
+        team_id = payload.get("team_id") or settings.slack_team_id
+        user_id = settings.slack_user_id
+
+        if not user_id:
+            return {"status": "skipped", "reason": "SLACK_USER_ID not configured"}
+
+        with get_sync_session() as db:
+            source = get_or_create_source_sync(
+                user_id=user_id,
+                source_type="slack",
+                provider_account_id=team_id or "slack",
+                db=db,
+            )
+            source_id = source.id
+
+        item = normalise_slack_event(event, source_id)
+        if item is None:
+            return {"status": "filtered"}
+
+        with get_sync_session() as db:
+            _, created = ingest_item(item, user_id, db)
+
+        return {"status": "ingested" if created else "duplicate"}
+    except Exception as exc:
+        raise self.retry(exc=exc)
+
+
+@celery_app.task(name="app.tasks.poll_email_imap")
+def poll_email_imap() -> dict:
+    """Poll IMAP mailbox for new emails and ingest them.
+
+    Scheduled every 5 minutes via Celery Beat.
+    Requires IMAP_HOST, IMAP_USER, IMAP_PASSWORD to be configured.
+    """
+    user_id = settings.slack_user_id  # reuse the single user ID for MVP
+    if not user_id:
+        return {"skipped": True, "reason": "no user configured"}
+
+    from app.connectors.email.imap_poller import poll_new_messages
+    return poll_new_messages(user_id)
