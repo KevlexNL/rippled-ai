@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Unit + Integration Tests
+    runs-on: ubuntu-latest
+
+    env:
+      # App config — pulled from GitHub secrets (Settings → Secrets → Actions)
+      DATABASE_URL:          ${{ secrets.DATABASE_URL }}
+      SUPABASE_URL:          ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY:     ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_KEY:  ${{ secrets.SUPABASE_SERVICE_KEY }}
+      SECRET_KEY:            ${{ secrets.SECRET_KEY }}
+      ENCRYPTION_KEY:        ${{ secrets.ENCRYPTION_KEY }}
+      APP_ENV:               testing
+      API_PREFIX:            /api/v1
+      REDIS_URL:             redis://localhost:6379/0
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest anyio
+
+      - name: Run unit tests
+        run: pytest tests/ --ignore=tests/integration -v
+
+      - name: Run integration tests
+        run: pytest tests/integration/ -v --tb=short
