@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.connectors.shared.credentials_utils import encrypt_credentials
 from app.core.dependencies import get_current_user_id
 from app.db.deps import get_db
 from app.models.orm import Source
@@ -13,7 +14,17 @@ router = APIRouter(prefix="/sources", tags=["sources"])
 
 
 def _to_schema(row: Source) -> SourceRead:
-    return SourceRead.model_validate(row)
+    return SourceRead(
+        id=row.id,
+        user_id=row.user_id,
+        source_type=row.source_type,
+        provider_account_id=row.provider_account_id,
+        display_name=row.display_name,
+        is_active=row.is_active,
+        has_credentials=bool(row.credentials),
+        created_at=row.created_at,
+        updated_at=row.updated_at,
+    )
 
 
 @router.post("", response_model=SourceRead, status_code=201)
@@ -28,6 +39,7 @@ async def create_source(
         provider_account_id=body.provider_account_id,
         display_name=body.display_name,
         metadata_=body.metadata_,
+        credentials=encrypt_credentials(body.credentials) if body.credentials else None,
     )
     db.add(source)
     await db.flush()

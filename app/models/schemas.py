@@ -58,6 +58,7 @@ class SourceRead(_Base):
     provider_account_id: str | None
     display_name: str | None
     is_active: bool
+    has_credentials: bool = False  # True if encrypted credentials are stored; never exposes raw values
     created_at: datetime
     updated_at: datetime
 
@@ -68,6 +69,7 @@ class SourceCreate(_Base):
     display_name: str | None = None
     # Field alias: API clients send {"metadata": ...}, stored as metadata_ in Python to avoid reserved name
     metadata_: dict | None = Field(None, alias="metadata")
+    credentials: dict | None = None  # sensitive fields are encrypted before storage
 
 
 class SourceUpdate(_Base):

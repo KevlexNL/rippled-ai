@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     # Meeting connector
     meeting_webhook_secret: str = ""
 
+    # Credential encryption
+    encryption_key: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = False
