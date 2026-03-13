@@ -5,6 +5,9 @@ import Review from './screens/Review'
 import Log from './screens/Log'
 import CommitmentDetail from './screens/CommitmentDetail'
 import LoginScreen from './screens/LoginScreen'
+import SignUpScreen from './screens/SignUpScreen'
+import ForgotPasswordScreen from './screens/ForgotPasswordScreen'
+import ResetPasswordScreen from './screens/ResetPasswordScreen'
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -17,6 +20,9 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginScreen />} />
+      <Route path="/signup" element={<SignUpScreen />} />
+      <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+      <Route path="/reset-password" element={<ResetPasswordScreen />} />
       <Route
         path="/"
         element={

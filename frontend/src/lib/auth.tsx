@@ -1,12 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
+import { apiGet } from './apiClient'
 
 interface AuthContextValue {
   session: Session | null
   user: User | null
   loading: boolean
   signOut: () => Promise<void>
+  signUp: (email: string, password: string) => Promise<void>
+  checkOnboardingComplete: () => Promise<boolean>
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -14,6 +17,8 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   loading: true,
   signOut: async () => {},
+  signUp: async () => {},
+  checkOnboardingComplete: async () => false,
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -41,8 +46,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(null)
   }
 
+  const signUp = async (email: string, password: string): Promise<void> => {
+    const { error } = await supabase.auth.signUp({ email, password })
+    if (error) throw error
+  }
+
+  const checkOnboardingComplete = async (): Promise<boolean> => {
+    try {
+      const data = await apiGet<{ has_sources: boolean }>('/api/v1/sources/onboarding-status')
+      return data.has_sources
+    } catch {
+      // If API fails, also check user metadata
+      const { data: { user } } = await supabase.auth.getUser()
+      return user?.user_metadata?.onboarding_complete === true
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, signOut, signUp, checkOnboardingComplete }}>
       {children}
     </AuthContext.Provider>
   )

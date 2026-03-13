@@ -1,28 +1,31 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../lib/auth'
 
-export default function LoginScreen() {
+export default function ResetPasswordScreen() {
   const navigate = useNavigate()
-  const { checkOnboardingComplete } = useAuth()
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
+
     setLoading(true)
 
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+      const { error: authError } = await supabase.auth.updateUser({ password })
       if (authError) {
         setError(authError.message)
       } else {
-        const isComplete = await checkOnboardingComplete()
-        navigate(isComplete ? '/' : '/onboarding')
+        navigate('/')
       }
     } catch {
       setError('An unexpected error occurred. Please try again.')
@@ -36,42 +39,37 @@ export default function LoginScreen() {
       <div className="w-full max-w-sm">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-black">Rippled</h1>
-          <p className="mt-1 text-sm text-gray-500">Sign in to your account</p>
+          <p className="mt-1 text-sm text-gray-500">Set a new password</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-black mb-1">
-              Email
+            <label htmlFor="password" className="block text-sm font-medium text-black mb-1">
+              New password
             </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label htmlFor="password" className="block text-sm font-medium text-black">
-                Password
-              </label>
-              <Link to="/forgot-password" className="text-xs text-gray-500 hover:text-black transition-colors">
-                Forgot password?
-              </Link>
-            </div>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              autoComplete="current-password"
+              autoComplete="new-password"
+              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="confirm-password" className="block text-sm font-medium text-black mb-1">
+              Confirm new password
+            </label>
+            <input
+              id="confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              autoComplete="new-password"
               className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
               placeholder="••••••••"
             />
@@ -88,16 +86,9 @@ export default function LoginScreen() {
             disabled={loading}
             className="w-full py-2.5 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900 active:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? 'Updating…' : 'Update password'}
           </button>
         </form>
-
-        <p className="mt-6 text-center text-sm text-gray-500">
-          Don't have an account?{' '}
-          <Link to="/signup" className="text-black font-medium hover:underline">
-            Sign up
-          </Link>
-        </p>
       </div>
     </div>
   )
