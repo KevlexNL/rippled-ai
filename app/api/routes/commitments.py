@@ -11,6 +11,7 @@ from app.models.orm import Commitment, CommitmentAmbiguity, CommitmentSignal, Li
 from app.models.schemas import (
     CommitmentAmbiguityCreate,
     CommitmentAmbiguityRead,
+    CommitmentCreate,
     CommitmentRead,
     CommitmentSignalCreate,
     CommitmentSignalRead,
@@ -72,6 +73,46 @@ async def list_commitments(
     q = q.order_by(Commitment.created_at.desc()).limit(limit).offset(offset)
     result = await db.execute(q)
     return [_commitment_to_schema(row) for row in result.scalars()]
+
+
+@router.post("", response_model=CommitmentRead, status_code=201)
+async def create_commitment(
+    body: CommitmentCreate,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> CommitmentRead:
+    commitment = Commitment(
+        user_id=user_id,
+        title=body.title,
+        description=body.description,
+        commitment_text=body.commitment_text,
+        commitment_type=body.commitment_type.value if body.commitment_type else None,
+        priority_class=body.priority_class.value if body.priority_class else None,
+        context_type=body.context_type,
+        owner_candidates=body.owner_candidates,
+        resolved_owner=body.resolved_owner,
+        suggested_owner=body.suggested_owner,
+        ownership_ambiguity=body.ownership_ambiguity.value if body.ownership_ambiguity else None,
+        deadline_candidates=body.deadline_candidates,
+        resolved_deadline=body.resolved_deadline,
+        vague_time_phrase=body.vague_time_phrase,
+        suggested_due_date=body.suggested_due_date,
+        timing_ambiguity=body.timing_ambiguity.value if body.timing_ambiguity else None,
+        deliverable=body.deliverable,
+        target_entity=body.target_entity,
+        suggested_next_step=body.suggested_next_step,
+        deliverable_ambiguity=body.deliverable_ambiguity.value if body.deliverable_ambiguity else None,
+        confidence_commitment=body.confidence_commitment,
+        confidence_actionability=body.confidence_actionability,
+        commitment_explanation=body.commitment_explanation,
+        observe_until=body.observe_until,
+        observation_window_hours=body.observation_window_hours,
+        lifecycle_state="proposed",
+    )
+    db.add(commitment)
+    await db.flush()
+    await db.refresh(commitment)
+    return _commitment_to_schema(commitment)
 
 
 @router.get("/{commitment_id}", response_model=CommitmentRead)

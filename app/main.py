@@ -36,3 +36,17 @@ app.include_router(candidates.router, prefix=settings.api_prefix, tags=["candida
 app.include_router(webhook_email.router, prefix=settings.api_prefix, tags=["webhooks"])
 app.include_router(webhook_slack.router, prefix=settings.api_prefix, tags=["webhooks"])
 app.include_router(webhook_meetings.router, prefix=settings.api_prefix, tags=["webhooks"])
+
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# Serve frontend SPA
+_PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "..", "api", "public")
+if os.path.isdir(_PUBLIC_DIR):
+    app.mount("/assets", StaticFiles(directory=os.path.join(_PUBLIC_DIR, "assets")), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa_fallback(full_path: str) -> FileResponse:
+        index = os.path.join(_PUBLIC_DIR, "index.html")
+        return FileResponse(index)

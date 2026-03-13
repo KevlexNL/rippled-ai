@@ -1,0 +1,75 @@
+import type { CommitmentRead } from '../types'
+import { getStatusColor, getGroupStatusColor } from '../types'
+
+export type SourceType = 'meeting' | 'slack' | 'email' | 'unknown'
+
+export const SOURCE_LABELS: Record<SourceType, string> = {
+  meeting: "From today's meeting",
+  slack: 'From Slack today',
+  email: 'From your email',
+  unknown: 'Other',
+}
+
+export function getSourceLabel(sourceType: string): string {
+  return SOURCE_LABELS[sourceType as SourceType] ?? 'Other'
+}
+
+/**
+ * Deduplicate commitments by id, keeping the first occurrence.
+ */
+export function dedupById(commitments: CommitmentRead[]): CommitmentRead[] {
+  const seen = new Set<string>()
+  return commitments.filter((c) => {
+    if (seen.has(c.id)) return false
+    seen.add(c.id)
+    return true
+  })
+}
+
+/**
+ * Group commitments by context_type. null context_type maps to 'unknown'.
+ */
+export function groupByContextType(
+  commitments: CommitmentRead[]
+): Record<SourceType, CommitmentRead[]> {
+  const groups: Record<SourceType, CommitmentRead[]> = {
+    meeting: [],
+    slack: [],
+    email: [],
+    unknown: [],
+  }
+
+  for (const c of commitments) {
+    const key = (c.context_type as SourceType) ?? 'unknown'
+    if (key in groups) {
+      groups[key].push(c)
+    } else {
+      groups.unknown.push(c)
+    }
+  }
+
+  return groups
+}
+
+/**
+ * Group commitments by target_entity. null target_entity maps to 'Other'.
+ */
+export function groupByTargetEntity(
+  commitments: CommitmentRead[]
+): Record<string, CommitmentRead[]> {
+  const groups: Record<string, CommitmentRead[]> = {}
+
+  for (const c of commitments) {
+    const key = c.target_entity ?? 'Other'
+    if (!groups[key]) groups[key] = []
+    groups[key].push(c)
+  }
+
+  return groups
+}
+
+/**
+ * Compute the worst status color for a group of commitments.
+ * Re-exports getGroupStatusColor for convenience.
+ */
+export { getStatusColor, getGroupStatusColor }
