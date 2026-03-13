@@ -19,7 +19,41 @@ from sqlalchemy import (
     Text,
     func,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, ENUM, JSONB, UUID
+
+# Mirror the PostgreSQL enum types created in the Phase 01 migration.
+# create_type=False tells SQLAlchemy not to CREATE TYPE (they already exist in the DB).
+_source_type = ENUM('meeting', 'slack', 'email', name='source_type', create_type=False)
+_lifecycle_state = ENUM(
+    'proposed', 'needs_clarification', 'active', 'delivered', 'closed', 'discarded',
+    name='lifecycle_state', create_type=False,
+)
+_signal_role = ENUM(
+    'origin', 'clarification', 'progress', 'delivery', 'closure', 'conflict', 'reopening',
+    name='signal_role', create_type=False,
+)
+_ambiguity_type = ENUM(
+    'owner_missing', 'owner_vague_collective', 'owner_multiple_candidates', 'owner_conflicting',
+    'timing_missing', 'timing_vague', 'timing_conflicting', 'timing_changed', 'timing_inferred_weak',
+    'deliverable_unclear', 'target_unclear', 'status_unclear', 'commitment_unclear',
+    name='ambiguity_type', create_type=False,
+)
+_ownership_ambiguity_type = ENUM(
+    'missing', 'vague_collective', 'multiple_candidates', 'conflicting',
+    name='ownership_ambiguity_type', create_type=False,
+)
+_timing_ambiguity_type = ENUM(
+    'missing', 'vague', 'conflicting', 'changed', 'inferred_weak',
+    name='timing_ambiguity_type', create_type=False,
+)
+_deliverable_ambiguity_type = ENUM(
+    'unclear', 'target_unknown',
+    name='deliverable_ambiguity_type', create_type=False,
+)
+_commitment_class = ENUM(
+    'big_promise', 'small_commitment',
+    name='commitment_class', create_type=False,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -47,7 +81,7 @@ class Source(Base):
 
     id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
     user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    source_type: Mapped[str] = mapped_column(String, nullable=False)
+    source_type: Mapped[str] = mapped_column(_source_type, nullable=False)
     provider_account_id: Mapped[str | None] = mapped_column(String, nullable=True)
     display_name: Mapped[str | None] = mapped_column(String, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, server_default="true", nullable=False)
@@ -63,7 +97,7 @@ class SourceItem(Base):
     id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
     source_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("sources.id", ondelete="CASCADE"), nullable=False, index=True)
     user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    source_type: Mapped[str] = mapped_column(String, nullable=False)
+    source_type: Mapped[str] = mapped_column(_source_type, nullable=False)
     external_id: Mapped[str] = mapped_column(String, nullable=False)
     thread_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     direction: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -93,22 +127,22 @@ class Commitment(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     commitment_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     commitment_type: Mapped[str | None] = mapped_column(String, nullable=True)
-    priority_class: Mapped[str | None] = mapped_column(String, nullable=True)
+    priority_class: Mapped[str | None] = mapped_column(_commitment_class, nullable=True)
     context_type: Mapped[str | None] = mapped_column(String, nullable=True)
     owner_candidates: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     resolved_owner: Mapped[str | None] = mapped_column(String, nullable=True)
     suggested_owner: Mapped[str | None] = mapped_column(String, nullable=True)
-    ownership_ambiguity: Mapped[str | None] = mapped_column(String, nullable=True)
+    ownership_ambiguity: Mapped[str | None] = mapped_column(_ownership_ambiguity_type, nullable=True)
     deadline_candidates: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     resolved_deadline: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     vague_time_phrase: Mapped[str | None] = mapped_column(String, nullable=True)
     suggested_due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    timing_ambiguity: Mapped[str | None] = mapped_column(String, nullable=True)
+    timing_ambiguity: Mapped[str | None] = mapped_column(_timing_ambiguity_type, nullable=True)
     deliverable: Mapped[str | None] = mapped_column(Text, nullable=True)
     target_entity: Mapped[str | None] = mapped_column(String, nullable=True)
     suggested_next_step: Mapped[str | None] = mapped_column(Text, nullable=True)
-    deliverable_ambiguity: Mapped[str | None] = mapped_column(String, nullable=True)
-    lifecycle_state: Mapped[str] = mapped_column(String, server_default="proposed", nullable=False, index=True)
+    deliverable_ambiguity: Mapped[str | None] = mapped_column(_deliverable_ambiguity_type, nullable=True)
+    lifecycle_state: Mapped[str] = mapped_column(_lifecycle_state, server_default="proposed", nullable=False, index=True)
     state_changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     confidence_commitment: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
     confidence_owner: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
@@ -145,7 +179,7 @@ class CommitmentSignal(Base):
     commitment_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
     source_item_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("source_items.id", ondelete="CASCADE"), nullable=False, index=True)
     user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id"), nullable=False, index=True)
-    signal_role: Mapped[str] = mapped_column(String, nullable=False)
+    signal_role: Mapped[str] = mapped_column(_signal_role, nullable=False)
     confidence: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
     interpretation_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -157,7 +191,7 @@ class CommitmentAmbiguity(Base):
     id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
     commitment_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
     user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id"), nullable=False, index=True)
-    ambiguity_type: Mapped[str] = mapped_column(String, nullable=False)
+    ambiguity_type: Mapped[str] = mapped_column(_ambiguity_type, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_resolved: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False, index=True)
     resolved_by_item_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("source_items.id", ondelete="SET NULL"), nullable=True)
@@ -171,8 +205,8 @@ class LifecycleTransition(Base):
     id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
     commitment_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
     user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id"), nullable=False, index=True)
-    from_state: Mapped[str | None] = mapped_column(String, nullable=True)
-    to_state: Mapped[str] = mapped_column(String, nullable=False)
+    from_state: Mapped[str | None] = mapped_column(_lifecycle_state, nullable=True)
+    to_state: Mapped[str] = mapped_column(_lifecycle_state, nullable=False)
     trigger_source_item_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("source_items.id", ondelete="SET NULL"), nullable=True, index=True)
     trigger_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     confidence_at_transition: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)

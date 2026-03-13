@@ -30,66 +30,6 @@ from app.models.schemas import (
 router = APIRouter(prefix="/sources", tags=["sources"])
 
 
-@router.get("/debug-db")
-async def debug_db(
-    user_id: str = Depends(get_current_user_id),
-    db: AsyncSession = Depends(get_db),
-) -> dict:
-    """Temporary debug endpoint — diagnose 500s. Remove before final commit."""
-    import traceback
-    results: dict = {"user_id": user_id, "steps": []}
-
-    async def step(name: str, coro):
-        try:
-            val = await coro
-            results["steps"].append({"step": name, "ok": True, "result": str(val)})
-            return val
-        except Exception as exc:
-            results["steps"].append({
-                "step": name, "ok": False,
-                "error": type(exc).__name__,
-                "detail": str(exc),
-                "trace": traceback.format_exc(),
-            })
-            return None
-
-    # 1. Raw DB ping
-    from sqlalchemy import text
-    await step("db_ping", db.execute(text("SELECT 1")))
-
-    # 2. Ensure user exists
-    debug_email = f"debug_{user_id[:8]}@rippled.internal"
-    await step("ensure_user", _ensure_user_exists(user_id, db, email=debug_email))
-
-    # 3. Query sources for this user
-    src_result = await step(
-        "query_sources",
-        db.execute(select(Source).where(Source.user_id == user_id))
-    )
-    if src_result is not None:
-        sources_found = src_result.scalars().all()
-        results["sources_count"] = len(sources_found)
-
-    # 4. Attempt Source insert + flush (no commit — roll back after)
-    try:
-        probe = Source(user_id=user_id, source_type="debug_probe")
-        db.add(probe)
-        await db.flush()
-        results["steps"].append({"step": "source_insert_flush", "ok": True, "probe_id": str(probe.id)})
-        # roll it back so we don't leave junk
-        await db.rollback()
-        results["steps"].append({"step": "rollback_probe", "ok": True})
-    except Exception as exc:
-        results["steps"].append({
-            "step": "source_insert_flush", "ok": False,
-            "error": type(exc).__name__,
-            "detail": str(exc),
-            "trace": traceback.format_exc(),
-        })
-
-    return results
-
-
 async def _ensure_user_exists(user_id: str, db: AsyncSession, email: str = "") -> None:
     """Auto-provision a user row on first API call.
 
