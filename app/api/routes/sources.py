@@ -15,7 +15,8 @@ from app.connectors.shared.credentials_utils import (
 from app.core.config import get_settings
 from app.core.dependencies import get_current_user_id
 from app.db.deps import get_db
-from app.models.orm import Source
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from app.models.orm import Source, User
 from app.models.schemas import (
     EmailSetupRequest,
     MeetingSetupRequest,
@@ -27,6 +28,23 @@ from app.models.schemas import (
 )
 
 router = APIRouter(prefix="/sources", tags=["sources"])
+
+
+async def _ensure_user_exists(user_id: str, db: AsyncSession, email: str = "") -> None:
+    """Auto-provision a user row on first API call.
+    
+    Supabase creates records in auth.users on signup, but our app's users
+    table needs a corresponding row (FK constraint). This upserts it silently.
+    """
+    stmt = pg_insert(User).values(
+        id=user_id,
+        email=email or f"user_{user_id[:8]}@rippled.internal",
+    ).on_conflict_do_update(
+        index_elements=["id"],
+        set_={"email": email} if email else {},
+    )
+    await db.execute(stmt)
+    await db.flush()
 
 
 def _imap_connect_test(
@@ -121,6 +139,7 @@ async def get_onboarding_status(
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
+    await _ensure_user_exists(user_id, db)
     result = await db.execute(
         select(Source).where(Source.user_id == user_id, Source.is_active.is_(True))
     )
@@ -161,6 +180,7 @@ async def setup_email_source(
     if not success:
         raise HTTPException(status_code=422, detail=f"IMAP connection failed: {message}")
 
+    await _ensure_user_exists(user_id, db, email=body.email)
     credentials = encrypt_credentials(
         {
             "imap_host": body.imap_host,
@@ -236,6 +256,7 @@ async def setup_slack_source(
         }
     )
 
+    await _ensure_user_exists(user_id, db)
     # Upsert: find existing slack source for this user
     result = await db.execute(
         select(Source).where(
@@ -269,6 +290,7 @@ async def setup_meeting_source(
     settings = get_settings()
     webhook_url = f"{settings.base_url}{settings.api_prefix}/webhooks/meeting/events"
 
+    await _ensure_user_exists(user_id, db)
     # Upsert: find existing meeting source for this user + platform
     result = await db.execute(
         select(Source).where(
