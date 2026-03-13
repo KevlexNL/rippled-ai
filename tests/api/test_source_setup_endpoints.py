@@ -100,12 +100,13 @@ class TestEmailSetup:
 
         app.dependency_overrides[get_db] = override
         try:
+            mock_encrypt = MagicMock(side_effect=lambda d: {"imap_password": "ENCRYPTED_VALUE", **{k: v for k, v in d.items() if k != "imap_password"}})
             with patch(
                 "app.api.routes.sources.asyncio.to_thread",
                 new_callable=AsyncMock,
                 return_value=(True, "Connected to test@example.com — 5 messages in INBOX"),
             ):
-                with patch("app.api.routes.sources.encrypt_credentials", side_effect=lambda d: d):
+                with patch("app.api.routes.sources.encrypt_credentials", mock_encrypt):
                     resp = client.post(
                         "/api/v1/sources/setup/email",
                         json=EMAIL_SETUP_BODY,
@@ -115,6 +116,11 @@ class TestEmailSetup:
             data = resp.json()
             assert data["source_type"] == "email"
             assert data["user_id"] == "user-001"
+            # Verify encrypt_credentials was called with a dict containing the password
+            mock_encrypt.assert_called_once()
+            call_args = mock_encrypt.call_args[0][0]
+            assert "imap_password" in call_args
+            assert call_args["imap_password"] == EMAIL_SETUP_BODY["app_password"]
         finally:
             app.dependency_overrides.pop(get_db, None)
 

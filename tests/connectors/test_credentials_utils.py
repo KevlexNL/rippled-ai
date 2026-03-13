@@ -64,12 +64,18 @@ def test_encrypt_changes_sensitive_values(monkeypatch):
         cu._get_cipher.cache_clear()
 
 
-def test_no_key_encrypt_returns_plaintext(monkeypatch):
+def test_no_key_encrypt_returns_plaintext(monkeypatch, caplog):
     """When ENCRYPTION_KEY is empty, encrypt returns data as-is with a warning."""
+    import logging
     _reset(monkeypatch, "")
     data = {"imap_password": "plaintext", "imap_host": "mail.example.com"}
-    result = cu.encrypt_credentials(data)
+
+    with caplog.at_level(logging.WARNING, logger="app.connectors.shared.credentials_utils"):
+        result = cu.encrypt_credentials(data)
+
     assert result == data
+    assert any("ENCRYPTION_KEY" in record.message for record in caplog.records), \
+        "Expected warning about missing ENCRYPTION_KEY"
 
 
 def test_no_key_decrypt_returns_plaintext(monkeypatch):
