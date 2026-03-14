@@ -47,6 +47,16 @@ class Settings(BaseSettings):
     # Public base URL for webhook URL generation (e.g. https://api.rippled.ai)
     base_url: str = ""
 
+    # Google Calendar integration
+    google_calendar_enabled: bool = False
+    google_oauth_client_id: str = ""
+    google_oauth_client_secret: str = ""
+    google_oauth_redirect_uri: str = ""
+    google_calendar_user_email: str = ""  # defaults to digest_to_email if empty
+
+    # Counterparty classification
+    internal_managers: str = ""  # comma-separated email list for internal_manager detection
+
     # Daily digest / email delivery
     digest_enabled: bool = True
     digest_smtp_host: str = ""

@@ -69,6 +69,47 @@ def encrypt_credentials(data: dict) -> dict:
     return result
 
 
+def encrypt_value(value: str | None) -> str | None:
+    """Encrypt a single string value using Fernet.
+
+    Returns the encrypted ciphertext as a string, or None if value is None.
+    If ENCRYPTION_KEY is not set, returns value as-is with a one-time warning.
+    """
+    if value is None:
+        return None
+    global _warned_no_key
+    cipher = _get_cipher()
+    if cipher is None:
+        if not _warned_no_key:
+            logger.warning(
+                "ENCRYPTION_KEY is not set — value will be stored unencrypted."
+            )
+            _warned_no_key = True
+        return value
+    return cipher.encrypt(value.encode()).decode()
+
+
+def decrypt_value(value: str | None) -> str | None:
+    """Decrypt a single Fernet-encrypted string value.
+
+    Returns the plaintext string, or None if value is None.
+    If ENCRYPTION_KEY is not set, returns value as-is.
+    """
+    if value is None:
+        return None
+    cipher = _get_cipher()
+    if cipher is None:
+        return value
+    try:
+        return cipher.decrypt(value.encode()).decode()
+    except InvalidToken:
+        logger.warning("Failed to decrypt value — possibly unencrypted legacy value, returning as-is.")
+        return value
+    except Exception as e:
+        logger.error("Unexpected error decrypting value: %s", e)
+        return value
+
+
 def decrypt_credentials(data: dict) -> dict:
     """Decrypt sensitive fields in *data*.
 

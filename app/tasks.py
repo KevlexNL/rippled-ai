@@ -1,4 +1,4 @@
-"""Celery application and tasks — Phase 03 + Phase 04 + Phase 05 + Phase 06 + Phase C1 + Phase C2.
+"""Celery application and tasks — Phase 03 + Phase 04 + Phase 05 + Phase 06 + Phase C1 + Phase C2 + Phase C3.
 
 Detection task: orchestrates detection service (Phase 03).
 Clarification task: orchestrates clarification pipeline (Phase 04).
@@ -56,6 +56,21 @@ celery_app.conf.update(
         "daily-digest": {
             "task": "app.tasks.send_daily_digest",
             "schedule": crontab(hour=8, minute=0),
+        },
+        # Phase C3 — Google Calendar sync every 15 minutes
+        "google-calendar-sync": {
+            "task": "app.tasks.sync_google_calendar",
+            "schedule": crontab(minute="*/15"),
+        },
+        # Phase C3 — Pre-event nudge every hour on the hour
+        "pre-event-nudge": {
+            "task": "app.tasks.run_pre_event_nudge",
+            "schedule": crontab(minute=0),
+        },
+        # Phase C3 — Post-event resolution every hour at :30
+        "post-event-resolution": {
+            "task": "app.tasks.run_post_event_resolution",
+            "schedule": crontab(minute=30),
         },
     },
 )
@@ -517,3 +532,141 @@ def send_daily_digest() -> dict:
         "commitment_count": commitment_count,
         "delivery_method": result.method,
     }
+
+
+@celery_app.task(name="app.tasks.sync_google_calendar")
+def sync_google_calendar() -> dict:
+    """Sync Google Calendar events for the configured user — Phase C3.
+
+    Guard clauses (checked in order):
+    1. settings.google_calendar_enabled is False → skip
+    2. settings.google_oauth_client_id is empty → skip
+    3. User not found or has no refresh_token → skip
+
+    Scheduled every 15 minutes via Celery Beat.
+
+    Returns:
+        Dict with status and sync counts.
+    """
+    from sqlalchemy import select
+    from app.models.orm import User
+    from app.connectors.google_calendar import GoogleCalendarConnector
+
+    if not settings.google_calendar_enabled:
+        return {"status": "skipped", "reason": "google_calendar_enabled=false"}
+
+    if not settings.google_oauth_client_id:
+        return {"status": "skipped", "reason": "oauth not configured"}
+
+    user_email = settings.google_calendar_user_email or settings.digest_to_email
+    if not user_email:
+        return {"status": "skipped", "reason": "no user email configured"}
+
+    with get_sync_session() as db:
+        user = db.execute(
+            select(User).where(User.email == user_email)
+        ).scalar_one_or_none()
+
+        if user is None:
+            return {"status": "skipped", "reason": "user not found"}
+
+        connector = GoogleCalendarConnector(settings=settings, db=db)
+        return connector.sync(user.id)
+
+
+@celery_app.task(name="app.tasks.run_pre_event_nudge")
+def run_pre_event_nudge() -> dict:
+    """Force upcoming-delivery commitments to main surface — Phase C3.
+
+    Finds commitments with a delivery_at event in the next 25 hours,
+    promotes them to 'main' if not already there, and logs SurfacingAudit rows.
+
+    Scheduled every hour on the hour via Celery Beat.
+
+    Returns:
+        Dict with 'nudged' count.
+    """
+    from sqlalchemy import select, and_
+    from app.models.orm import Commitment, CommitmentEventLink, Event
+    from app.services.nudge import NudgeService
+
+    with get_sync_session() as db:
+        now_dt = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        window_end = now_dt + __import__("datetime").timedelta(hours=25)
+
+        # Load commitment-event pairs where delivery event is within 25h
+        rows = db.execute(
+            select(Commitment, Event)
+            .join(CommitmentEventLink, CommitmentEventLink.commitment_id == Commitment.id)
+            .join(Event, Event.id == CommitmentEventLink.event_id)
+            .where(
+                and_(
+                    CommitmentEventLink.relationship == "delivery_at",
+                    Event.status != "cancelled",
+                    Event.starts_at.between(now_dt, window_end),
+                    Commitment.lifecycle_state.in_(("proposed", "active", "needs_clarification")),
+                )
+            )
+        ).all()
+
+        pairs = [(row[0], row[1]) for row in rows]
+        service = NudgeService()
+        return service.run(db, commitment_event_pairs=pairs)
+
+
+@celery_app.task(name="app.tasks.run_post_event_resolution")
+def run_post_event_resolution() -> dict:
+    """Resolve commitments after their delivery events end — Phase C3.
+
+    Scans events that ended 0-48h ago with unresolved linked commitments.
+    Classifies delivery signal from recent SourceItems or escalates to main.
+
+    Scheduled every hour at :30 via Celery Beat.
+
+    Returns:
+        Dict with 'processed' and 'escalated' counts.
+    """
+    from sqlalchemy import select, and_
+    from app.models.orm import Commitment, CommitmentEventLink, Event, SourceItem
+    from app.services.post_event_resolver import PostEventResolver
+
+    with get_sync_session() as db:
+        now_dt = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        window_start = now_dt - __import__("datetime").timedelta(hours=48)
+
+        rows = db.execute(
+            select(Commitment, Event)
+            .join(CommitmentEventLink, CommitmentEventLink.commitment_id == Commitment.id)
+            .join(Event, Event.id == CommitmentEventLink.event_id)
+            .where(
+                and_(
+                    CommitmentEventLink.relationship == "delivery_at",
+                    Event.ends_at.between(window_start, now_dt),
+                    Commitment.lifecycle_state.in_(("proposed", "active", "needs_clarification")),
+                    Commitment.post_event_reviewed.is_(False),
+                )
+            )
+        ).all()
+
+        pairs = [(row[0], row[1]) for row in rows]
+
+        # Build source_item_map: fetch recent source items per counterparty
+        source_item_map: dict = {}
+        for commitment, event in pairs:
+            if commitment.counterparty_email:
+                items = db.execute(
+                    select(SourceItem)
+                    .where(
+                        and_(
+                            SourceItem.occurred_at > event.ends_at,
+                            SourceItem.sender_email == commitment.counterparty_email,
+                            SourceItem.user_id == commitment.user_id,
+                        )
+                    )
+                    .order_by(SourceItem.occurred_at.asc())
+                    .limit(20)
+                ).scalars().all()
+                source_item_map[commitment.id] = list(items)
+
+        resolver = PostEventResolver()
+        return resolver.run(db, commitment_event_pairs=pairs, source_item_map=source_item_map, now=now_dt)

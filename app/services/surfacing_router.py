@@ -64,7 +64,7 @@ class RoutingResult:
 # Public API
 # ---------------------------------------------------------------------------
 
-def route(commitment) -> RoutingResult:
+def route(commitment, proximity_hours: float | None = None) -> RoutingResult:
     """Route a commitment to a surface destination.
 
     Args:
@@ -74,7 +74,7 @@ def route(commitment) -> RoutingResult:
         RoutingResult with surface destination, score, and reason.
     """
     classifier_result = classify(commitment)
-    priority = score(classifier_result, commitment)
+    priority = score(classifier_result, commitment, proximity_hours=proximity_hours)
 
     # --- Step 1: Observation window gate ---
     in_window = is_observable(commitment)

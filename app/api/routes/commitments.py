@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user_id
 from app.db.deps import get_db
-from app.models.orm import Commitment, CommitmentAmbiguity, CommitmentSignal, LifecycleTransition
+from app.models.orm import Commitment, CommitmentAmbiguity, CommitmentEventLink, CommitmentSignal, Event, LifecycleTransition
 from app.models.schemas import (
     CommitmentAmbiguityCreate,
     CommitmentAmbiguityRead,
@@ -304,6 +304,38 @@ class AmbiguityPatch(BaseModel):
     resolved_by_item_id: str | None = None
 
 
+# ---------------------------------------------------------------------------
+# [C3] Delivery state models
+# ---------------------------------------------------------------------------
+
+_VALID_DELIVERY_STATES = frozenset({
+    "draft_sent", "acknowledged", "rescheduled", "partial",
+    "delivered", "closed_no_delivery",
+})
+
+
+class DeliveryStatePatch(BaseModel):
+    state: str
+    note: str | None = None
+
+
+class CommitmentEventLinkRead(BaseModel):
+    id: str
+    commitment_id: str
+    event_id: str
+    relationship: str
+    confidence: float | None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class CommitmentEventLinkCreate(BaseModel):
+    event_id: str
+    relationship: str = "delivery_at"
+
+
 @router.patch("/{commitment_id}/ambiguities/{ambiguity_id}", response_model=CommitmentAmbiguityRead)
 async def patch_ambiguity(
     commitment_id: str,
@@ -333,3 +365,83 @@ async def patch_ambiguity(
     await db.flush()
     await db.refresh(ambiguity)
     return _ambiguity_to_schema(ambiguity)
+
+
+# ---------------------------------------------------------------------------
+# [C3] Delivery State
+# ---------------------------------------------------------------------------
+
+
+@router.patch("/{commitment_id}/delivery-state", response_model=CommitmentRead)
+async def patch_delivery_state(
+    commitment_id: str,
+    body: DeliveryStatePatch,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> CommitmentRead:
+    """Update the delivery state of a commitment."""
+    if body.state not in _VALID_DELIVERY_STATES:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid delivery state: {body.state!r}. Must be one of {sorted(_VALID_DELIVERY_STATES)}",
+        )
+    commitment = await _get_commitment_or_404(commitment_id, user_id, db)
+    commitment.delivery_state = body.state
+    commitment.updated_at = datetime.now(timezone.utc)
+    await db.flush()
+    await db.refresh(commitment)
+    return _commitment_to_schema(commitment)
+
+
+# ---------------------------------------------------------------------------
+# [C3] Commitment ↔ Event links
+# ---------------------------------------------------------------------------
+
+
+@router.get("/{commitment_id}/events", response_model=list[CommitmentEventLinkRead])
+async def list_commitment_events(
+    commitment_id: str,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> list[CommitmentEventLinkRead]:
+    """List all event links for a commitment."""
+    await _get_commitment_or_404(commitment_id, user_id, db)
+    result = await db.execute(
+        select(CommitmentEventLink)
+        .where(CommitmentEventLink.commitment_id == commitment_id)
+        .order_by(CommitmentEventLink.created_at.desc())
+    )
+    links = result.scalars().all()
+    return [CommitmentEventLinkRead.model_validate(link) for link in links]
+
+
+@router.post("/{commitment_id}/events", response_model=CommitmentEventLinkRead, status_code=201)
+async def create_commitment_event_link(
+    commitment_id: str,
+    body: CommitmentEventLinkCreate,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> CommitmentEventLinkRead:
+    """Manually link a commitment to an event."""
+    import uuid as _uuid
+    from decimal import Decimal
+
+    await _get_commitment_or_404(commitment_id, user_id, db)
+
+    # Verify event exists
+    event_result = await db.execute(select(Event).where(Event.id == body.event_id))
+    event = event_result.scalar_one_or_none()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    link = CommitmentEventLink(
+        id=str(_uuid.uuid4()),
+        commitment_id=commitment_id,
+        event_id=body.event_id,
+        relationship=body.relationship,
+        confidence=Decimal("1.000"),
+    )
+    db.add(link)
+    await db.flush()
+    await db.refresh(link)
+    return CommitmentEventLinkRead.model_validate(link)

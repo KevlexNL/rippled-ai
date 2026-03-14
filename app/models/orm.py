@@ -168,6 +168,11 @@ class Commitment(Base):
     cognitive_burden: Mapped[int | None] = mapped_column(Integer, nullable=True)
     confidence_for_surfacing: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
     surfacing_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Phase C3 — delivery state + counterparty tracking
+    delivery_state: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    counterparty_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    counterparty_email: Mapped[str | None] = mapped_column(Text, nullable=True)
+    post_event_reviewed: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
@@ -284,6 +289,39 @@ class SurfacingAudit(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
 
 
+class Event(Base):
+    __tablename__ = "events"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    source_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("sources.id", ondelete="SET NULL"), nullable=True)
+    external_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    ends_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    is_recurring: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    recurrence_rule: Mapped[str | None] = mapped_column(Text, nullable=True)
+    event_type: Mapped[str] = mapped_column(String(20), server_default="explicit", nullable=False)
+    status: Mapped[str] = mapped_column(String(20), server_default="confirmed", nullable=False, index=True)
+    cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    rescheduled_from: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    location: Mapped[str | None] = mapped_column(Text, nullable=True)
+    attendees: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class CommitmentEventLink(Base):
+    __tablename__ = "commitment_event_links"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    commitment_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
+    event_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("events.id", ondelete="CASCADE"), nullable=False, index=True)
+    relationship: Mapped[str] = mapped_column(String(20), nullable=False)
+    confidence: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
 class UserSettings(Base):
     __tablename__ = "user_settings"
 
@@ -291,6 +329,10 @@ class UserSettings(Base):
     digest_enabled: Mapped[bool] = mapped_column(Boolean, server_default="true", nullable=False)
     digest_time: Mapped[str] = mapped_column(String(5), server_default="08:00", nullable=False)
     last_digest_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Phase C3 — Google OAuth tokens (Fernet-encrypted at write/read)
+    google_access_token: Mapped[str | None] = mapped_column(Text, nullable=True)
+    google_refresh_token: Mapped[str | None] = mapped_column(Text, nullable=True)
+    google_token_expiry: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

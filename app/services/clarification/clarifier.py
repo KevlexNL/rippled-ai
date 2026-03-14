@@ -12,10 +12,12 @@ import uuid
 
 from sqlalchemy.orm import Session
 
-from app.models.orm import Clarification, CommitmentCandidate, LifecycleTransition
+from app.models.orm import Clarification, CommitmentCandidate, LifecycleTransition, SourceItem, User
 from app.services.clarification.analyzer import AnalysisResult, analyze_candidate
 from app.services.clarification.promoter import promote_candidate
 from app.services.clarification.suggestions import generate_suggestions
+from app.services.event_linker import CounterpartyExtractor
+from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +80,19 @@ def run_clarification(candidate_id: str, db: Session) -> dict:
     # Step 5 — promote
     commitment = promote_candidate(candidate, db, analysis)
     logger.info("Candidate %s promoted to commitment %s", candidate_id, commitment.id)
+
+    # Step 5b — [C3] enrich counterparty before flush
+    try:
+        settings = get_settings()
+        source_item = None
+        if candidate.originating_item_id:
+            source_item = db.get(SourceItem, candidate.originating_item_id)
+        user = db.get(User, candidate.user_id)
+        user_email = user.email if user else ""
+        extractor = CounterpartyExtractor(settings=settings, user_email=user_email)
+        extractor.extract(commitment, source_item, user_email=user_email)
+    except Exception as exc:
+        logger.warning("CounterpartyExtractor failed (non-fatal): %s", exc)
 
     # Step 6 — generate suggestions
     suggested_values = generate_suggestions(candidate, analysis.issue_types)
