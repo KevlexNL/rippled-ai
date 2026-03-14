@@ -38,3 +38,8 @@ migrations/__pycache__/
 
 # Logs
 *.log
+
+# Node
+node_modules/
+frontend/dist/
+frontend-admin/dist/

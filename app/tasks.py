@@ -586,30 +586,12 @@ def run_pre_event_nudge() -> dict:
     Returns:
         Dict with 'nudged' count.
     """
-    from sqlalchemy import select, and_
-    from app.models.orm import Commitment, CommitmentEventLink, Event
+    from datetime import datetime, timezone
     from app.services.nudge import NudgeService
 
     with get_sync_session() as db:
-        now_dt = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
-        window_end = now_dt + __import__("datetime").timedelta(hours=25)
-
-        # Load commitment-event pairs where delivery event is within 25h
-        rows = db.execute(
-            select(Commitment, Event)
-            .join(CommitmentEventLink, CommitmentEventLink.commitment_id == Commitment.id)
-            .join(Event, Event.id == CommitmentEventLink.event_id)
-            .where(
-                and_(
-                    CommitmentEventLink.relationship == "delivery_at",
-                    Event.status != "cancelled",
-                    Event.starts_at.between(now_dt, window_end),
-                    Commitment.lifecycle_state.in_(("proposed", "active", "needs_clarification")),
-                )
-            )
-        ).all()
-
-        pairs = [(row[0], row[1]) for row in rows]
+        now_dt = datetime.now(timezone.utc)
+        pairs = NudgeService.load_pairs(db, now_dt)
         service = NudgeService()
         return service.run(db, commitment_event_pairs=pairs)
 
@@ -626,47 +608,11 @@ def run_post_event_resolution() -> dict:
     Returns:
         Dict with 'processed' and 'escalated' counts.
     """
-    from sqlalchemy import select, and_
-    from app.models.orm import Commitment, CommitmentEventLink, Event, SourceItem
+    from datetime import datetime, timezone
     from app.services.post_event_resolver import PostEventResolver
 
     with get_sync_session() as db:
-        now_dt = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
-        window_start = now_dt - __import__("datetime").timedelta(hours=48)
-
-        rows = db.execute(
-            select(Commitment, Event)
-            .join(CommitmentEventLink, CommitmentEventLink.commitment_id == Commitment.id)
-            .join(Event, Event.id == CommitmentEventLink.event_id)
-            .where(
-                and_(
-                    CommitmentEventLink.relationship == "delivery_at",
-                    Event.ends_at.between(window_start, now_dt),
-                    Commitment.lifecycle_state.in_(("proposed", "active", "needs_clarification")),
-                    Commitment.post_event_reviewed.is_(False),
-                )
-            )
-        ).all()
-
-        pairs = [(row[0], row[1]) for row in rows]
-
-        # Build source_item_map: fetch recent source items per counterparty
-        source_item_map: dict = {}
-        for commitment, event in pairs:
-            if commitment.counterparty_email:
-                items = db.execute(
-                    select(SourceItem)
-                    .where(
-                        and_(
-                            SourceItem.occurred_at > event.ends_at,
-                            SourceItem.sender_email == commitment.counterparty_email,
-                            SourceItem.user_id == commitment.user_id,
-                        )
-                    )
-                    .order_by(SourceItem.occurred_at.asc())
-                    .limit(20)
-                ).scalars().all()
-                source_item_map[commitment.id] = list(items)
-
+        now_dt = datetime.now(timezone.utc)
+        pairs, source_item_map = PostEventResolver.load_pairs(db, now_dt)
         resolver = PostEventResolver()
         return resolver.run(db, commitment_event_pairs=pairs, source_item_map=source_item_map, now=now_dt)

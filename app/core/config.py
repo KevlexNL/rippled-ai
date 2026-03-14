@@ -67,6 +67,10 @@ class Settings(BaseSettings):
     digest_to_email: str = ""
     sendgrid_api_key: str = ""
 
+    # Admin UI
+    admin_secret_key: str = ""        # if empty → admin API returns 503 Service Unavailable
+    admin_ui_enabled: bool = True     # killswitch for admin static serving
+
     class Config:
         env_file = ".env"
         case_sensitive = False

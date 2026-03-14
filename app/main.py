@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import get_settings
 from app.api.routes import sources, source_items, commitments, surface, candidates, digest as digest_routes
 from app.api.routes import events as events_routes, integrations as integrations_routes
+from app.api.routes import admin as admin_routes
 from app.api.routes.webhooks import email as webhook_email, slack as webhook_slack, meetings as webhook_meetings
 
 settings = get_settings()
@@ -22,7 +23,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Tighten before production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,9 +46,25 @@ app.include_router(webhook_meetings.router, prefix=settings.api_prefix, tags=["w
 app.include_router(digest_routes.router, prefix=settings.api_prefix, tags=["digest"])
 app.include_router(events_routes.router, prefix=settings.api_prefix, tags=["events"])
 app.include_router(integrations_routes.router, prefix=settings.api_prefix, tags=["integrations"])
+app.include_router(admin_routes.router, prefix=settings.api_prefix, tags=["admin"])
 
-# Serve frontend SPA
+# Serve user frontend SPA
 _PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "..", "api", "public")
+
+# Serve admin frontend SPA
+# IMPORTANT: admin SPA fallback must precede user SPA catch-all
+_ADMIN_PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "..", "api", "public-admin")
+if os.path.isdir(_ADMIN_PUBLIC_DIR):
+    _admin_assets = os.path.join(_ADMIN_PUBLIC_DIR, "assets")
+    if os.path.isdir(_admin_assets):
+        app.mount("/admin/assets", StaticFiles(directory=_admin_assets), name="admin-assets")
+
+    @app.get("/admin", include_in_schema=False)
+    @app.get("/admin/{full_path:path}", include_in_schema=False)
+    async def admin_spa_fallback(full_path: str = "") -> FileResponse:
+        index = os.path.join(_ADMIN_PUBLIC_DIR, "index.html")
+        return FileResponse(index)
+
 if os.path.isdir(_PUBLIC_DIR):
     app.mount("/assets", StaticFiles(directory=os.path.join(_PUBLIC_DIR, "assets")), name="assets")
 

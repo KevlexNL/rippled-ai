@@ -40,6 +40,60 @@ _DELIVERY_KEYWORDS = frozenset({
 class PostEventResolver:
     """Processes commitment-event pairs after an event ends."""
 
+    @staticmethod
+    def load_pairs(db, now: datetime) -> tuple[list, dict]:
+        """Load commitment-event pairs whose delivery event ended in the last 48 hours.
+
+        Also builds source_item_map: commitment_id → list[SourceItem] from same counterparty.
+
+        Args:
+            db: Synchronous SQLAlchemy session.
+            now: Current datetime (UTC).
+
+        Returns:
+            Tuple of (commitment_event_pairs, source_item_map).
+        """
+        from datetime import timedelta
+        from sqlalchemy import select, and_
+        from app.models.orm import Commitment, CommitmentEventLink, Event, SourceItem
+
+        window_start = now - timedelta(hours=48)
+
+        rows = db.execute(
+            select(Commitment, Event)
+            .join(CommitmentEventLink, CommitmentEventLink.commitment_id == Commitment.id)
+            .join(Event, Event.id == CommitmentEventLink.event_id)
+            .where(
+                and_(
+                    CommitmentEventLink.relationship == "delivery_at",
+                    Event.ends_at.between(window_start, now),
+                    Commitment.lifecycle_state.in_(("proposed", "active", "needs_clarification")),
+                    Commitment.post_event_reviewed.is_(False),
+                )
+            )
+        ).all()
+
+        pairs = [(row[0], row[1]) for row in rows]
+
+        source_item_map: dict = {}
+        for commitment, event in pairs:
+            if commitment.counterparty_email:
+                items = db.execute(
+                    select(SourceItem)
+                    .where(
+                        and_(
+                            SourceItem.occurred_at > event.ends_at,
+                            SourceItem.sender_email == commitment.counterparty_email,
+                            SourceItem.user_id == commitment.user_id,
+                        )
+                    )
+                    .order_by(SourceItem.occurred_at.asc())
+                    .limit(20)
+                ).scalars().all()
+                source_item_map[commitment.id] = list(items)
+
+        return pairs, source_item_map
+
     def run(
         self,
         db,

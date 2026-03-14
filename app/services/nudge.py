@@ -25,6 +25,39 @@ _NUDGE_WINDOW_HOURS = 25
 class NudgeService:
     """Surfaces commitments whose delivery event is within the nudge window."""
 
+    @staticmethod
+    def load_pairs(db, now: datetime) -> list:
+        """Load commitment-event pairs with delivery events within the nudge window.
+
+        Args:
+            db: Synchronous SQLAlchemy session.
+            now: Current datetime (UTC).
+
+        Returns:
+            List of (Commitment, Event) tuples.
+        """
+        from datetime import timedelta
+        from sqlalchemy import select, and_
+        from app.models.orm import Commitment, CommitmentEventLink, Event
+
+        window_end = now + timedelta(hours=_NUDGE_WINDOW_HOURS)
+
+        rows = db.execute(
+            select(Commitment, Event)
+            .join(CommitmentEventLink, CommitmentEventLink.commitment_id == Commitment.id)
+            .join(Event, Event.id == CommitmentEventLink.event_id)
+            .where(
+                and_(
+                    CommitmentEventLink.relationship == "delivery_at",
+                    Event.status != "cancelled",
+                    Event.starts_at.between(now, window_end),
+                    Commitment.lifecycle_state.in_(("proposed", "active", "needs_clarification")),
+                )
+            )
+        ).all()
+
+        return [(row[0], row[1]) for row in rows]
+
     def run(self, db, user_id: str | None = None, commitment_event_pairs: list | None = None) -> dict:
         """Run nudge sweep over provided commitment+event pairs.
 

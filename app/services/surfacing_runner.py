@@ -139,6 +139,8 @@ def run_surfacing_sweep(db: Session) -> dict:
     changed = 0
     surfaced = 0
     held = 0
+    surfaced_main = 0
+    surfaced_shortlist = 0
 
     for commitment in commitments:
         proximity_hours = proximity_map.get(commitment.id)
@@ -175,6 +177,10 @@ def run_surfacing_sweep(db: Session) -> dict:
 
         if new_surface is not None:
             surfaced += 1
+            if new_surface == "main":
+                surfaced_main += 1
+            elif new_surface == "shortlist":
+                surfaced_shortlist += 1
         else:
             held += 1
 
@@ -191,4 +197,6 @@ def run_surfacing_sweep(db: Session) -> dict:
         "changed": changed,
         "surfaced": surfaced,
         "held": held,
+        "surfaced_main": surfaced_main,
+        "surfaced_shortlist": surfaced_shortlist,
     }
