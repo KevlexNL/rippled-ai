@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-type Tab = 'active' | 'commitments'
+type Tab = 'active' | 'commitments' | 'log' | 'settings'
 
 type GroupMode = 'status' | 'client' | 'source'
 
@@ -653,9 +653,21 @@ function CommitmentCard({ commitment, onOpen }: { commitment: Commitment; onOpen
       <div className="flex">
         <div className={`w-[3px] self-stretch border-l-2 ${accentClass(commitment.status)} flex-shrink-0`} style={{ borderLeftWidth: '3px', borderStyle: 'solid' }} />
         <div className="flex-1 px-4 py-3">
-          {/* Top row: badge */}
-          <div className="mb-1.5">
+          {/* Top row: badge left, metadata right */}
+          <div className="flex justify-between items-start mb-1.5">
             <StatusBadge badge={commitment.badge} />
+            <div className="flex items-center gap-1 text-[12px] text-[#9ca3af] text-right flex-shrink-0 ml-3">
+              <span>{sourceIcon(commitment.source)}</span>
+              <span>{commitment.source}</span>
+              {commitment.person !== '—' && (
+                <>
+                  <span>·</span>
+                  <span>{commitment.person}</span>
+                </>
+              )}
+              <span>·</span>
+              <span>{commitment.date}</span>
+            </div>
           </div>
           {/* Title */}
           <div className="font-semibold text-[15px] text-[#191919] mb-0.5">{commitment.title}</div>
@@ -663,19 +675,7 @@ function CommitmentCard({ commitment, onOpen }: { commitment: Commitment; onOpen
           {commitment.description && (
             <div className="text-[13px] text-[#6b7280] leading-relaxed mb-2">{commitment.description}</div>
           )}
-          {/* Source · person · date — single right-aligned line */}
-          <div className="flex items-center justify-end gap-1 text-[12px] text-[#9ca3af] mb-2">
-            <span>{sourceIcon(commitment.source)}</span>
-            <span>{commitment.source}</span>
-            {commitment.person !== '—' && (
-              <>
-                <span>·</span>
-                <span>{commitment.person}</span>
-              </>
-            )}
-            <span>·</span>
-            <span>{commitment.date}</span>
-          </div>
+
           {/* Action row */}
           <div className="flex items-center gap-2 pt-2 border-t border-[#f0f0ef]">
             <button
@@ -799,6 +799,8 @@ function Header({ activeTab, onTabChange }: { activeTab: Tab; onTabChange: (t: T
   const tabs: { id: Tab; label: string }[] = [
     { id: 'active', label: 'Active' },
     { id: 'commitments', label: 'Commitments' },
+    { id: 'log', label: 'Log' },
+    { id: 'settings', label: 'Settings' },
   ]
 
   return (
@@ -1071,6 +1073,304 @@ function CommitmentsTabContent({ onOpen, selectedId }: { onOpen: (id: string) =>
   )
 }
 
+// ─── LogTabContent ──────────────────────────────────────────────────────────
+
+type LogSource = 'Slack' | 'Email' | 'Meetings' | 'Calendar'
+
+function LogTabContent({ onCancel }: { onCancel: () => void }) {
+  const [description, setDescription] = useState('')
+  const [person, setPerson] = useState('')
+  const [source, setSource] = useState<LogSource>('Slack')
+  const [madeDate, setMadeDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [deadline, setDeadline] = useState('')
+  const [success, setSuccess] = useState(false)
+
+  const sources: LogSource[] = ['Slack', 'Email', 'Meetings', 'Calendar']
+
+  function handleSubmit() {
+    setSuccess(true)
+    setTimeout(() => {
+      setDescription('')
+      setPerson('')
+      setSource('Slack')
+      setMadeDate(new Date().toISOString().slice(0, 10))
+      setDeadline('')
+      setSuccess(false)
+    }, 2000)
+  }
+
+  return (
+    <div className="max-w-[540px] mx-auto pt-8">
+      <CenteredHeading
+        heading="Log a commitment"
+        subline="Add something Rippled should track."
+      />
+      <div className="bg-white border border-[#e8e8e6] rounded-lg p-6 mt-6">
+        {success && (
+          <div className="mb-4 rounded-md bg-[#f0fdf4] border border-[#bbf7d0] px-4 py-3 text-[13px] text-[#15803d] font-medium">
+            Commitment logged. Rippled will track it.
+          </div>
+        )}
+
+        {/* What did you commit to? */}
+        <div className="mb-5">
+          <label className="block text-[13px] font-medium text-[#191919] mb-1.5">What did you commit to?</label>
+          <textarea
+            rows={3}
+            className="w-full border border-[#e8e8e6] rounded-md px-3 py-2 text-[13px] text-[#191919] placeholder:text-[#9ca3af] focus:outline-none focus:border-[#d1d1cf] resize-none"
+            placeholder="Describe the commitment or promise you made…"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+
+        {/* Who is involved? */}
+        <div className="mb-5">
+          <label className="block text-[13px] font-medium text-[#191919] mb-1.5">Who is involved?</label>
+          <input
+            type="text"
+            className="w-full border border-[#e8e8e6] rounded-md px-3 py-2 text-[13px] text-[#191919] placeholder:text-[#9ca3af] focus:outline-none focus:border-[#d1d1cf]"
+            placeholder="Person or team name"
+            value={person}
+            onChange={(e) => setPerson(e.target.value)}
+          />
+        </div>
+
+        {/* Source */}
+        <div className="mb-5">
+          <label className="block text-[13px] font-medium text-[#191919] mb-1.5">Source</label>
+          <div className="flex gap-2">
+            {sources.map((s) => (
+              <button
+                key={s}
+                onClick={() => setSource(s)}
+                className={`px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors ${
+                  source === s
+                    ? 'bg-[#191919] text-white'
+                    : 'border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919]'
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* When did you make this? */}
+        <div className="mb-5">
+          <label className="block text-[13px] font-medium text-[#191919] mb-1.5">When did you make this?</label>
+          <input
+            type="date"
+            className="w-full border border-[#e8e8e6] rounded-md px-3 py-2 text-[13px] text-[#191919] focus:outline-none focus:border-[#d1d1cf]"
+            value={madeDate}
+            onChange={(e) => setMadeDate(e.target.value)}
+          />
+        </div>
+
+        {/* Deadline */}
+        <div className="mb-6">
+          <label className="block text-[13px] font-medium text-[#191919] mb-1.5">Any deadline or target date? <span className="text-[#9ca3af] font-normal">(optional)</span></label>
+          <input
+            type="date"
+            className="w-full border border-[#e8e8e6] rounded-md px-3 py-2 text-[13px] text-[#191919] focus:outline-none focus:border-[#d1d1cf]"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-3 pt-4 border-t border-[#f0f0ef]">
+          <button
+            onClick={handleSubmit}
+            className="bg-[#191919] text-white text-[13px] px-4 py-2 rounded-md font-medium hover:bg-[#333] transition-colors"
+          >
+            Log commitment
+          </button>
+          <button
+            onClick={onCancel}
+            className="text-[13px] text-[#6b7280] hover:text-[#191919] transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── SettingsTabContent ─────────────────────────────────────────────────────
+
+type SettingsSection = 'llm' | 'integrations'
+
+function SettingsTabContent() {
+  const [section, setSection] = useState<SettingsSection>('llm')
+  const [claudeKey, setClaudeKey] = useState('sk-ant-•••••••••••••••••••••')
+  const [claudeConnected] = useState(true)
+  const [openaiKey, setOpenaiKey] = useState('')
+  const [openaiConnected] = useState(false)
+
+  const sidebarItems: { id: SettingsSection; label: string }[] = [
+    { id: 'llm', label: 'LLM API Token' },
+    { id: 'integrations', label: 'Integrations' },
+  ]
+
+  return (
+    <div className="flex min-h-[calc(100vh-84px)]">
+      {/* Sidebar */}
+      <div className="w-[180px] bg-white border-r border-[#e8e8e6] px-4 py-6 flex-shrink-0">
+        <div className="flex flex-col gap-1">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setSection(item.id)}
+              className={`px-3 py-2 rounded-md text-[14px] cursor-pointer w-full text-left transition-colors ${
+                section === item.id
+                  ? 'font-medium text-[#191919] bg-[#f5f5f4]'
+                  : 'text-[#6b7280] hover:text-[#191919]'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 px-8 py-6 max-w-[640px]">
+        {section === 'llm' && (
+          <>
+            <div className="font-semibold text-[20px] text-[#191919]">LLM API Token</div>
+            <div className="text-[14px] text-[#6b7280] mt-1">Connect an LLM provider to power Rippled's commitment detection.</div>
+
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              {/* Claude card */}
+              <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#191919] text-[12px] font-bold">A</div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-[15px] text-[#191919]">Claude</div>
+                    <div className="text-[12px] text-[#6b7280]">claude-haiku-4-5 · Recommended</div>
+                  </div>
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                    claudeConnected ? 'bg-[#f0fdf4] text-[#15803d]' : 'bg-[#f9fafb] text-[#6b7280] border border-[#e8e8e6]'
+                  }`}>
+                    {claudeConnected ? 'Connected' : 'Not connected'}
+                  </span>
+                </div>
+                <div>
+                  <label className="block text-[12px] text-[#6b7280] mb-1">API Key</label>
+                  <input
+                    type="password"
+                    className="w-full border border-[#e8e8e6] rounded-md px-3 py-1.5 text-[13px] text-[#191919] placeholder:text-[#9ca3af] focus:outline-none focus:border-[#d1d1cf]"
+                    placeholder="sk-ant-…"
+                    value={claudeKey}
+                    onChange={(e) => setClaudeKey(e.target.value)}
+                  />
+                </div>
+                <button className="bg-[#191919] text-white text-[12px] px-3 py-1.5 rounded-md font-medium hover:bg-[#333] transition-colors self-start">
+                  {claudeConnected ? 'Update key' : 'Save key'}
+                </button>
+              </div>
+
+              {/* OpenAI card */}
+              <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#191919] text-[12px] font-bold">G</div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-[15px] text-[#191919]">ChatGPT</div>
+                    <div className="text-[12px] text-[#6b7280]">gpt-4o-mini · Alternative</div>
+                  </div>
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                    openaiConnected ? 'bg-[#f0fdf4] text-[#15803d]' : 'bg-[#f9fafb] text-[#6b7280] border border-[#e8e8e6]'
+                  }`}>
+                    {openaiConnected ? 'Connected' : 'Not connected'}
+                  </span>
+                </div>
+                <div>
+                  <label className="block text-[12px] text-[#6b7280] mb-1">API Key</label>
+                  <input
+                    type="password"
+                    className="w-full border border-[#e8e8e6] rounded-md px-3 py-1.5 text-[13px] text-[#191919] placeholder:text-[#9ca3af] focus:outline-none focus:border-[#d1d1cf]"
+                    placeholder="sk-…"
+                    value={openaiKey}
+                    onChange={(e) => setOpenaiKey(e.target.value)}
+                  />
+                </div>
+                <button className="bg-[#191919] text-white text-[12px] px-3 py-1.5 rounded-md font-medium hover:bg-[#333] transition-colors self-start">
+                  Save key
+                </button>
+              </div>
+            </div>
+
+            <div className="text-[12px] text-[#9ca3af] italic mt-4">Your API key is stored locally and never shared.</div>
+          </>
+        )}
+
+        {section === 'integrations' && (
+          <>
+            <div className="font-semibold text-[20px] text-[#191919]">Integrations</div>
+            <div className="text-[14px] text-[#6b7280] mt-1">Manage your connected data sources.</div>
+
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              {/* Slack */}
+              <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#6b7280] text-[12px] font-semibold">#</div>
+                  <span className="font-semibold text-[15px] text-[#191919]">Slack</span>
+                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-[#f0fdf4] text-[#15803d] ml-auto">Connected</span>
+                </div>
+                <div className="text-[12px] text-[#6b7280]">Workspace: kevlex.slack.com</div>
+                <button className="border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919] text-[12px] px-3 py-1.5 rounded-md font-medium transition-colors self-start mt-1">
+                  Edit
+                </button>
+              </div>
+
+              {/* Email */}
+              <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#6b7280]"><IconEmails /></div>
+                  <span className="font-semibold text-[15px] text-[#191919]">Email</span>
+                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-[#f0fdf4] text-[#15803d] ml-auto">Connected</span>
+                </div>
+                <div className="text-[12px] text-[#6b7280]">kevin@kevlex.digital</div>
+                <button className="border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919] text-[12px] px-3 py-1.5 rounded-md font-medium transition-colors self-start mt-1">
+                  Edit
+                </button>
+              </div>
+
+              {/* Meetings */}
+              <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#6b7280]"><IconMeetings /></div>
+                  <span className="font-semibold text-[15px] text-[#191919]">Meetings</span>
+                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-[#f0fdf4] text-[#15803d] ml-auto">Connected</span>
+                </div>
+                <div className="text-[12px] text-[#6b7280]">Google Meet · Synced</div>
+                <button className="border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919] text-[12px] px-3 py-1.5 rounded-md font-medium transition-colors self-start mt-1">
+                  Edit
+                </button>
+              </div>
+
+              {/* Calendar */}
+              <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#6b7280]"><IconCalendar /></div>
+                  <span className="font-semibold text-[15px] text-[#191919]">Calendar</span>
+                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-[#fef3c7] text-[#92400e] ml-auto">Needs reconnect</span>
+                </div>
+                <div className="text-[12px] text-[#6b7280]">Google Calendar</div>
+                <button className="border border-[#d97706] text-[#92400e] text-[12px] px-3 py-1.5 rounded-md font-medium transition-colors self-start mt-1 hover:bg-[#fef3c7]">
+                  Reconnect
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── PrototypeDashboard ──────────────────────────────────────────────────────
 
 export default function PrototypeDashboard() {
@@ -1097,6 +1397,8 @@ export default function PrototypeDashboard() {
       <main className="max-w-[1100px] mx-auto px-6 py-6 pb-16">
         {activeTab === 'active' && <ActiveTabContent onOpen={(id) => setSelectedId(id)} />}
         {activeTab === 'commitments' && <CommitmentsTabContent onOpen={(id) => setSelectedId(id)} selectedId={selectedId} />}
+        {activeTab === 'log' && <LogTabContent onCancel={() => setActiveTab('active')} />}
+        {activeTab === 'settings' && <SettingsTabContent />}
       </main>
       <ProofOfWork />
       <DetailPanel commitment={selectedCommitment} onClose={() => setSelectedId(null)} />
