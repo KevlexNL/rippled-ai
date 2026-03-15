@@ -533,6 +533,9 @@ export default function OnboardingScreen() {
             onChange={(v) => setSlackForm((prev) => ({ ...prev, signingSecret: v }))}
             placeholder="••••••••••••"
           />
+          <p className="text-xs text-gray-500 -mt-2">
+            Found in your Slack App &rarr; Basic Information &rarr; App Credentials &rarr; Signing Secret
+          </p>
           <FormField
             label="Your Slack user ID"
             id="slack-user-id"

@@ -11,7 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.connectors.shared.credentials_utils import decrypt_credentials
 from app.connectors.slack.verifier import verify_slack_signature
-from app.core.config import get_settings
 from app.db.deps import get_db
 from app.models.orm import Source
 
@@ -34,7 +33,6 @@ async def slack_events(
     Acks immediately and dispatches to Celery (Slack requires <3s response).
     """
     body = await request.body()
-    settings = get_settings()
 
     # Peek at team_id from body to resolve per-source signing secret
     # NOTE: team_id is parsed before signature verification to enable per-source secret lookup.
@@ -47,7 +45,7 @@ async def slack_events(
     except Exception:
         pass
 
-    signing_secret = settings.slack_signing_secret  # global fallback
+    signing_secret: str | None = None
 
     if team_id:
         try:
@@ -61,26 +59,29 @@ async def slack_events(
             slack_source = result.scalar_one_or_none()
             if slack_source and slack_source.credentials:
                 creds = decrypt_credentials(slack_source.credentials)
-                signing_secret = creds.get("signing_secret") or settings.slack_signing_secret
+                signing_secret = creds.get("signing_secret") or None
         except Exception:
-            # DB unavailable — fall back to global signing secret for verification
-            logger.warning("Could not look up Slack Source for team_id=%s — using global signing secret", team_id)
+            logger.warning("Could not look up Slack Source for team_id=%s", team_id)
 
-    # Verify signature using resolved signing secret
-    if signing_secret:
-        if not x_slack_signature or not x_slack_request_timestamp:
-            raise HTTPException(status_code=401, detail="Missing Slack signature headers")
-        try:
-            valid = verify_slack_signature(
-                signing_secret=signing_secret,
-                timestamp=x_slack_request_timestamp,
-                body=body,
-                signature=x_slack_signature,
-            )
-        except ValueError as e:
-            raise HTTPException(status_code=401, detail=str(e))
-        if not valid:
-            raise HTTPException(status_code=401, detail="Invalid Slack signature")
+    if not signing_secret:
+        raise HTTPException(
+            status_code=401,
+            detail="Slack signing secret not configured for this workspace",
+        )
+
+    if not x_slack_signature or not x_slack_request_timestamp:
+        raise HTTPException(status_code=401, detail="Missing Slack signature headers")
+    try:
+        valid = verify_slack_signature(
+            signing_secret=signing_secret,
+            timestamp=x_slack_request_timestamp,
+            body=body,
+            signature=x_slack_signature,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    if not valid:
+        raise HTTPException(status_code=401, detail="Invalid Slack signature")
 
     try:
         payload = json_lib.loads(body)
