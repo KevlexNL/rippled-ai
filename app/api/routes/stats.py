@@ -22,6 +22,7 @@ class StatsRead(BaseModel):
     emails_captured: int
     commitments_detected: int
     sources_connected: int
+    people_identified: int
 
 
 @router.get("", response_model=StatsRead)
@@ -55,10 +56,20 @@ async def get_stats(
     )
     sources_count = sources_result.scalar() or 0
 
+    # Count distinct people (unique sender_name or sender_email across source_items)
+    people_result = await db.execute(
+        select(func.count(func.distinct(SourceItem.sender_email))).where(
+            SourceItem.user_id == user_id,
+            SourceItem.sender_email.isnot(None),
+        )
+    )
+    people_count = people_result.scalar() or 0
+
     return StatsRead(
         meetings_analyzed=items_row.meetings or 0,
         messages_processed=items_row.slack or 0,
         emails_captured=items_row.email or 0,
         commitments_detected=commitments_count,
         sources_connected=sources_count,
+        people_identified=people_count,
     )

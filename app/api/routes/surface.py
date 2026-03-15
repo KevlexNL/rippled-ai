@@ -7,11 +7,13 @@ Endpoints:
     GET /surface/main            → commitments with surfaced_as = 'main'
     GET /surface/shortlist       → commitments with surfaced_as = 'shortlist'
     GET /surface/clarifications  → commitments with surfaced_as = 'clarifications'
+    GET /surface/best-next-moves → grouped best next actions (≤5 items)
     GET /surface/internal        → unsurfaced active commitments (debug/admin)
 """
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import select
+from pydantic import BaseModel
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user_id
@@ -22,6 +24,18 @@ from app.models.schemas import CommitmentRead, LinkedEventRead
 router = APIRouter(prefix="/surface", tags=["surfacing"])
 
 _SURFACED_STATES = ("active", "needs_clarification", "proposed")
+
+# Quick-win commitment types (low effort, quick to resolve)
+_QUICK_WIN_TYPES = ("confirm", "send", "update", "follow_up")
+
+
+class BestNextMovesGroup(BaseModel):
+    label: str
+    items: list[CommitmentRead]
+
+
+class BestNextMovesResponse(BaseModel):
+    groups: list[BestNextMovesGroup]
 
 
 async def _fetch_event_map(commitment_ids: list[str], db: AsyncSession) -> dict[str, list[tuple]]:
@@ -129,6 +143,101 @@ async def surface_clarifications(
     rows = list(result.scalars())
     event_map = await _fetch_event_map([r.id for r in rows], db)
     return [_build_commitment_read(row, event_map) for row in rows]
+
+
+@router.get("/best-next-moves", response_model=BestNextMovesResponse)
+async def best_next_moves(
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> BestNextMovesResponse:
+    """Return ≤5 commitments grouped by best-next-move rationale.
+
+    Groups:
+    - Quick wins: low-effort commitment types (confirm, send, update, follow_up)
+      OR shortlist items with confidence ≥ 0.65
+    - Likely blockers: overdue items with external counterparty
+    - Needs focus: remaining surfaced items by priority
+    """
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc)
+
+    # Fetch all surfaced, active commitments for this user
+    result = await db.execute(
+        select(Commitment)
+        .where(
+            Commitment.user_id == user_id,
+            Commitment.lifecycle_state.in_(_SURFACED_STATES),
+            Commitment.surfaced_as.isnot(None),
+        )
+        .order_by(Commitment.priority_score.desc().nullslast(), Commitment.created_at.desc())
+    )
+    all_rows = list(result.scalars())
+    event_map = await _fetch_event_map([r.id for r in all_rows], db)
+
+    quick_wins: list[CommitmentRead] = []
+    blockers: list[CommitmentRead] = []
+    needs_focus: list[CommitmentRead] = []
+    seen_ids: set[str] = set()
+    total = 0
+
+    # Pass 1: Quick wins — low-effort types or shortlist with decent confidence
+    for row in all_rows:
+        if total >= 5:
+            break
+        is_quick_type = row.commitment_type in _QUICK_WIN_TYPES
+        is_shortlist_confident = (
+            row.surfaced_as == "shortlist"
+            and row.confidence_for_surfacing is not None
+            and float(row.confidence_for_surfacing) >= 0.65
+        )
+        if is_quick_type or is_shortlist_confident:
+            quick_wins.append(_build_commitment_read(row, event_map))
+            seen_ids.add(row.id)
+            total += 1
+            if len(quick_wins) >= 2:
+                break
+
+    # Pass 2: Likely blockers — overdue with external counterparty
+    for row in all_rows:
+        if total >= 5:
+            break
+        if row.id in seen_ids:
+            continue
+        is_overdue = (
+            row.resolved_deadline is not None
+            and row.resolved_deadline < now
+        ) or (
+            row.suggested_due_date is not None
+            and row.suggested_due_date < now
+        )
+        is_external = row.counterparty_type == "external"
+        if is_overdue and is_external:
+            blockers.append(_build_commitment_read(row, event_map))
+            seen_ids.add(row.id)
+            total += 1
+            if len(blockers) >= 2:
+                break
+
+    # Pass 3: Needs focus — remaining surfaced items by priority
+    for row in all_rows:
+        if total >= 5:
+            break
+        if row.id in seen_ids:
+            continue
+        needs_focus.append(_build_commitment_read(row, event_map))
+        seen_ids.add(row.id)
+        total += 1
+
+    groups = []
+    if quick_wins:
+        groups.append(BestNextMovesGroup(label="Quick wins", items=quick_wins))
+    if blockers:
+        groups.append(BestNextMovesGroup(label="Likely blockers", items=blockers))
+    if needs_focus:
+        groups.append(BestNextMovesGroup(label="Needs focus", items=needs_focus))
+
+    return BestNextMovesResponse(groups=groups)
 
 
 @router.get("/internal", response_model=list[CommitmentRead])

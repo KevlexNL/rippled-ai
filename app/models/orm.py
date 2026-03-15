@@ -55,6 +55,11 @@ _commitment_class = ENUM(
     'big_promise', 'small_commitment',
     name='commitment_class', create_type=False,
 )
+_commitment_type_enum = ENUM(
+    'send', 'review', 'follow_up', 'deliver', 'investigate', 'introduce',
+    'coordinate', 'update', 'delegate', 'schedule', 'confirm', 'other',
+    name='commitment_type_enum', create_type=False,
+)
 
 
 def _uuid(**kwargs):
@@ -126,7 +131,7 @@ class Commitment(Base):
     title: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     commitment_text: Mapped[str | None] = mapped_column(Text, nullable=True)
-    commitment_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    commitment_type: Mapped[str | None] = mapped_column(_commitment_type_enum, nullable=True)
     priority_class: Mapped[str | None] = mapped_column(_commitment_class, nullable=True)
     context_type: Mapped[str | None] = mapped_column(String, nullable=True)
     owner_candidates: Mapped[list | None] = mapped_column(JSONB, nullable=True)
@@ -172,6 +177,7 @@ class Commitment(Base):
     delivery_state: Mapped[str | None] = mapped_column(String(30), nullable=True)
     counterparty_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
     counterparty_email: Mapped[str | None] = mapped_column(Text, nullable=True)
+    counterparty_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     post_event_reviewed: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -335,6 +341,9 @@ class UserSettings(Base):
     google_refresh_token: Mapped[str | None] = mapped_column(Text, nullable=True)
     google_token_expiry: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     digest_to_email: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # LLM API key storage (Fernet-encrypted)
+    anthropic_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    openai_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

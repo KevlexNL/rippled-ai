@@ -202,6 +202,7 @@ class CommitmentRead(_Base):
     delivery_state: str | None = None
     counterparty_type: str | None = None
     counterparty_email: str | None = None
+    counterparty_name: str | None = None
     post_event_reviewed: bool | None = False
     # Phase C5 — linked events (injected at query time)
     linked_events: list["LinkedEventRead"] | None = None
@@ -232,6 +233,7 @@ class CommitmentCreate(_Base):
     confidence_commitment: Decimal | None = None
     confidence_actionability: Decimal | None = None
     commitment_explanation: str | None = None
+    counterparty_name: str | None = None
     observe_until: datetime | None = None
     observation_window_hours: Decimal | None = None
 
