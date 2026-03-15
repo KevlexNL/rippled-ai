@@ -85,15 +85,12 @@ async def google_callback(
     error: str | None = None,
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
-) -> dict:
+) -> RedirectResponse:
     """Handle Google OAuth callback, exchange code for tokens, store them."""
     _require_google_enabled()
 
-    if error:
-        raise HTTPException(status_code=400, detail=f"OAuth error: {error}")
-
-    if not code:
-        raise HTTPException(status_code=400, detail="Missing authorization code")
+    if error or not code:
+        return RedirectResponse(url="/settings/integrations?calendar=error")
 
     try:
         from app.connectors.google_calendar import exchange_code
@@ -101,7 +98,7 @@ async def google_callback(
         tokens = exchange_code(code, settings)
     except Exception as exc:
         logger.error("Google OAuth code exchange failed: %s", exc)
-        raise HTTPException(status_code=400, detail="Failed to exchange authorization code")
+        return RedirectResponse(url="/settings/integrations?calendar=error")
 
     us = await _get_or_create_user_settings(user_id, db)
     us.google_access_token = encrypt_value(tokens.get("access_token"))
@@ -111,7 +108,7 @@ async def google_callback(
 
     await db.flush()
 
-    return {"status": "connected"}
+    return RedirectResponse(url="/settings/integrations?calendar=connected")
 
 
 @router.get("/google/status", response_model=GoogleStatusResponse)

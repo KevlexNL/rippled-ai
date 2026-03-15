@@ -302,7 +302,7 @@ export default function OnboardingScreen() {
     return (
       <StepLayout>
         <div className="mb-6">
-          <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Step 1 of 3</p>
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Step 1 of 4</p>
           <h1 className="text-2xl font-bold text-black">Connect your email</h1>
           <p className="mt-3 text-sm text-gray-600 leading-relaxed">
             Email is where the most consequential commitments live — proposals sent, deadlines
@@ -389,7 +389,7 @@ export default function OnboardingScreen() {
     return (
       <StepLayout>
         <div className="mb-6">
-          <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Step 2 of 3</p>
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Step 2 of 4</p>
           <h1 className="text-2xl font-bold text-black">Connect Slack</h1>
           <p className="mt-3 text-sm text-gray-600 leading-relaxed">
             Slack is where small commitments disappear. &quot;I&apos;ll look into it.&quot; &quot;Let me check.&quot; &quot;Send
@@ -530,7 +530,7 @@ export default function OnboardingScreen() {
     return (
       <StepLayout>
         <div className="mb-6">
-          <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Step 3 of 3</p>
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Step 3 of 4</p>
           <h1 className="text-2xl font-bold text-black">Connect meeting transcripts</h1>
           <p className="mt-3 text-sm text-gray-600 leading-relaxed">
             Meetings are commitment-dense. Every &quot;I&apos;ll handle that&quot; and &quot;we&apos;ll ship by Friday&quot; is a
@@ -634,7 +634,53 @@ export default function OnboardingScreen() {
     )
   }
 
-  // Step 4 — Done
+  // Step 4 — Calendar
+  if (step === 4) {
+    const API_BASE = import.meta.env.VITE_API_URL || ''
+    return (
+      <StepLayout maxWidth="max-w-sm">
+        <div className="mb-8">
+          <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Step 4 of 4</p>
+          <h1 className="text-2xl font-bold text-black">Connect your calendar</h1>
+          <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+            Rippled uses your calendar to detect upcoming delivery moments and surface
+            commitments at the right time — before the meeting, not after.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          <button
+            onClick={() => {
+              window.open(`${API_BASE}/api/v1/integrations/google/auth`, '_blank')
+            }}
+            className="w-full py-2.5 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900 active:bg-gray-800 transition-colors"
+          >
+            Connect Google Calendar
+          </button>
+          <p className="text-xs text-gray-400 text-center">
+            A new tab will open. Return here after connecting.
+          </p>
+          <button
+            onClick={() => setStep(5)}
+            className="w-full py-2.5 rounded-lg border border-gray-200 text-black text-sm font-medium hover:bg-gray-50 transition-colors"
+          >
+            I&apos;ve connected it
+          </button>
+        </div>
+
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setStep(5)}
+            className="text-sm text-gray-400 hover:text-black transition-colors"
+          >
+            Skip for now
+          </button>
+        </div>
+      </StepLayout>
+    )
+  }
+
+  // Step 5 — Done
   return (
     <StepLayout maxWidth="max-w-sm">
       <div className="mb-8">

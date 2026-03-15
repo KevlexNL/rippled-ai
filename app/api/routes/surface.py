@@ -16,16 +16,56 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user_id
 from app.db.deps import get_db
-from app.models.orm import Commitment
-from app.models.schemas import CommitmentRead
+from app.models.orm import Commitment, CommitmentEventLink, Event
+from app.models.schemas import CommitmentRead, LinkedEventRead
 
 router = APIRouter(prefix="/surface", tags=["surfacing"])
 
 _SURFACED_STATES = ("active", "needs_clarification", "proposed")
 
 
-def _to_schema(row: Commitment) -> CommitmentRead:
-    return CommitmentRead.model_validate(row)
+async def _fetch_event_map(commitment_ids: list[str], db: AsyncSession) -> dict[str, list[tuple]]:
+    """Batch-fetch delivery_at linked events for a list of commitment IDs.
+    Returns dict: commitment_id → list of (link, event) tuples, ordered by starts_at asc.
+    Only the nearest delivery_at event per commitment is needed for the list view.
+    """
+    if not commitment_ids:
+        return {}
+    result = await db.execute(
+        select(CommitmentEventLink, Event)
+        .join(Event, Event.id == CommitmentEventLink.event_id)
+        .where(
+            CommitmentEventLink.commitment_id.in_(commitment_ids),
+            CommitmentEventLink.relationship == "delivery_at",
+            Event.status != "cancelled",
+        )
+        .order_by(Event.starts_at.asc())
+    )
+    event_map: dict[str, list[tuple]] = {}
+    for link, event in result:
+        if link.commitment_id not in event_map:
+            event_map[link.commitment_id] = []
+        event_map[link.commitment_id].append((link, event))
+    return event_map
+
+
+def _build_commitment_read(row: Commitment, event_map: dict[str, list[tuple]] | None = None) -> CommitmentRead:
+    """Build a CommitmentRead schema, injecting linked_events from the event_map."""
+    schema = CommitmentRead.model_validate(row)
+    if event_map and row.id in event_map:
+        schema.linked_events = [
+            LinkedEventRead(
+                event_id=event.id,
+                title=event.title,
+                starts_at=event.starts_at,
+                ends_at=event.ends_at,
+                relationship=link.relationship,
+            )
+            for link, event in event_map[row.id]
+        ]
+    else:
+        schema.linked_events = []
+    return schema
 
 
 @router.get("/main", response_model=list[CommitmentRead])
@@ -44,7 +84,9 @@ async def surface_main(
         .order_by(Commitment.priority_score.desc().nullslast(), Commitment.created_at.desc())
         .limit(10)
     )
-    return [_to_schema(row) for row in result.scalars()]
+    rows = list(result.scalars())
+    event_map = await _fetch_event_map([r.id for r in rows], db)
+    return [_build_commitment_read(row, event_map) for row in rows]
 
 
 @router.get("/shortlist", response_model=list[CommitmentRead])
@@ -63,7 +105,9 @@ async def surface_shortlist(
         .order_by(Commitment.priority_score.desc().nullslast(), Commitment.created_at.desc())
         .limit(10)
     )
-    return [_to_schema(row) for row in result.scalars()]
+    rows = list(result.scalars())
+    event_map = await _fetch_event_map([r.id for r in rows], db)
+    return [_build_commitment_read(row, event_map) for row in rows]
 
 
 @router.get("/clarifications", response_model=list[CommitmentRead])
@@ -82,7 +126,9 @@ async def surface_clarifications(
         .order_by(Commitment.priority_score.desc().nullslast(), Commitment.state_changed_at.asc())
         .limit(10)
     )
-    return [_to_schema(row) for row in result.scalars()]
+    rows = list(result.scalars())
+    event_map = await _fetch_event_map([r.id for r in rows], db)
+    return [_build_commitment_read(row, event_map) for row in rows]
 
 
 @router.get("/internal", response_model=list[CommitmentRead])
@@ -90,11 +136,7 @@ async def surface_internal(
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ) -> list[CommitmentRead]:
-    """Return unsurfaced active commitments (debug/admin view).
-
-    These are commitments in active states that have not been assigned a
-    surface destination. Useful for debugging the surfacing pipeline.
-    """
+    """Return unsurfaced active commitments (debug/admin view)."""
     result = await db.execute(
         select(Commitment)
         .where(
@@ -105,4 +147,6 @@ async def surface_internal(
         .order_by(Commitment.priority_score.desc().nullslast(), Commitment.created_at.desc())
         .limit(20)
     )
-    return [_to_schema(row) for row in result.scalars()]
+    rows = list(result.scalars())
+    event_map = await _fetch_event_map([r.id for r in rows], db)
+    return [_build_commitment_read(row, event_map) for row in rows]

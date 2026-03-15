@@ -43,3 +43,8 @@ migrations/__pycache__/
 node_modules/
 frontend/dist/
 frontend-admin/dist/
+
+# Playwright E2E
+/playwright-report/
+/test-results/
+/node_modules/

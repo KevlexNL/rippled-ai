@@ -94,9 +94,11 @@ Check `workorders/` in the workspace for your Work Order.
 
 ## Commands
 ```bash
-uvicorn app.main:app --reload   # run locally
-alembic upgrade head            # run migrations
-alembic revision --autogenerate -m "description"  # new migration
-pytest                          # run tests
-ruff check app/                 # lint
+uvicorn app.main:app --reload                      # run locally
+alembic upgrade head                               # run migrations
+alembic revision --autogenerate -m "description"   # new migration
+pytest                                             # run backend tests
+ruff check app/                                    # lint
+npm run dev --prefix frontend                      # run frontend dev server (port 5173)
+npm run test:e2e                                   # E2E browser tests (requires frontend dev server running)
 ```

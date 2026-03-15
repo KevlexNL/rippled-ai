@@ -9,6 +9,8 @@ from app.core.config import get_settings
 from app.api.routes import sources, source_items, commitments, surface, candidates, digest as digest_routes
 from app.api.routes import events as events_routes, integrations as integrations_routes
 from app.api.routes import admin as admin_routes
+from app.api.routes import user_settings as user_settings_routes
+from app.api.routes import clarifications as clarifications_routes
 from app.api.routes.webhooks import email as webhook_email, slack as webhook_slack, meetings as webhook_meetings
 
 settings = get_settings()
@@ -47,6 +49,8 @@ app.include_router(digest_routes.router, prefix=settings.api_prefix, tags=["dige
 app.include_router(events_routes.router, prefix=settings.api_prefix, tags=["events"])
 app.include_router(integrations_routes.router, prefix=settings.api_prefix, tags=["integrations"])
 app.include_router(admin_routes.router, prefix=settings.api_prefix, tags=["admin"])
+app.include_router(user_settings_routes.router, prefix=settings.api_prefix, tags=["user-settings"])
+app.include_router(clarifications_routes.router, prefix=settings.api_prefix, tags=["clarifications"])
 
 # Serve user frontend SPA
 _PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "..", "api", "public")

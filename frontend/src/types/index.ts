@@ -6,6 +6,14 @@ export type LifecycleState =
   | 'closed'
   | 'discarded'
 
+export interface LinkedEventRead {
+  event_id: string
+  title: string
+  starts_at: string
+  ends_at: string | null
+  relationship: string
+}
+
 export interface CommitmentRead {
   id: string
   user_id: string
@@ -50,6 +58,13 @@ export interface CommitmentRead {
   surfacing_reason: string | null
   owner_candidates: unknown[] | null
   deadline_candidates: unknown[] | null
+  // Phase C3 fields
+  delivery_state: string | null
+  counterparty_type: string | null
+  counterparty_email: string | null
+  post_event_reviewed: boolean
+  // Phase C5 — linked events
+  linked_events: LinkedEventRead[] | null
   created_at: string
   updated_at: string
 }

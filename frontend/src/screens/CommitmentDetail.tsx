@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { getCommitment, getSignals, getAmbiguities, patchCommitment } from '../api/commitments'
@@ -5,6 +6,8 @@ import type { CommitmentSignalRead, CommitmentAmbiguityRead } from '../types'
 import StatusDot from '../components/StatusDot'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorBanner from '../components/ErrorBanner'
+import PostEventBanner from '../components/PostEventBanner'
+import DeliveryActions from '../components/DeliveryActions'
 
 const SIGNAL_ROLE_LABELS: Record<string, string> = {
   origin: 'Origin',
@@ -57,6 +60,7 @@ export default function CommitmentDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const [bannerDismissed, setBannerDismissed] = useState(false)
 
   const results = useQueries({
     queries: [
@@ -100,6 +104,16 @@ export default function CommitmentDetail() {
   const signalGroups = groupSignalsByRole(signals)
   const signalRoleOrder = ['origin', 'clarification', 'delivery', 'closure']
 
+  // Determine if post-event banner should show
+  const now = new Date()
+  const pastEvent = commitment.linked_events?.find(
+    (e) => e.relationship === 'delivery_at' && new Date(e.starts_at) < now
+  ) ?? null
+  const showPostEventBanner =
+    !bannerDismissed &&
+    commitment.post_event_reviewed === false &&
+    pastEvent !== null
+
   return (
     <div className="min-h-screen bg-white pb-24">
       {/* Header */}
@@ -112,6 +126,15 @@ export default function CommitmentDetail() {
           ‹ Back
         </button>
       </div>
+
+      {/* Post-event banner */}
+      {showPostEventBanner && pastEvent && (
+        <PostEventBanner
+          commitment={commitment}
+          eventTitle={pastEvent.title}
+          onDismiss={() => setBannerDismissed(true)}
+        />
+      )}
 
       {/* Title */}
       <div className="px-4 mb-4">
@@ -217,6 +240,12 @@ export default function CommitmentDetail() {
             ))}
         </div>
       )}
+
+      {/* Delivery actions */}
+      <DeliveryActions
+        commitment={commitment}
+        onUpdate={() => queryClient.invalidateQueries({ queryKey: ['commitment', id] })}
+      />
 
       {/* Bottom bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-2 pb-safe flex items-center gap-2 z-10">

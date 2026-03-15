@@ -76,6 +76,7 @@ Checklist:
 - [ ] Run `ruff check app/` — fix any issues
 - [ ] Manual smoke test or curl check if applicable
 - [ ] No regressions in prior phase tests
+- [ ] **Frontend phases only:** E2E tests pass (`npm run test:e2e` from project root — requires `npm run dev --prefix frontend` running on port 5173)
 
 **Exit condition:** Tests green. Linter clean. Behaviour confirmed.
 **Next:** Move to STAGE 5 — COMMIT

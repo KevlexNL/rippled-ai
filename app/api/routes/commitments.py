@@ -16,6 +16,7 @@ from app.models.schemas import (
     CommitmentSignalCreate,
     CommitmentSignalRead,
     CommitmentUpdate,
+    LinkedEventRead,
 )
 
 router = APIRouter(prefix="/commitments", tags=["commitments"])
@@ -31,7 +32,36 @@ VALID_TRANSITIONS: dict[str, list[str]] = {
 
 
 def _commitment_to_schema(row: Commitment) -> CommitmentRead:
-    return CommitmentRead.model_validate(row)
+    schema = CommitmentRead.model_validate(row)
+    schema.linked_events = []
+    return schema
+
+
+async def _build_commitment_with_events(row: Commitment, db: AsyncSession) -> CommitmentRead:
+    """Build CommitmentRead with linked_events for single-commitment endpoints."""
+    result = await db.execute(
+        select(CommitmentEventLink, Event)
+        .join(Event, Event.id == CommitmentEventLink.event_id)
+        .where(
+            CommitmentEventLink.commitment_id == row.id,
+            CommitmentEventLink.relationship == "delivery_at",
+            Event.status != "cancelled",
+        )
+        .order_by(Event.starts_at.asc())
+    )
+    pairs = list(result)
+    schema = CommitmentRead.model_validate(row)
+    schema.linked_events = [
+        LinkedEventRead(
+            event_id=event.id,
+            title=event.title,
+            starts_at=event.starts_at,
+            ends_at=event.ends_at,
+            relationship=link.relationship,
+        )
+        for link, event in pairs
+    ]
+    return schema
 
 
 def _signal_to_schema(row: CommitmentSignal) -> CommitmentSignalRead:
@@ -122,7 +152,7 @@ async def get_commitment(
     db: AsyncSession = Depends(get_db),
 ) -> CommitmentRead:
     commitment = await _get_commitment_or_404(commitment_id, user_id, db)
-    return _commitment_to_schema(commitment)
+    return await _build_commitment_with_events(commitment, db)
 
 
 @router.patch("/{commitment_id}", response_model=CommitmentRead)
@@ -379,15 +409,48 @@ async def patch_delivery_state(
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ) -> CommitmentRead:
-    """Update the delivery state of a commitment."""
+    """Update the delivery state of a commitment.
+
+    Special state 'pending': marks post_event_reviewed=True without changing delivery_state.
+    State 'delivered': also sets lifecycle_state='delivered' atomically.
+    """
+    _PENDING_STATE = "pending"
+
+    commitment = await _get_commitment_or_404(commitment_id, user_id, db)
+
+    if body.state == _PENDING_STATE:
+        # Special: just mark post_event_reviewed=true, don't change delivery_state
+        commitment.post_event_reviewed = True
+        commitment.updated_at = datetime.now(timezone.utc)
+        await db.flush()
+        await db.refresh(commitment)
+        return _commitment_to_schema(commitment)
+
     if body.state not in _VALID_DELIVERY_STATES:
         raise HTTPException(
             status_code=422,
             detail=f"Invalid delivery state: {body.state!r}. Must be one of {sorted(_VALID_DELIVERY_STATES)}",
         )
-    commitment = await _get_commitment_or_404(commitment_id, user_id, db)
+
     commitment.delivery_state = body.state
     commitment.updated_at = datetime.now(timezone.utc)
+
+    # When delivered, also sync lifecycle_state atomically
+    if body.state == "delivered":
+        old_state = commitment.lifecycle_state
+        allowed = VALID_TRANSITIONS.get(old_state, [])
+        if "delivered" in allowed:
+            commitment.lifecycle_state = "delivered"
+            commitment.state_changed_at = datetime.now(timezone.utc)
+            transition = LifecycleTransition(
+                commitment_id=commitment_id,
+                user_id=user_id,
+                from_state=old_state,
+                to_state="delivered",
+                trigger_reason="delivery_state_update",
+            )
+            db.add(transition)
+
     await db.flush()
     await db.refresh(commitment)
     return _commitment_to_schema(commitment)

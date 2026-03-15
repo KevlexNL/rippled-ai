@@ -3,7 +3,9 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { getSurface } from '../api/surface'
 import { postCommitment, patchCommitment } from '../api/commitments'
+import { getClarifications } from '../api/clarifications'
 import type { CommitmentRead, CommitmentCreate } from '../types'
+import type { ClarificationRead } from '../api/clarifications'
 import { dedupById, groupByContextType, getGroupStatusColor, getSourceLabel } from '../utils/grouping'
 import SourceGroup from '../components/SourceGroup'
 import BottomBar from '../components/BottomBar'
@@ -52,6 +54,27 @@ export default function Dashboard() {
     ...(shortlistResult.data ?? []),
     ...(clarificationsResult.data ?? []),
   ])
+
+  // Pre-fetch clarifications for needs_clarification commitments
+  const clarificationCommitments = allCommitments.filter(
+    (c) => c.lifecycle_state === 'needs_clarification'
+  )
+  const clarificationResults = useQueries({
+    queries: clarificationCommitments.map((c) => ({
+      queryKey: ['clarification', c.id],
+      queryFn: () => getClarifications(c.id),
+      enabled: !isLoading,
+    })),
+  })
+
+  // Build clarificationMap: commitment_id → first open clarification
+  const clarificationMap: Record<string, ClarificationRead> = {}
+  clarificationCommitments.forEach((c, i) => {
+    const result = clarificationResults[i]
+    if (result?.data && result.data.length > 0) {
+      clarificationMap[c.id] = result.data[0]
+    }
+  })
 
   const groups = groupByContextType(allCommitments)
   const sourceTypes = (['meeting', 'slack', 'email', 'unknown'] as const).filter(
@@ -105,18 +128,30 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-white pb-24">
       {/* Header */}
-      <div className="px-4 pt-8 pb-4">
-        <h1 className="text-2xl font-bold text-black">Ripples</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Your commitments, tracked.</p>
+      <div className="px-4 pt-8 pb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-black">Ripples</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Your commitments, tracked.</p>
+        </div>
+        <Link
+          to="/settings/integrations"
+          className="p-2 rounded-lg text-gray-400 hover:text-black hover:bg-gray-50 transition-colors"
+          aria-label="Settings"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </Link>
       </div>
 
       {/* Source groups */}
       <div className="px-4">
-        {sourceTypes.length === 0 && (
+        {allCommitments.length === 0 && (
           <div className="mt-4 p-6 rounded-2xl border border-gray-100 bg-gray-50 text-center">
-            <p className="text-sm font-medium text-black mb-1">Rippled has no signals yet.</p>
+            <p className="text-sm font-medium text-black mb-1">You&apos;re clear.</p>
             <p className="text-sm text-gray-500 mb-4">
-              Connect your first source to start capturing commitments.
+              No commitments need your attention right now.
             </p>
             <Link
               to="/settings/sources"

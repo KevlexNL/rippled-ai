@@ -33,3 +33,6 @@ export const getSignals = (id: string) =>
 
 export const getAmbiguities = (id: string) =>
   apiGet<CommitmentAmbiguityRead[]>(`/api/v1/commitments/${id}/ambiguities?limit=50`)
+
+export const patchDeliveryState = (id: string, state: string) =>
+  apiPatch<CommitmentRead>(`/api/v1/commitments/${id}/delivery-state`, { state })

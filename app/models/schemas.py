@@ -198,6 +198,13 @@ class CommitmentRead(_Base):
     # JSONB candidate arrays (read-only; included for surfacing/UI context)
     owner_candidates: list[Any] | None
     deadline_candidates: list[Any] | None
+    # Phase C3 fields (were in ORM but missing from schema)
+    delivery_state: str | None = None
+    counterparty_type: str | None = None
+    counterparty_email: str | None = None
+    post_event_reviewed: bool | None = False
+    # Phase C5 — linked events (injected at query time)
+    linked_events: list["LinkedEventRead"] | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -363,3 +370,11 @@ class CandidateCommitmentRead(_Base):
     candidate_id: str
     commitment_id: str
     created_at: datetime
+
+
+class LinkedEventRead(_Base):
+    event_id: str
+    title: str
+    starts_at: datetime
+    ends_at: datetime | None = None
+    relationship: str

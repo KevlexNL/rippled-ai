@@ -1,0 +1,32 @@
+{
+  "name": "rippled-ai",
+  "version": "1.0.0",
+  "description": "> Personal commitment intelligence engine. Observes your meetings, Slack, and email — surfaces what you said you'd do, without becoming another task system.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KevlexNL/rippled-ai.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/KevlexNL/rippled-ai/issues"
+  },
+  "homepage": "https://github.com/KevlexNL/rippled-ai#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "typescript": "^5.9.3"
+  }
+}
