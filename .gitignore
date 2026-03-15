@@ -48,3 +48,4 @@ frontend-admin/dist/
 /playwright-report/
 /test-results/
 /node_modules/
+frontend-admin/node_modules/
