@@ -653,10 +653,9 @@ function CommitmentCard({ commitment, onOpen }: { commitment: Commitment; onOpen
       <div className="flex">
         <div className={`w-[3px] self-stretch border-l-2 ${accentClass(commitment.status)} flex-shrink-0`} style={{ borderLeftWidth: '3px', borderStyle: 'solid' }} />
         <div className="flex-1 px-4 py-3">
-          {/* Top row: badge left, date right */}
-          <div className="flex justify-between items-center mb-1.5">
+          {/* Top row: badge */}
+          <div className="mb-1.5">
             <StatusBadge badge={commitment.badge} />
-            <span className="text-[12px] text-[#9ca3af]">{commitment.date}</span>
           </div>
           {/* Title */}
           <div className="font-semibold text-[15px] text-[#191919] mb-0.5">{commitment.title}</div>
@@ -664,15 +663,18 @@ function CommitmentCard({ commitment, onOpen }: { commitment: Commitment; onOpen
           {commitment.description && (
             <div className="text-[13px] text-[#6b7280] leading-relaxed mb-2">{commitment.description}</div>
           )}
-          {/* Source + person: right-aligned */}
-          <div className="text-right mb-2">
-            <div className="flex items-center justify-end gap-1 text-[12px] text-[#9ca3af]">
-              <span>{sourceIcon(commitment.source)}</span>
-              <span>{commitment.source}</span>
-            </div>
+          {/* Source · person · date — single right-aligned line */}
+          <div className="flex items-center justify-end gap-1 text-[12px] text-[#9ca3af] mb-2">
+            <span>{sourceIcon(commitment.source)}</span>
+            <span>{commitment.source}</span>
             {commitment.person !== '—' && (
-              <div className="text-[12px] text-[#9ca3af]">{commitment.person}</div>
+              <>
+                <span>·</span>
+                <span>{commitment.person}</span>
+              </>
             )}
+            <span>·</span>
+            <span>{commitment.date}</span>
           </div>
           {/* Action row */}
           <div className="flex items-center gap-2 pt-2 border-t border-[#f0f0ef]">
