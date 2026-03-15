@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-type Tab = 'active' | 'commitments' | 'log' | 'settings'
+type Tab = 'active' | 'commitments'
 
 type GroupMode = 'status' | 'client' | 'source'
 
@@ -795,12 +795,10 @@ function ProofOfWork() {
 
 // ─── Header ──────────────────────────────────────────────────────────────────
 
-function Header({ activeTab, onTabChange }: { activeTab: Tab; onTabChange: (t: Tab) => void }) {
+function Header({ activeTab, onTabChange, onLogClick, onSettingsClick }: { activeTab: Tab; onTabChange: (t: Tab) => void; onLogClick: () => void; onSettingsClick: () => void }) {
   const tabs: { id: Tab; label: string }[] = [
     { id: 'active', label: 'Active' },
     { id: 'commitments', label: 'Commitments' },
-    { id: 'log', label: 'Log' },
-    { id: 'settings', label: 'Settings' },
   ]
 
   return (
@@ -830,10 +828,14 @@ function Header({ activeTab, onTabChange }: { activeTab: Tab; onTabChange: (t: T
         )}
       </div>
       <div className="flex items-center gap-3 flex-1 justify-end">
-        <button className="text-[#9ca3af] hover:text-[#191919] transition-colors">
-          <IconBell />
+        <button
+          onClick={onLogClick}
+          className="text-[#6b7280] hover:text-[#191919] border border-[#e8e8e6] hover:border-[#d1d1cf] rounded-md px-3 py-1 text-[12px] font-medium transition-colors"
+        >
+          + Log commitment
         </button>
-        <button className="text-[#9ca3af] hover:text-[#191919] transition-colors">
+        <div className="w-px h-4 bg-[#e8e8e6]" />
+        <button onClick={onSettingsClick} className="text-[#9ca3af] hover:text-[#191919] transition-colors">
           <IconGear />
         </button>
         <div className="w-7 h-7 rounded-full bg-[#191919] flex items-center justify-center text-white text-[11px] font-semibold cursor-pointer">
@@ -1200,182 +1202,113 @@ function LogTabContent({ onCancel }: { onCancel: () => void }) {
 
 // ─── SettingsTabContent ─────────────────────────────────────────────────────
 
-type SettingsSection = 'llm' | 'integrations'
-
 function SettingsTabContent() {
-  const [section, setSection] = useState<SettingsSection>('llm')
   const [claudeKey, setClaudeKey] = useState('sk-ant-•••••••••••••••••••••')
   const [claudeConnected] = useState(true)
   const [openaiKey, setOpenaiKey] = useState('')
   const [openaiConnected] = useState(false)
 
-  const sidebarItems: { id: SettingsSection; label: string }[] = [
-    { id: 'llm', label: 'LLM API Token' },
-    { id: 'integrations', label: 'Integrations' },
-  ]
-
   return (
-    <div className="flex min-h-[calc(100vh-84px)]">
-      {/* Sidebar */}
-      <div className="w-[180px] bg-white border-r border-[#e8e8e6] px-4 py-6 flex-shrink-0">
-        <div className="flex flex-col gap-1">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setSection(item.id)}
-              className={`px-3 py-2 rounded-md text-[14px] cursor-pointer w-full text-left transition-colors ${
-                section === item.id
-                  ? 'font-medium text-[#191919] bg-[#f5f5f4]'
-                  : 'text-[#6b7280] hover:text-[#191919]'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+    <div className="max-w-[680px] mx-auto py-8">
+      {/* LLM API Token */}
+      <div className="mb-10">
+        <div className="font-semibold text-[17px] text-[#191919]">LLM API Token</div>
+        <div className="text-[13px] text-[#6b7280] mt-1 mb-5">Connect an LLM provider to power Rippled's commitment detection.</div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#191919] text-[12px] font-bold">A</div>
+              <div className="flex-1">
+                <div className="font-semibold text-[15px] text-[#191919]">Claude</div>
+                <div className="text-[12px] text-[#6b7280]">claude-haiku-4-5 · Recommended</div>
+              </div>
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${claudeConnected ? 'bg-[#f0fdf4] text-[#15803d]' : 'bg-[#f9fafb] text-[#6b7280] border border-[#e8e8e6]'}`}>
+                {claudeConnected ? 'Connected' : 'Not connected'}
+              </span>
+            </div>
+            <div>
+              <label className="block text-[12px] text-[#6b7280] mb-1">API Key</label>
+              <input type="password" className="w-full border border-[#e8e8e6] rounded-md px-3 py-1.5 text-[13px] text-[#191919] placeholder:text-[#9ca3af] focus:outline-none focus:border-[#d1d1cf]" placeholder="sk-ant-…" value={claudeKey} onChange={(e) => setClaudeKey(e.target.value)} />
+            </div>
+            <button className="bg-[#191919] text-white text-[12px] px-3 py-1.5 rounded-md font-medium hover:bg-[#333] transition-colors self-start">{claudeConnected ? 'Update key' : 'Save key'}</button>
+          </div>
+          <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#191919] text-[12px] font-bold">G</div>
+              <div className="flex-1">
+                <div className="font-semibold text-[15px] text-[#191919]">ChatGPT</div>
+                <div className="text-[12px] text-[#6b7280]">gpt-4o-mini · Alternative</div>
+              </div>
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${openaiConnected ? 'bg-[#f0fdf4] text-[#15803d]' : 'bg-[#f9fafb] text-[#6b7280] border border-[#e8e8e6]'}`}>
+                {openaiConnected ? 'Connected' : 'Not connected'}
+              </span>
+            </div>
+            <div>
+              <label className="block text-[12px] text-[#6b7280] mb-1">API Key</label>
+              <input type="password" className="w-full border border-[#e8e8e6] rounded-md px-3 py-1.5 text-[13px] text-[#191919] placeholder:text-[#9ca3af] focus:outline-none focus:border-[#d1d1cf]" placeholder="sk-…" value={openaiKey} onChange={(e) => setOpenaiKey(e.target.value)} />
+            </div>
+            <button className="bg-[#191919] text-white text-[12px] px-3 py-1.5 rounded-md font-medium hover:bg-[#333] transition-colors self-start">Save key</button>
+          </div>
         </div>
+        <div className="text-[12px] text-[#9ca3af] italic mt-3">Your API key is stored locally and never shared.</div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 px-8 py-6 max-w-[640px]">
-        {section === 'llm' && (
-          <>
-            <div className="font-semibold text-[20px] text-[#191919]">LLM API Token</div>
-            <div className="text-[14px] text-[#6b7280] mt-1">Connect an LLM provider to power Rippled's commitment detection.</div>
+      {/* Divider */}
+      <div className="border-t border-[#e8e8e6] mb-10" />
 
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              {/* Claude card */}
-              <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#191919] text-[12px] font-bold">A</div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-[15px] text-[#191919]">Claude</div>
-                    <div className="text-[12px] text-[#6b7280]">claude-haiku-4-5 · Recommended</div>
-                  </div>
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                    claudeConnected ? 'bg-[#f0fdf4] text-[#15803d]' : 'bg-[#f9fafb] text-[#6b7280] border border-[#e8e8e6]'
-                  }`}>
-                    {claudeConnected ? 'Connected' : 'Not connected'}
-                  </span>
-                </div>
-                <div>
-                  <label className="block text-[12px] text-[#6b7280] mb-1">API Key</label>
-                  <input
-                    type="password"
-                    className="w-full border border-[#e8e8e6] rounded-md px-3 py-1.5 text-[13px] text-[#191919] placeholder:text-[#9ca3af] focus:outline-none focus:border-[#d1d1cf]"
-                    placeholder="sk-ant-…"
-                    value={claudeKey}
-                    onChange={(e) => setClaudeKey(e.target.value)}
-                  />
-                </div>
-                <button className="bg-[#191919] text-white text-[12px] px-3 py-1.5 rounded-md font-medium hover:bg-[#333] transition-colors self-start">
-                  {claudeConnected ? 'Update key' : 'Save key'}
-                </button>
-              </div>
-
-              {/* OpenAI card */}
-              <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#191919] text-[12px] font-bold">G</div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-[15px] text-[#191919]">ChatGPT</div>
-                    <div className="text-[12px] text-[#6b7280]">gpt-4o-mini · Alternative</div>
-                  </div>
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                    openaiConnected ? 'bg-[#f0fdf4] text-[#15803d]' : 'bg-[#f9fafb] text-[#6b7280] border border-[#e8e8e6]'
-                  }`}>
-                    {openaiConnected ? 'Connected' : 'Not connected'}
-                  </span>
-                </div>
-                <div>
-                  <label className="block text-[12px] text-[#6b7280] mb-1">API Key</label>
-                  <input
-                    type="password"
-                    className="w-full border border-[#e8e8e6] rounded-md px-3 py-1.5 text-[13px] text-[#191919] placeholder:text-[#9ca3af] focus:outline-none focus:border-[#d1d1cf]"
-                    placeholder="sk-…"
-                    value={openaiKey}
-                    onChange={(e) => setOpenaiKey(e.target.value)}
-                  />
-                </div>
-                <button className="bg-[#191919] text-white text-[12px] px-3 py-1.5 rounded-md font-medium hover:bg-[#333] transition-colors self-start">
-                  Save key
-                </button>
-              </div>
+      {/* Integrations */}
+      <div>
+        <div className="font-semibold text-[17px] text-[#191919]">Integrations</div>
+        <div className="text-[13px] text-[#6b7280] mt-1 mb-5">Manage your connected data sources.</div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#6b7280] text-[12px] font-semibold">#</div>
+              <span className="font-semibold text-[15px] text-[#191919]">Slack</span>
+              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-[#f0fdf4] text-[#15803d] ml-auto">Connected</span>
             </div>
-
-            <div className="text-[12px] text-[#9ca3af] italic mt-4">Your API key is stored locally and never shared.</div>
-          </>
-        )}
-
-        {section === 'integrations' && (
-          <>
-            <div className="font-semibold text-[20px] text-[#191919]">Integrations</div>
-            <div className="text-[14px] text-[#6b7280] mt-1">Manage your connected data sources.</div>
-
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              {/* Slack */}
-              <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#6b7280] text-[12px] font-semibold">#</div>
-                  <span className="font-semibold text-[15px] text-[#191919]">Slack</span>
-                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-[#f0fdf4] text-[#15803d] ml-auto">Connected</span>
-                </div>
-                <div className="text-[12px] text-[#6b7280]">Workspace: kevlex.slack.com</div>
-                <button className="border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919] text-[12px] px-3 py-1.5 rounded-md font-medium transition-colors self-start mt-1">
-                  Edit
-                </button>
-              </div>
-
-              {/* Email */}
-              <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#6b7280]"><IconEmails /></div>
-                  <span className="font-semibold text-[15px] text-[#191919]">Email</span>
-                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-[#f0fdf4] text-[#15803d] ml-auto">Connected</span>
-                </div>
-                <div className="text-[12px] text-[#6b7280]">kevin@kevlex.digital</div>
-                <button className="border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919] text-[12px] px-3 py-1.5 rounded-md font-medium transition-colors self-start mt-1">
-                  Edit
-                </button>
-              </div>
-
-              {/* Meetings */}
-              <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#6b7280]"><IconMeetings /></div>
-                  <span className="font-semibold text-[15px] text-[#191919]">Meetings</span>
-                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-[#f0fdf4] text-[#15803d] ml-auto">Connected</span>
-                </div>
-                <div className="text-[12px] text-[#6b7280]">Google Meet · Synced</div>
-                <button className="border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919] text-[12px] px-3 py-1.5 rounded-md font-medium transition-colors self-start mt-1">
-                  Edit
-                </button>
-              </div>
-
-              {/* Calendar */}
-              <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#6b7280]"><IconCalendar /></div>
-                  <span className="font-semibold text-[15px] text-[#191919]">Calendar</span>
-                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-[#fef3c7] text-[#92400e] ml-auto">Needs reconnect</span>
-                </div>
-                <div className="text-[12px] text-[#6b7280]">Google Calendar</div>
-                <button className="border border-[#d97706] text-[#92400e] text-[12px] px-3 py-1.5 rounded-md font-medium transition-colors self-start mt-1 hover:bg-[#fef3c7]">
-                  Reconnect
-                </button>
-              </div>
+            <div className="text-[12px] text-[#6b7280]">Workspace: kevlex.slack.com</div>
+            <button className="border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919] text-[12px] px-3 py-1.5 rounded-md font-medium transition-colors self-start mt-1">Edit</button>
+          </div>
+          <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#6b7280]"><IconEmails /></div>
+              <span className="font-semibold text-[15px] text-[#191919]">Email</span>
+              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-[#f0fdf4] text-[#15803d] ml-auto">Connected</span>
             </div>
-          </>
-        )}
+            <div className="text-[12px] text-[#6b7280]">kevin@kevlex.digital</div>
+            <button className="border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919] text-[12px] px-3 py-1.5 rounded-md font-medium transition-colors self-start mt-1">Edit</button>
+          </div>
+          <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#6b7280]"><IconMeetings /></div>
+              <span className="font-semibold text-[15px] text-[#191919]">Meetings</span>
+              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-[#f0fdf4] text-[#15803d] ml-auto">Connected</span>
+            </div>
+            <div className="text-[12px] text-[#6b7280]">Google Meet · Synced</div>
+            <button className="border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919] text-[12px] px-3 py-1.5 rounded-md font-medium transition-colors self-start mt-1">Edit</button>
+          </div>
+          <div className="bg-white border border-[#e8e8e6] rounded-lg p-4 flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-md bg-[#f0f0ef] flex items-center justify-center text-[#6b7280]"><IconCalendar /></div>
+              <span className="font-semibold text-[15px] text-[#191919]">Calendar</span>
+              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-[#fef3c7] text-[#92400e] ml-auto">Needs reconnect</span>
+            </div>
+            <div className="text-[12px] text-[#6b7280]">Google Calendar</div>
+            <button className="border border-[#d97706] text-[#92400e] text-[12px] px-3 py-1.5 rounded-md font-medium transition-colors self-start mt-1 hover:bg-[#fef3c7]">Reconnect</button>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
-
 // ─── PrototypeDashboard ──────────────────────────────────────────────────────
 
 export default function PrototypeDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('active')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [showLog, setShowLog] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   const allBestNextItems = BEST_NEXT_MOVES.flatMap((g) => g.items)
   const allData: Commitment[] = [
@@ -1392,16 +1325,41 @@ export default function PrototypeDashboard() {
 
   return (
     <div className="min-h-screen bg-[#f9f9f8]">
-      <Header activeTab={activeTab} onTabChange={handleTabChange} />
+      <Header
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        onLogClick={() => setShowLog(true)}
+        onSettingsClick={() => setShowSettings(true)}
+      />
       <StatusBar />
       <main className="max-w-[1100px] mx-auto px-6 py-6 pb-16">
         {activeTab === 'active' && <ActiveTabContent onOpen={(id) => setSelectedId(id)} />}
         {activeTab === 'commitments' && <CommitmentsTabContent onOpen={(id) => setSelectedId(id)} selectedId={selectedId} />}
-        {activeTab === 'log' && <LogTabContent onCancel={() => setActiveTab('active')} />}
-        {activeTab === 'settings' && <SettingsTabContent />}
       </main>
       <ProofOfWork />
       <DetailPanel commitment={selectedCommitment} onClose={() => setSelectedId(null)} />
+
+      {/* Log commitment overlay */}
+      {showLog && (
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center" onClick={() => setShowLog(false)}>
+          <div className="bg-[#f9f9f8] rounded-xl shadow-2xl w-full max-w-[560px] max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <LogTabContent onCancel={() => setShowLog(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Settings overlay */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-start justify-center pt-16 pb-16" onClick={() => setShowSettings(false)}>
+          <div className="bg-[#f9f9f8] rounded-xl shadow-2xl w-full max-w-[760px] max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-8 pt-6 pb-4 border-b border-[#e8e8e6]">
+              <span className="font-semibold text-[16px] text-[#191919]">Settings</span>
+              <button onClick={() => setShowSettings(false)} className="w-8 h-8 flex items-center justify-center text-[#9ca3af] hover:text-[#191919] hover:bg-[#f0f0ef] rounded-md transition-colors text-[18px]">×</button>
+            </div>
+            <SettingsTabContent />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
