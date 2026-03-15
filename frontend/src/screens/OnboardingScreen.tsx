@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { apiPost } from '../lib/apiClient'
@@ -108,6 +108,7 @@ function StepLayout({
 
 export default function OnboardingScreen() {
   const navigate = useNavigate()
+  const API_BASE = import.meta.env.VITE_API_URL || ''
 
   const [step, setStep] = useState(0)
   const [connectedSources, setConnectedSources] = useState<string[]>([])
@@ -122,6 +123,7 @@ export default function OnboardingScreen() {
   const [emailTestResult, setEmailTestResult] = useState<TestResult | null>(null)
   const [emailTestLoading, setEmailTestLoading] = useState(false)
   const [emailConnectLoading, setEmailConnectLoading] = useState(false)
+  const [emailAccessExpanded, setEmailAccessExpanded] = useState(false)
 
   // Step 2 — Slack
   const [slackForm, setSlackForm] = useState({
@@ -299,6 +301,7 @@ export default function OnboardingScreen() {
   // Step 1 — Email
   if (step === 1) {
     const canConnect = emailTestResult?.success || (emailForm.email.length > 0 && emailForm.appPassword.length > 0)
+    const isGmail = emailForm.email.toLowerCase().endsWith('@gmail.com')
     return (
       <StepLayout>
         <div className="mb-6">
@@ -309,6 +312,25 @@ export default function OnboardingScreen() {
             agreed, deliverables promised. Rippled reads your inbox and sent mail to catch what you
             said you&apos;d do and what others said they&apos;d do for you.
           </p>
+          <p className="mt-3 text-xs text-gray-400 leading-relaxed">
+            Rippled reads your inbox and sent mail to detect commitments. It only reads — never
+            sends or modifies.
+          </p>
+          <button
+            type="button"
+            onClick={() => setEmailAccessExpanded((v) => !v)}
+            className="mt-2 text-xs text-gray-400 hover:text-black transition-colors underline"
+          >
+            {emailAccessExpanded ? 'Hide access details ↑' : 'What access do we need? ↓'}
+          </button>
+          {emailAccessExpanded && (
+            <div className="mt-2 p-3 rounded-lg bg-gray-50 border border-gray-100 space-y-1">
+              <p className="text-xs text-gray-600">• IMAP read access to INBOX and Sent folder</p>
+              <p className="text-xs text-gray-600">
+                • We do not store full email bodies — only commitment signals extracted from content
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">
@@ -328,6 +350,21 @@ export default function OnboardingScreen() {
             onChange={(v) => setEmailForm((prev) => ({ ...prev, appPassword: v }))}
             placeholder="••••••••••••"
           />
+          {isGmail && (
+            <p className="text-xs text-gray-500 leading-relaxed -mt-2">
+              For Gmail: create an{' '}
+              <a
+                href="https://myaccount.google.com/apppasswords"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-black"
+              >
+                App Password
+              </a>{' '}
+              in your Google account security settings and use it here instead of your regular
+              password.
+            </p>
+          )}
           <FormField
             label="IMAP host"
             id="imap-host"
@@ -454,12 +491,31 @@ export default function OnboardingScreen() {
             <li className="flex gap-2">
               <span className="shrink-0 font-medium text-black">4.</span>
               <span>
-                Under &quot;Event Subscriptions&quot;, enter your Rippled webhook URL and copy the Signing
-                Secret
+                Under &quot;Event Subscriptions&quot;, enable events and enter your webhook URL:
               </span>
             </li>
           </ol>
+          <div className="mt-2 ml-6 p-2 rounded bg-white border border-gray-200">
+            <p className="text-xs font-mono text-black break-all">
+              {API_BASE}/api/v1/webhooks/slack/events
+            </p>
+          </div>
+          <p className="mt-2 ml-6 text-xs text-gray-500">
+            Copy the Signing Secret shown on that page and paste it below.
+          </p>
         </div>
+
+        {connectedSources.includes('slack') && (
+          <div className="mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
+            <p className="text-sm font-medium text-black mb-1">Step 2: Invite bot to channels</p>
+            <p className="text-sm text-gray-600">
+              To receive signals from a channel, type this in that channel:
+            </p>
+            <p className="mt-1 font-mono text-sm text-black">
+              /invite @Rippled
+            </p>
+          </div>
+        )}
 
         <div className="space-y-4">
           <FormField
@@ -636,7 +692,6 @@ export default function OnboardingScreen() {
 
   // Step 4 — Calendar
   if (step === 4) {
-    const API_BASE = import.meta.env.VITE_API_URL || ''
     return (
       <StepLayout maxWidth="max-w-sm">
         <div className="mb-8">

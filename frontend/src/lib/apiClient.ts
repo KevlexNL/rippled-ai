@@ -39,3 +39,12 @@ export async function apiPatch<T>(path: string, body: unknown): Promise<T> {
   if (!res.ok) throw new Error(`API error ${res.status}: ${path}`)
   return res.json() as Promise<T>
 }
+
+export async function apiDelete(path: string): Promise<void> {
+  const userId = await getUserId()
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'DELETE',
+    headers: { 'X-User-ID': userId },
+  })
+  if (!res.ok) throw new Error(`API error ${res.status}: ${path}`)
+}

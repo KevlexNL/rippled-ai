@@ -1,11 +1,16 @@
 import { useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSurface } from '../api/surface'
 import { postCommitment, patchCommitment } from '../api/commitments'
 import { getClarifications } from '../api/clarifications'
+import { listSources } from '../api/sources'
+import { getStats } from '../api/stats'
+import { getUpcomingEvents } from '../api/events'
 import type { CommitmentRead, CommitmentCreate } from '../types'
 import type { ClarificationRead } from '../api/clarifications'
+import type { StatsRead } from '../api/stats'
+import type { EventRead } from '../api/events'
 import { dedupById, groupByContextType, getGroupStatusColor, getSourceLabel } from '../utils/grouping'
 import SourceGroup from '../components/SourceGroup'
 import BottomBar from '../components/BottomBar'
@@ -23,6 +28,21 @@ interface OverviewCounts {
   clarifications: number
 }
 
+function formatRelativeTime(isoString: string): string {
+  const date = new Date(isoString)
+  const now = new Date()
+  const diffMs = date.getTime() - now.getTime()
+  const diffMin = Math.round(diffMs / 60000)
+  const diffHrs = Math.round(diffMs / 3600000)
+  const diffDays = Math.round(diffMs / 86400000)
+
+  if (diffMin < 0) return 'In progress'
+  if (diffMin < 60) return `in ${diffMin}m`
+  if (diffHrs < 24) return `in ${diffHrs}h`
+  if (diffDays === 1) return 'tomorrow'
+  return `in ${diffDays}d`
+}
+
 export default function Dashboard() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -38,9 +58,24 @@ export default function Dashboard() {
 
   const results = useQueries({
     queries: [
-      { queryKey: ['surface', 'main'], queryFn: () => getSurface('main') },
-      { queryKey: ['surface', 'shortlist'], queryFn: () => getSurface('shortlist') },
-      { queryKey: ['surface', 'clarifications'], queryFn: () => getSurface('clarifications') },
+      {
+        queryKey: ['surface', 'main'],
+        queryFn: () => getSurface('main'),
+        refetchInterval: 30_000,
+        staleTime: 25_000,
+      },
+      {
+        queryKey: ['surface', 'shortlist'],
+        queryFn: () => getSurface('shortlist'),
+        refetchInterval: 30_000,
+        staleTime: 25_000,
+      },
+      {
+        queryKey: ['surface', 'clarifications'],
+        queryFn: () => getSurface('clarifications'),
+        refetchInterval: 30_000,
+        staleTime: 25_000,
+      },
     ],
   })
 
@@ -49,11 +84,48 @@ export default function Dashboard() {
   const isLoading = results.some((r) => r.isLoading)
   const hasError = results.some((r) => r.isError)
 
+  // Sources query — needed for 3-state empty state
+  const { data: sources } = useQuery({
+    queryKey: ['sources'],
+    queryFn: listSources,
+    refetchInterval: 30_000,
+    staleTime: 25_000,
+  })
+
+  // Stats query
+  const { data: stats } = useQuery<StatsRead>({
+    queryKey: ['stats'],
+    queryFn: getStats,
+    refetchInterval: 60_000,
+    staleTime: 55_000,
+  })
+
+  // Google calendar status (for Upcoming section)
+  const { data: googleStatus } = useQuery<{ connected: boolean; expiry: string | null }>({
+    queryKey: ['google-status'],
+    queryFn: () =>
+      fetch('/api/v1/integrations/google/status', {
+        headers: { 'Content-Type': 'application/json' },
+      }).then((r) => (r.ok ? r.json() : { connected: false, expiry: null })),
+    staleTime: 60_000,
+  })
+
+  // Upcoming events — only fetch when calendar connected
+  const { data: upcomingEvents } = useQuery<EventRead[]>({
+    queryKey: ['events'],
+    queryFn: getUpcomingEvents,
+    enabled: googleStatus?.connected === true,
+    refetchInterval: 60_000,
+    staleTime: 55_000,
+  })
+
   const allCommitments: CommitmentRead[] = dedupById([
     ...(mainResult.data ?? []),
     ...(shortlistResult.data ?? []),
     ...(clarificationsResult.data ?? []),
   ])
+
+  const hasConnectedSources = (sources ?? []).some((s) => s.is_active)
 
   // Pre-fetch clarifications for needs_clarification commitments
   const clarificationCommitments = allCommitments.filter(
@@ -86,6 +158,19 @@ export default function Dashboard() {
     shortlist: shortlistResult.data?.length ?? 0,
     clarifications: clarificationsResult.data?.length ?? 0,
   }
+
+  const statsAllZero =
+    !stats ||
+    (stats.meetings_analyzed === 0 &&
+      stats.messages_processed === 0 &&
+      stats.emails_captured === 0 &&
+      stats.commitments_detected === 0 &&
+      stats.sources_connected === 0)
+
+  const showUpcoming =
+    googleStatus?.connected === true &&
+    upcomingEvents != null &&
+    upcomingEvents.length > 0
 
   async function handleRevert() {
     const buffer = undoBufferRef.current
@@ -148,34 +233,114 @@ export default function Dashboard() {
       {/* Source groups */}
       <div className="px-4">
         {allCommitments.length === 0 && (
-          <div className="mt-4 p-6 rounded-2xl border border-gray-100 bg-gray-50 text-center">
-            <p className="text-sm font-medium text-black mb-1">You&apos;re clear.</p>
-            <p className="text-sm text-gray-500 mb-4">
-              No commitments need your attention right now.
-            </p>
-            <Link
-              to="/settings/sources"
-              className="inline-block px-4 py-2 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900 transition-colors"
-            >
-              Connect a source →
-            </Link>
-          </div>
+          <>
+            {!hasConnectedSources ? (
+              /* No sources connected */
+              <div className="mt-4 p-6 rounded-2xl border border-gray-100 bg-gray-50 text-center">
+                <p className="text-sm font-medium text-black mb-1">Connect your first source.</p>
+                <p className="text-sm text-gray-500 mb-4">
+                  Rippled needs a source to watch before it can surface commitments.
+                </p>
+                <Link
+                  to="/settings/sources"
+                  className="inline-block px-4 py-2 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900 transition-colors"
+                >
+                  Connect a source →
+                </Link>
+              </div>
+            ) : (
+              /* Sources connected but no commitments yet */
+              <div className="mt-4 p-6 rounded-2xl border border-gray-100 bg-gray-50 text-center">
+                <p className="text-sm font-medium text-black mb-1">Scanning your sources…</p>
+                <p className="text-sm text-gray-500">
+                  Rippled is scanning your recent messages and meetings. This usually takes a few
+                  minutes.
+                </p>
+                <p className="text-xs text-gray-400 mt-2">
+                  New signals will appear here automatically.
+                </p>
+              </div>
+            )}
+          </>
         )}
-        {sourceTypes.map((st) => {
-          const groupCommitments = groups[st]
-          const color = getGroupStatusColor(groupCommitments)
-          const label = getSourceLabel(st)
-          return (
-            <SourceGroup
-              key={st}
-              label={label}
-              color={color}
-              commitments={groupCommitments}
-              onPress={() => navigate(`/source/${st}`)}
-            />
-          )
-        })}
+        {allCommitments.length > 0 && (
+          <>
+            {sourceTypes.map((st) => {
+              const groupCommitments = groups[st]
+              const color = getGroupStatusColor(groupCommitments)
+              const label = getSourceLabel(st)
+              return (
+                <SourceGroup
+                  key={st}
+                  label={label}
+                  color={color}
+                  commitments={groupCommitments}
+                  onPress={() => navigate(`/source/${st}`)}
+                />
+              )
+            })}
+          </>
+        )}
       </div>
+
+      {/* Upcoming events section */}
+      {showUpcoming && (
+        <div className="px-4 mt-6">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+            Upcoming
+          </p>
+          <div className="space-y-2">
+            {(upcomingEvents ?? []).slice(0, 5).map((event) => (
+              <div
+                key={event.id}
+                className="flex items-center justify-between px-4 py-3 rounded-xl border border-gray-100 bg-gray-50"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-black truncate">{event.title}</p>
+                  {event.location && (
+                    <p className="text-xs text-gray-400 truncate">{event.location}</p>
+                  )}
+                </div>
+                <span className="ml-3 shrink-0 text-xs text-gray-400 tabular-nums">
+                  {formatRelativeTime(event.starts_at)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Stats row */}
+      {!statsAllZero && (
+        <div className="px-4 mt-6">
+          <div className="flex gap-4 justify-center flex-wrap">
+            {stats && stats.meetings_analyzed > 0 && (
+              <div className="text-center">
+                <p className="text-lg font-bold text-black">{stats.meetings_analyzed}</p>
+                <p className="text-xs text-gray-400">meetings</p>
+              </div>
+            )}
+            {stats && stats.messages_processed > 0 && (
+              <div className="text-center">
+                <p className="text-lg font-bold text-black">{stats.messages_processed}</p>
+                <p className="text-xs text-gray-400">messages</p>
+              </div>
+            )}
+            {stats && stats.emails_captured > 0 && (
+              <div className="text-center">
+                <p className="text-lg font-bold text-black">{stats.emails_captured}</p>
+                <p className="text-xs text-gray-400">emails</p>
+              </div>
+            )}
+            {stats && stats.commitments_detected > 0 && (
+              <div className="text-center">
+                <p className="text-lg font-bold text-black">{stats.commitments_detected}</p>
+                <p className="text-xs text-gray-400">detected</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Log commitment button */}
       <div className="px-4 mt-2">

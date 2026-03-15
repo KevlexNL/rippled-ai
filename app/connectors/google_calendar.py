@@ -87,7 +87,7 @@ class GoogleCalendarConnector:
         cancelled = 0
 
         for raw_event in raw_events:
-            result = self._upsert_event(raw_event, db)
+            result = self._upsert_event(raw_event, db, user_id=user_id)
             if result == "created":
                 created += 1
             elif result == "updated":
@@ -157,7 +157,7 @@ class GoogleCalendarConnector:
 
         return result.get("items", [])
 
-    def _upsert_event(self, raw: dict, db) -> str:
+    def _upsert_event(self, raw: dict, db, user_id: str | None = None) -> str:
         """Upsert a single Google Calendar event. Returns 'created', 'updated', or 'cancelled'."""
         from sqlalchemy import select
         from app.models.orm import Event
@@ -188,6 +188,7 @@ class GoogleCalendarConnector:
         if existing is None:
             event = Event(
                 id=str(uuid.uuid4()),
+                user_id=user_id,
                 external_id=external_id,
                 title=title,
                 description=description,

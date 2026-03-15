@@ -772,14 +772,20 @@ class TestPipelineTriggerLinker:
 
     def test_run_linker_returns_shape(self, admin_key_configured):
         """POST /admin/pipeline/run-linker returns linked and created_implicit."""
-        with patch("app.api.routes.admin.DeadlineEventLinker") as mock_linker_cls:
-            mock_linker = MagicMock()
-            mock_linker.run.return_value = {"linked": 2, "created_implicit": 1}
-            mock_linker_cls.return_value = mock_linker
-            resp = client.post(
-                f"{ADMIN_URL}/pipeline/run-linker",
-                headers=VALID_HEADERS,
-            )
+        mock_db = MagicMock()
+        mock_db.execute.return_value.scalars.return_value.all.return_value = []
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__ = MagicMock(return_value=mock_db)
+        mock_ctx.__exit__ = MagicMock(return_value=False)
+        with patch("app.api.routes.admin.get_sync_session", return_value=mock_ctx):
+            with patch("app.api.routes.admin.DeadlineEventLinker") as mock_linker_cls:
+                mock_linker = MagicMock()
+                mock_linker.run.return_value = {"links_created": 2, "implicit_events_created": 1}
+                mock_linker_cls.return_value = mock_linker
+                resp = client.post(
+                    f"{ADMIN_URL}/pipeline/run-linker",
+                    headers=VALID_HEADERS,
+                )
         assert resp.status_code == 200
         data = resp.json()
         assert "linked" in data

@@ -293,6 +293,7 @@ class Event(Base):
     __tablename__ = "events"
 
     id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
     source_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("sources.id", ondelete="SET NULL"), nullable=True)
     external_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     title: Mapped[str] = mapped_column(Text, nullable=False)

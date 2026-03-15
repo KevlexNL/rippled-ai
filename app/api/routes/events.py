@@ -110,6 +110,7 @@ async def list_events(
         await db.execute(
             select(Event)
             .where(
+                Event.user_id == user_id,
                 Event.starts_at >= now,
                 Event.starts_at <= window_end,
             )

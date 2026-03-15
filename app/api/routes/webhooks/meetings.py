@@ -11,7 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.connectors.meeting.normalizer import normalise_meeting_transcript
 from app.connectors.meeting.schemas import MeetingTranscriptPayload
-from app.core.config import get_settings
 from app.db.deps import get_db
 from app.models.orm import Source
 from app.models.schemas import SourceItemRead
@@ -48,32 +47,48 @@ async def _get_or_create_source(user_id: str, meeting_id: str, db: AsyncSession)
     return source
 
 
-def _verify_meeting_auth(
+async def _verify_meeting_auth(
     user_id: str | None,
     webhook_secret_header: str | None,
+    db: AsyncSession,
 ) -> str:
-    """Verify meeting endpoint authentication.
+    """Verify meeting endpoint authentication per-source.
 
-    If MEETING_WEBHOOK_SECRET is configured: verify X-Rippled-Webhook-Secret header.
-    Otherwise: require X-User-ID header (standard auth).
+    Flow:
+    1. X-User-ID header is always required.
+    2. Look up the user's meeting source from DB (any meeting source for this user).
+    3. If source exists and credentials.webhook_secret is non-empty:
+       → verify X-Rippled-Webhook-Secret header against it.
+    4. If source has no webhook_secret or source not found:
+       → skip secret verification, accept payload.
 
     Returns the user_id or raises HTTPException.
     """
-    settings = get_settings()
-
-    if settings.meeting_webhook_secret:
-        if not webhook_secret_header:
-            raise HTTPException(status_code=401, detail="X-Rippled-Webhook-Secret header required")
-        if not hmac.compare_digest(settings.meeting_webhook_secret, webhook_secret_header):
-            raise HTTPException(status_code=401, detail="Invalid webhook secret")
-        # When using webhook secret, user_id must still be provided via X-User-ID
-        if not user_id:
-            raise HTTPException(status_code=401, detail="X-User-ID header required")
-        return user_id
-
-    # Fallback: standard X-User-ID auth
     if not user_id:
         raise HTTPException(status_code=401, detail="X-User-ID header required")
+
+    # Look up any active meeting source for this user
+    result = await db.execute(
+        select(Source).where(
+            Source.user_id == user_id,
+            Source.source_type == "meeting",
+        ).limit(1)
+    )
+    source = result.scalar_one_or_none()
+
+    # Determine required secret from per-source credentials
+    per_source_secret = None
+    if source and source.credentials:
+        per_source_secret = source.credentials.get("webhook_secret") or None
+
+    if per_source_secret:
+        # Source has a secret configured — require and verify header
+        if not webhook_secret_header:
+            raise HTTPException(status_code=401, detail="X-Rippled-Webhook-Secret header required")
+        if not hmac.compare_digest(per_source_secret, webhook_secret_header):
+            raise HTTPException(status_code=401, detail="Invalid webhook secret")
+
+    # No per-source secret → accept without secret verification
     return user_id
 
 
@@ -86,13 +101,13 @@ async def receive_meeting_transcript(
 ) -> SourceItemRead:
     """Receive a meeting transcript.
 
-    Authentication: X-Rippled-Webhook-Secret (if MEETING_WEBHOOK_SECRET is set)
-    or X-User-ID header (standard auth, fallback).
+    Authentication: per-source webhook secret (from Source.credentials.webhook_secret).
+    If the source has no configured secret, X-User-ID alone is sufficient.
     """
     from sqlalchemy.exc import IntegrityError
     from app.models.orm import SourceItem
 
-    user_id = _verify_meeting_auth(x_user_id, x_rippled_webhook_secret)
+    user_id = await _verify_meeting_auth(x_user_id, x_rippled_webhook_secret, db)
 
     source = await _get_or_create_source(user_id, payload.meeting_id, db)
     item = normalise_meeting_transcript(payload, source.id)
