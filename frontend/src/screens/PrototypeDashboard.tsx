@@ -30,8 +30,22 @@ interface Commitment {
   status: CommitmentStatus
 }
 
-interface NextMove extends Commitment {
+type BestNextItem = {
+  id: string
+  title: string
+  source: 'Email' | 'Slack' | 'Meetings' | 'Calendar'
+  date: string
   rationale: string
+  badge: BadgeType
+  confidence: number
+  person: string
+  status: CommitmentStatus
+}
+
+type BestNextGroup = {
+  id: string
+  label: 'Quick wins' | 'Likely blockers' | 'Needs focus'
+  items: BestNextItem[]
 }
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
@@ -50,19 +64,8 @@ const ACTIVE_COMMITMENTS: Commitment[] = [
   },
   {
     id: '2',
-    title: 'Revised proposal for Sarah Chen may still be outstanding',
-    description: 'You mentioned sending the updated pricing proposal during yesterday\'s call. No follow-up detected yet.',
-    source: 'Meetings',
-    date: 'Yesterday, 3:42 PM',
-    person: 'Sarah Chen',
-    badge: 'Needs review',
-    confidence: 87,
-    status: 'needs-review',
-  },
-  {
-    id: '3',
     title: 'Acme onboarding follow-up may need a clearer date',
-    description: 'You agreed to \'get back to them next week\' but no specific date was set. Worth confirming the exact day.',
+    description: 'You agreed to get back to them next week but no specific date was set.',
     source: 'Email',
     date: 'Monday, 11:15 AM',
     person: 'James Miller',
@@ -71,67 +74,91 @@ const ACTIVE_COMMITMENTS: Commitment[] = [
     status: 'likely-missing',
   },
   {
-    id: '4',
-    title: 'Share design mockups with marketing team',
-    description: 'Mentioned in standup that you\'d share by end of week. Two days remaining.',
+    id: '3',
+    title: 'Revised proposal for Sarah Chen may still be outstanding',
+    description: 'Mentioned sending updated pricing during yesterday\'s call. No follow-up detected.',
     source: 'Meetings',
-    date: 'Wednesday, 9:30 AM',
-    person: '—',
-    badge: 'Worth confirming',
-    confidence: 68,
-    status: 'worth-confirming',
+    date: 'Yesterday, 3:42 PM',
+    person: 'Sarah Chen',
+    badge: 'Needs review',
+    confidence: 87,
+    status: 'needs-review',
   },
 ]
 
-const UP_NEXT: NextMove[] = [
-  { ...ACTIVE_COMMITMENTS[3], rationale: 'Promised in standup — deadline approaching' },
+const BEST_NEXT_MOVES: BestNextGroup[] = [
   {
-    id: '5',
-    title: 'Review Q1 budget with finance team',
-    description: '',
-    source: 'Email',
-    date: '3 days ago',
-    person: 'Maria Reyes',
-    badge: 'Needs review',
-    confidence: 79,
-    status: 'needs-review',
-    rationale: 'Quick confirmation may unblock follow-up',
+    id: 'quick-wins',
+    label: 'Quick wins',
+    items: [
+      {
+        id: '4',
+        title: 'Share design mockups with marketing team',
+        source: 'Meetings',
+        date: 'Wed 9:30 AM',
+        rationale: 'Promised in standup — deadline approaching',
+        badge: 'Worth confirming',
+        confidence: 68,
+        person: 'Lisa Chen',
+        status: 'worth-confirming',
+      },
+      {
+        id: '5',
+        title: 'Review Q1 budget with finance team',
+        source: 'Email',
+        date: '3 days ago',
+        rationale: 'Quick confirmation may unblock follow-up',
+        badge: 'Needs review',
+        confidence: 79,
+        person: 'Maria Reyes',
+        status: 'needs-review',
+      },
+    ],
   },
   {
-    id: '6',
-    title: 'Confirm speaker for company all-hands',
-    description: '',
-    source: 'Slack',
-    date: 'Tuesday',
-    person: 'Kevin B',
-    badge: 'Worth confirming',
-    confidence: 65,
-    status: 'worth-confirming',
-    rationale: 'Likely waiting on your reply — low effort to close',
+    id: 'likely-blockers',
+    label: 'Likely blockers',
+    items: [
+      {
+        id: '6',
+        title: 'Confirm speaker for company all-hands',
+        source: 'Slack',
+        date: 'Tuesday',
+        rationale: 'Likely waiting on your reply',
+        badge: 'Worth confirming',
+        confidence: 65,
+        person: 'Kevin B',
+        status: 'worth-confirming',
+      },
+    ],
   },
   {
-    id: '11',
-    title: 'Send updated NDA to Vertex legal team',
-    description: '',
-    source: 'Email',
-    date: 'Yesterday',
-    person: 'Rachel Kim',
-    badge: 'Needs review',
-    confidence: 74,
-    status: 'needs-review',
-    rationale: 'External promise — no response detected',
-  },
-  {
-    id: '12',
-    title: 'Respond to partner integration timeline request',
-    description: '',
-    source: 'Slack',
-    date: 'Monday',
-    person: 'Leo Tran',
-    badge: 'Worth confirming',
-    confidence: 66,
-    status: 'worth-confirming',
-    rationale: 'Short reply could confirm ownership and move this forward',
+    id: 'needs-focus',
+    label: 'Needs focus',
+    items: [
+      {
+        id: '11',
+        title: 'Send revised onboarding doc to new hire',
+        source: 'Email',
+        date: 'Monday',
+        rationale: 'External promise — no response detected',
+        badge: 'Needs review',
+        confidence: 74,
+        person: 'Rachel Kim',
+        status: 'needs-review',
+      },
+      {
+        id: '12',
+        title: 'Follow up on Vertex Partners proposal status',
+        source: 'Meetings',
+        date: 'Last Friday',
+        rationale: 'Short reply could confirm interest',
+        badge: 'Worth confirming',
+        confidence: 66,
+        person: 'Leo Tran',
+        status: 'worth-confirming',
+      },
+    ],
   },
 ]
 
@@ -161,7 +188,17 @@ const ALL_COMMITMENTS: Commitment[] = [
     status: 'delivered',
   },
   { ...ACTIVE_COMMITMENTS[2] },
-  { ...ACTIVE_COMMITMENTS[3] },
+  {
+    id: '4',
+    title: 'Share design mockups with marketing team',
+    description: 'Mentioned in standup that you\'d share by end of week. Two days remaining.',
+    source: 'Meetings',
+    date: 'Wednesday, 9:30 AM',
+    person: 'Lisa Chen',
+    badge: 'Worth confirming',
+    confidence: 68,
+    status: 'worth-confirming',
+  },
   {
     id: '9',
     title: 'Update onboarding doc with new login flow',
@@ -184,7 +221,50 @@ const ALL_COMMITMENTS: Commitment[] = [
     confidence: 61,
     status: 'dismissed',
   },
-  ...UP_NEXT.slice(1),
+  {
+    id: '5',
+    title: 'Review Q1 budget with finance team',
+    description: '',
+    source: 'Email',
+    date: '3 days ago',
+    person: 'Maria Reyes',
+    badge: 'Needs review',
+    confidence: 79,
+    status: 'needs-review',
+  },
+  {
+    id: '6',
+    title: 'Confirm speaker for company all-hands',
+    description: '',
+    source: 'Slack',
+    date: 'Tuesday',
+    person: 'Kevin B',
+    badge: 'Worth confirming',
+    confidence: 65,
+    status: 'worth-confirming',
+  },
+  {
+    id: '11',
+    title: 'Send revised onboarding doc to new hire',
+    description: '',
+    source: 'Email',
+    date: 'Monday',
+    person: 'Rachel Kim',
+    badge: 'Needs review',
+    confidence: 74,
+    status: 'needs-review',
+  },
+  {
+    id: '12',
+    title: 'Follow up on Vertex Partners proposal status',
+    description: '',
+    source: 'Meetings',
+    date: 'Last Friday',
+    person: 'Leo Tran',
+    badge: 'Worth confirming',
+    confidence: 66,
+    status: 'worth-confirming',
+  },
 ]
 
 // ─── Detail Mock Data ────────────────────────────────────────────────────────
@@ -200,15 +280,6 @@ const DETAIL_MOCK: Record<string, { whySurfaced: string; signals: { source: stri
     suggestedMove: 'Send David a quick update or ask if the review is still needed. Even a short acknowledgement resets the clock.',
   },
   '2': {
-    whySurfaced: 'You verbally committed to sending a revised pricing proposal during yesterday\'s call. No email or document share has been detected since.',
-    signals: [
-      { source: 'Meetings', text: 'Call with Sarah Chen — Yesterday, 3:42 PM — "I\'ll send the updated numbers tonight"' },
-      { source: 'Email', text: 'No outbound email to Sarah Chen found in the last 24 hours' },
-    ],
-    relatedRole: 'Account Executive',
-    suggestedMove: 'Draft and send the revised proposal to Sarah. If it\'s not ready, let her know the revised timeline.',
-  },
-  '3': {
     whySurfaced: 'The commitment to follow up was made with a vague timeframe ("next week") and no specific date. This often leads to missed expectations.',
     signals: [
       { source: 'Email', text: 'Email to James Miller — Monday, 11:15 AM — "We\'ll get back to you next week"' },
@@ -216,6 +287,15 @@ const DETAIL_MOCK: Record<string, { whySurfaced: string; signals: { source: stri
     ],
     relatedRole: 'Client Success Manager',
     suggestedMove: 'Pick a specific day and send a calendar invite for the Acme onboarding follow-up.',
+  },
+  '3': {
+    whySurfaced: 'You verbally committed to sending a revised pricing proposal during yesterday\'s call. No email or document share has been detected since.',
+    signals: [
+      { source: 'Meetings', text: 'Call with Sarah Chen — Yesterday, 3:42 PM — "I\'ll send the updated numbers tonight"' },
+      { source: 'Email', text: 'No outbound email to Sarah Chen found in the last 24 hours' },
+    ],
+    relatedRole: 'Account Executive',
+    suggestedMove: 'Draft and send the revised proposal to Sarah. If it\'s not ready, let her know the revised timeline.',
   },
   '4': {
     whySurfaced: 'You volunteered to share design mockups by end of week during standup. Two days remain but no share or upload has been detected.',
@@ -242,20 +322,20 @@ const DETAIL_MOCK: Record<string, { whySurfaced: string; signals: { source: stri
     suggestedMove: 'Confirm the speaker or let Kevin know if you need more time to finalize.',
   },
   '11': {
-    whySurfaced: 'An updated NDA was promised to Vertex\'s legal team. No outbound document or email has been detected.',
+    whySurfaced: 'A revised onboarding document was promised to a new hire. No outbound document or email has been detected.',
     signals: [
-      { source: 'Email', text: 'Email thread with Rachel Kim — Yesterday — "I\'ll send the updated NDA today"' },
+      { source: 'Email', text: 'Email thread with Rachel Kim — Monday — "I\'ll send the updated onboarding doc today"' },
     ],
-    relatedRole: 'Legal Contact',
-    suggestedMove: 'Send the updated NDA to Rachel or let her know the revised timeline.',
+    relatedRole: 'HR Contact',
+    suggestedMove: 'Send the revised onboarding doc to Rachel or let her know the revised timeline.',
   },
   '12': {
-    whySurfaced: 'A partner asked about the integration timeline on Slack. No response has been detected.',
+    whySurfaced: 'A follow-up on the Vertex Partners proposal was discussed in a meeting. No response has been detected.',
     signals: [
-      { source: 'Slack', text: 'DM from Leo Tran — Monday — "Any update on the integration timeline?"' },
+      { source: 'Meetings', text: 'Meeting with Leo Tran — Last Friday — "I\'ll check on the proposal status and get back to you"' },
     ],
     relatedRole: 'Partner Engineer',
-    suggestedMove: 'Send Leo a quick update on the integration timeline, even if details are still being finalized.',
+    suggestedMove: 'Send Leo a quick update on the proposal status, even if details are still being finalized.',
   },
 }
 
@@ -453,6 +533,14 @@ function accentClass(status: CommitmentStatus): string {
   }
 }
 
+function groupPillClasses(label: BestNextGroup['label']): string {
+  switch (label) {
+    case 'Quick wins': return 'bg-[#d1fae5] text-[#065f46]'
+    case 'Likely blockers': return 'bg-[#fef3c7] text-[#92400e]'
+    case 'Needs focus': return 'bg-[#ede9fe] text-[#5b21b6]'
+  }
+}
+
 // ─── StatusBadge ─────────────────────────────────────────────────────────────
 
 function StatusBadge({ badge }: { badge: BadgeType }) {
@@ -483,7 +571,6 @@ function DetailPanel({ commitment, onClose }: { commitment: Commitment | null; o
               </div>
               <div className="font-semibold text-[15px] leading-snug text-[#191919]">{commitment.title}</div>
             </div>
-            {/* FIX 2: Larger close button hit target */}
             <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-[#9ca3af] hover:text-[#191919] hover:bg-[#f0f0ef] rounded-md transition-colors ml-3 mt-0.5 flex-shrink-0">
               <IconClose />
             </button>
@@ -517,7 +604,7 @@ function DetailPanel({ commitment, onClose }: { commitment: Commitment | null; o
             </div>
           </div>
 
-          {/* Related — FIX 5: use person field, no "Unknown" */}
+          {/* Related */}
           <div className="px-5 py-3 border-b border-[#f0f0ef]">
             <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1.5">Related</div>
             <div className="text-[13px] text-[#191919]">
@@ -560,59 +647,56 @@ function DetailPanel({ commitment, onClose }: { commitment: Commitment | null; o
 function CommitmentCard({ commitment, onOpen }: { commitment: Commitment; onOpen: (id: string) => void }) {
   return (
     <div
-      className={`flex bg-white rounded-lg border border-[#e8e8e6] overflow-hidden hover:border-[#d1d1cf] transition-colors cursor-pointer`}
+      className={`bg-white rounded-lg border border-[#e8e8e6] overflow-hidden hover:border-[#d1d1cf] transition-colors cursor-pointer`}
       onClick={() => onOpen(commitment.id)}
     >
-      <div className={`w-[3px] self-stretch border-l-2 ${accentClass(commitment.status)} flex-shrink-0`} style={{ borderLeftWidth: '3px', borderStyle: 'solid' }} />
-      <div className="flex-1 px-3.5 py-2.5">
-        <div className="flex justify-between items-center mb-1">
-          <StatusBadge badge={commitment.badge} />
-          <span className="text-[11px] text-[#9ca3af] font-medium">{confidenceLabel(commitment.confidence)}</span>
-        </div>
-        <div className="font-medium text-[14px] text-[#191919] mb-0.5">{commitment.title}</div>
-        {commitment.description && (
-          <div className="text-[13px] text-[#6b7280] leading-relaxed mb-2.5">{commitment.description}</div>
-        )}
-        <div className="flex items-center gap-1.5 text-[12px] text-[#9ca3af] mb-0">
-          <span className="text-[#9ca3af]">{sourceIcon(commitment.source)}</span>
-          <span>{commitment.source}</span>
-          <span>·</span>
-          <span>{commitment.date}</span>
-          {commitment.person !== '—' && (
-            <>
-              <span>·</span>
-              <span>{commitment.person}</span>
-            </>
+      <div className="flex">
+        <div className={`w-[3px] self-stretch border-l-2 ${accentClass(commitment.status)} flex-shrink-0`} style={{ borderLeftWidth: '3px', borderStyle: 'solid' }} />
+        <div className="flex-1 px-4 py-3">
+          {/* Top row: badge left, date right */}
+          <div className="flex justify-between items-center mb-1.5">
+            <StatusBadge badge={commitment.badge} />
+            <span className="text-[12px] text-[#9ca3af]">{commitment.date}</span>
+          </div>
+          {/* Title */}
+          <div className="font-semibold text-[15px] text-[#191919] mb-0.5">{commitment.title}</div>
+          {/* Supporting sentence */}
+          {commitment.description && (
+            <div className="text-[13px] text-[#6b7280] leading-relaxed mb-2">{commitment.description}</div>
           )}
-        </div>
-        {/* FIX 8: "Why this?" in same action row as buttons */}
-        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[#f0f0ef]">
-          <button
-            className="flex items-center gap-1.5 bg-[#191919] text-white text-[11px] px-3 py-1 rounded-md font-medium hover:bg-[#333] transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <IconCheck />
-            Confirm
-          </button>
-          <button
-            className="flex items-center gap-1.5 bg-[#f0f0ef] text-[#191919] text-[11px] px-3 py-1 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <IconX />
-            Dismiss
-          </button>
-          <button
-            className="flex items-center gap-1.5 border border-[#e8e8e6] text-[#191919] text-[11px] px-3 py-1 rounded-md font-medium hover:bg-[#f5f5f4] transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            Details
-          </button>
-          <span
-            className="text-[11px] text-[#9ca3af] hover:text-[#191919] cursor-pointer transition-colors flex items-center gap-1"
-            onClick={(e) => { e.stopPropagation(); onOpen(commitment.id) }}
-          >
-            Why this? <IconArrow />
-          </span>
+          {/* Source + person: right-aligned */}
+          <div className="text-right mb-2">
+            <div className="flex items-center justify-end gap-1 text-[12px] text-[#9ca3af]">
+              <span>{sourceIcon(commitment.source)}</span>
+              <span>{commitment.source}</span>
+            </div>
+            {commitment.person !== '—' && (
+              <div className="text-[12px] text-[#9ca3af]">{commitment.person}</div>
+            )}
+          </div>
+          {/* Action row */}
+          <div className="flex items-center gap-2 pt-2 border-t border-[#f0f0ef]">
+            <button
+              className="flex items-center gap-1.5 bg-[#191919] text-white text-[12px] px-3 py-1.5 rounded-md font-medium hover:bg-[#333] transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <IconCheck />
+              Confirm
+            </button>
+            <button
+              className="flex items-center gap-1.5 bg-[#f0f0ef] text-[#191919] text-[12px] px-3 py-1.5 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <IconX />
+              Dismiss
+            </button>
+            <button
+              className="flex items-center gap-1.5 border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919] text-[12px] px-3 py-1.5 rounded-md transition-colors ml-auto"
+              onClick={(e) => { e.stopPropagation(); onOpen(commitment.id) }}
+            >
+              Details <IconArrow />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -664,34 +748,28 @@ function CompactCommitmentRow({ commitment, selected, onClick }: { commitment: C
 
 function BestNextMovesRail({ onOpen }: { onOpen: (id: string) => void }) {
   return (
-    <div className="border-l border-[#f0f0ef] pl-5">
-      <div className="mb-1">
-        <span className="font-semibold text-[13px] text-[#191919]">Best next moves</span>
-        <span className="text-[#9ca3af] text-[12px] ml-1.5">· 5</span>
-      </div>
-      <div className="text-[11px] text-[#9ca3af] mb-3">5 likely next moves to unblock work or move commitments forward.</div>
-      <div className="flex flex-col max-h-[520px] overflow-y-auto">
-        {UP_NEXT.map((c, i) => (
-          <div
-            key={c.id}
-            className={`group px-3 py-3 rounded-md hover:bg-[#f5f5f4] cursor-pointer transition-colors ${i < UP_NEXT.length - 1 ? 'border-b border-[#f0f0ef]' : ''}`}
-            onClick={() => onOpen(c.id)}
-          >
-            <div className="mb-1">
-              <StatusBadge badge={c.badge} />
+    <div>
+      <div className="text-[17px] font-semibold text-[#191919]">Best next moves</div>
+      <div className="text-[12px] text-[#9ca3af] mt-0.5 mb-5">Unblock work or move commitments forward.</div>
+      <div className="flex flex-col gap-4">
+        {BEST_NEXT_MOVES.map((group) => (
+          <div key={group.id}>
+            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium mb-3 mt-0 ${groupPillClasses(group.label)}`}>
+              {group.label} · {group.items.length}
+            </span>
+            <div className="bg-white border border-[#e8e8e6] rounded-lg overflow-hidden">
+              {group.items.map((item, i) => (
+                <div
+                  key={item.id}
+                  className={`px-4 py-3 hover:bg-[#f5f5f4] cursor-pointer transition-colors ${i > 0 ? 'border-t border-[#f0f0ef]' : ''}`}
+                  onClick={() => onOpen(item.id)}
+                >
+                  <div className="text-[13px] font-semibold text-[#191919] mb-0.5">{item.title}</div>
+                  <div className="text-[11px] text-[#9ca3af]">{item.source} · {item.date}</div>
+                  <div className="text-[11px] text-[#9ca3af] italic mt-0.5">{item.rationale}</div>
+                </div>
+              ))}
             </div>
-            <div className="flex items-start justify-between gap-2">
-              <div className="text-[13px] font-medium text-[#191919] leading-snug">{c.title}</div>
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[11px] text-[#9ca3af] flex-shrink-0 mt-0.5">
-                Open →
-              </span>
-            </div>
-            <div className="flex items-center gap-1 text-[11px] text-[#9ca3af] mt-1">
-              <span>{c.source}</span>
-              <span>·</span>
-              <span>{c.date}</span>
-            </div>
-            <div className="text-[11px] text-[#6b7280] italic mt-0.5">{c.rationale}</div>
           </div>
         ))}
       </div>
@@ -788,7 +866,6 @@ function StatusBar() {
           <span className="text-[12px] text-[#6b7280]">Calendar</span>
         </div>
       </div>
-      {/* FIX 4: Added pr-4 to prevent right-side text clipping */}
       <div className="flex items-center gap-3 text-[12px] pr-4">
         <span className="text-[#6b7280]">14 signals reviewed in the last 24 hours</span>
         <span className="text-[#e8e8e6]">|</span>
@@ -802,9 +879,8 @@ function StatusBar() {
 
 function CenteredHeading({ heading, subline, countLine }: { heading: string; subline: string; countLine?: string }) {
   return (
-    // FIX 7: Reduced top padding from py-5 to pt-2 pb-4
     <div className="pt-2 pb-4 max-w-[480px] mx-auto text-center">
-      <div className="font-semibold text-[22px] text-[#191919]">{heading}</div>
+      <div className="font-semibold text-[24px] text-[#191919]">{heading}</div>
       <div className="text-[14px] text-[#6b7280] mt-1.5">{subline}</div>
       {countLine && <div className="text-[12px] text-[#9ca3af] mt-1.5">{countLine}</div>}
     </div>
@@ -839,16 +915,20 @@ function ActiveTabContent({ onOpen }: { onOpen: (id: string) => void }) {
         subline="Rippled is only surfacing the highest-priority items right now."
         countLine="Showing 3 highest-priority items"
       />
-      {/* FIX 9: Visual separation between cards and rail handled by BestNextMovesRail border-l */}
-      <div className="grid grid-cols-[1fr_280px] gap-6">
+      <div className="grid grid-cols-[1fr_320px] gap-8">
+        {/* Left column */}
         <div>
+          <h2 className="text-[17px] font-semibold text-[#191919] mb-4">Surfaced for review</h2>
           <div className="flex flex-col gap-3">
             {surfaced.map((c) => (
               <CommitmentCard key={c.id} commitment={c} onOpen={onOpen} />
             ))}
           </div>
         </div>
-        <BestNextMovesRail onOpen={onOpen} />
+        {/* Right column */}
+        <div>
+          <BestNextMovesRail onOpen={onOpen} />
+        </div>
       </div>
     </>
   )
@@ -898,7 +978,6 @@ function CommitmentsTabContent({ onOpen, selectedId }: { onOpen: (id: string) =>
               </div>
             )
           })}
-          {/* FIX 6: Toggle dismissed show/hide */}
           {dismissedCount > 0 && (
             <span
               className="text-[12px] text-[#9ca3af] hover:text-[#6b7280] cursor-pointer mt-4 inline-block hover:underline underline-offset-2"
@@ -996,10 +1075,14 @@ export default function PrototypeDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('active')
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  const allData = [...ACTIVE_COMMITMENTS, ...UP_NEXT, ...ALL_COMMITMENTS]
+  const allBestNextItems = BEST_NEXT_MOVES.flatMap((g) => g.items)
+  const allData: Commitment[] = [
+    ...ACTIVE_COMMITMENTS,
+    ...allBestNextItems.map((item) => ({ ...item, description: '' })),
+    ...ALL_COMMITMENTS,
+  ]
   const selectedCommitment = selectedId ? allData.find((c) => c.id === selectedId) || null : null
 
-  // FIX 1: Close detail panel on tab switch
   const handleTabChange = (t: Tab) => {
     setActiveTab(t)
     setSelectedId(null)
