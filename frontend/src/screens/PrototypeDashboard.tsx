@@ -30,6 +30,10 @@ interface Commitment {
   status: CommitmentStatus
 }
 
+interface NextMove extends Commitment {
+  rationale: string
+}
+
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 
 const ACTIVE_COMMITMENTS: Commitment[] = [
@@ -79,8 +83,8 @@ const ACTIVE_COMMITMENTS: Commitment[] = [
   },
 ]
 
-const UP_NEXT: Commitment[] = [
-  { ...ACTIVE_COMMITMENTS[3] },
+const UP_NEXT: NextMove[] = [
+  { ...ACTIVE_COMMITMENTS[3], rationale: 'Promised in standup — deadline approaching' },
   {
     id: '5',
     title: 'Review Q1 budget with finance team',
@@ -91,6 +95,7 @@ const UP_NEXT: Commitment[] = [
     badge: 'Needs review',
     confidence: 79,
     status: 'needs-review',
+    rationale: 'Quick confirmation may unblock follow-up',
   },
   {
     id: '6',
@@ -102,6 +107,7 @@ const UP_NEXT: Commitment[] = [
     badge: 'Worth confirming',
     confidence: 65,
     status: 'worth-confirming',
+    rationale: 'Likely waiting on your reply — low effort to close',
   },
   {
     id: '11',
@@ -113,6 +119,7 @@ const UP_NEXT: Commitment[] = [
     badge: 'Needs review',
     confidence: 74,
     status: 'needs-review',
+    rationale: 'External promise — no response detected',
   },
   {
     id: '12',
@@ -124,17 +131,7 @@ const UP_NEXT: Commitment[] = [
     badge: 'Worth confirming',
     confidence: 66,
     status: 'worth-confirming',
-  },
-  {
-    id: '13',
-    title: 'Prepare demo environment for client walkthrough',
-    description: '',
-    source: 'Meetings',
-    date: 'This morning',
-    person: 'Anita Gupta',
-    badge: 'Likely missing detail',
-    confidence: 63,
-    status: 'likely-missing',
+    rationale: 'Short reply could confirm ownership and move this forward',
   },
 ]
 
@@ -227,6 +224,38 @@ const DETAIL_MOCK: Record<string, { whySurfaced: string; signals: { source: stri
     ],
     relatedRole: 'Design Lead',
     suggestedMove: 'Prepare and share the mockups today to give the marketing team time to review before the weekend.',
+  },
+  '5': {
+    whySurfaced: 'A Q1 budget review was requested via email 3 days ago. No response or calendar invite has been detected since.',
+    signals: [
+      { source: 'Email', text: 'Email from Maria Reyes — 3 days ago — "Can we review the Q1 budget this week?"' },
+    ],
+    relatedRole: 'Finance Lead',
+    suggestedMove: 'Reply to Maria with available times or send a calendar invite for the budget review.',
+  },
+  '6': {
+    whySurfaced: 'You were asked to confirm the speaker for the company all-hands. No reply has been detected.',
+    signals: [
+      { source: 'Slack', text: 'Message in #events — Tuesday — "Can you confirm the speaker for Friday\'s all-hands?"' },
+    ],
+    relatedRole: 'Events Coordinator',
+    suggestedMove: 'Confirm the speaker or let Kevin know if you need more time to finalize.',
+  },
+  '11': {
+    whySurfaced: 'An updated NDA was promised to Vertex\'s legal team. No outbound document or email has been detected.',
+    signals: [
+      { source: 'Email', text: 'Email thread with Rachel Kim — Yesterday — "I\'ll send the updated NDA today"' },
+    ],
+    relatedRole: 'Legal Contact',
+    suggestedMove: 'Send the updated NDA to Rachel or let her know the revised timeline.',
+  },
+  '12': {
+    whySurfaced: 'A partner asked about the integration timeline on Slack. No response has been detected.',
+    signals: [
+      { source: 'Slack', text: 'DM from Leo Tran — Monday — "Any update on the integration timeline?"' },
+    ],
+    relatedRole: 'Partner Engineer',
+    suggestedMove: 'Send Leo a quick update on the integration timeline, even if details are still being finalized.',
   },
 }
 
@@ -454,7 +483,8 @@ function DetailPanel({ commitment, onClose }: { commitment: Commitment | null; o
               </div>
               <div className="font-semibold text-[15px] leading-snug text-[#191919]">{commitment.title}</div>
             </div>
-            <button onClick={onClose} className="text-[#9ca3af] hover:text-[#191919] transition-colors ml-3 mt-0.5 flex-shrink-0">
+            {/* FIX 2: Larger close button hit target */}
+            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-[#9ca3af] hover:text-[#191919] hover:bg-[#f0f0ef] rounded-md transition-colors ml-3 mt-0.5 flex-shrink-0">
               <IconClose />
             </button>
           </div>
@@ -487,11 +517,15 @@ function DetailPanel({ commitment, onClose }: { commitment: Commitment | null; o
             </div>
           </div>
 
-          {/* Related */}
+          {/* Related — FIX 5: use person field, no "Unknown" */}
           <div className="px-5 py-3 border-b border-[#f0f0ef]">
             <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1.5">Related</div>
             <div className="text-[13px] text-[#191919]">
-              {commitment.person !== '—' ? commitment.person : 'Unknown'} <span className="text-[#9ca3af]">· {detail.relatedRole}</span>
+              {commitment.person !== '—' ? (
+                <>{commitment.person} <span className="text-[#9ca3af]">· {detail.relatedRole}</span></>
+              ) : (
+                <span className="text-[#9ca3af]">—</span>
+              )}
             </div>
           </div>
 
@@ -551,6 +585,7 @@ function CommitmentCard({ commitment, onOpen }: { commitment: Commitment; onOpen
             </>
           )}
         </div>
+        {/* FIX 8: "Why this?" in same action row as buttons */}
         <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[#f0f0ef]">
           <button
             className="flex items-center gap-1.5 bg-[#191919] text-white text-[11px] px-3 py-1 rounded-md font-medium hover:bg-[#333] transition-colors"
@@ -573,7 +608,7 @@ function CommitmentCard({ commitment, onOpen }: { commitment: Commitment; onOpen
             Details
           </button>
           <span
-            className="text-[11px] text-[#9ca3af] hover:text-[#191919] cursor-pointer transition-colors ml-auto flex items-center gap-1"
+            className="text-[11px] text-[#9ca3af] hover:text-[#191919] cursor-pointer transition-colors flex items-center gap-1"
             onClick={(e) => { e.stopPropagation(); onOpen(commitment.id) }}
           >
             Why this? <IconArrow />
@@ -625,39 +660,38 @@ function CompactCommitmentRow({ commitment, selected, onClick }: { commitment: C
   )
 }
 
-// ─── UpNextRail ──────────────────────────────────────────────────────────────
+// ─── BestNextMovesRail ───────────────────────────────────────────────────────
 
-function UpNextRail({ onOpen }: { onOpen: (id: string) => void }) {
+function BestNextMovesRail({ onOpen }: { onOpen: (id: string) => void }) {
   return (
-    <div>
+    <div className="border-l border-[#f0f0ef] pl-5">
       <div className="mb-1">
-        <span className="font-semibold text-[13px] text-[#191919]">Up next</span>
-        <span className="text-[#9ca3af] text-[12px] ml-1.5">· {UP_NEXT.length}</span>
+        <span className="font-semibold text-[13px] text-[#191919]">Best next moves</span>
+        <span className="text-[#9ca3af] text-[12px] ml-1.5">· 5</span>
       </div>
-      <div className="text-[11px] text-[#9ca3af] mb-3">Likely next priorities if your current surfaced items are handled.</div>
+      <div className="text-[11px] text-[#9ca3af] mb-3">5 likely next moves to unblock work or move commitments forward.</div>
       <div className="flex flex-col max-h-[520px] overflow-y-auto">
         {UP_NEXT.map((c, i) => (
           <div
             key={c.id}
-            className={`group px-3 py-2.5 rounded-md hover:bg-[#f5f5f4] cursor-pointer transition-colors ${i < UP_NEXT.length - 1 ? 'border-b border-[#f0f0ef]' : ''}`}
+            className={`group px-3 py-3 rounded-md hover:bg-[#f5f5f4] cursor-pointer transition-colors ${i < UP_NEXT.length - 1 ? 'border-b border-[#f0f0ef]' : ''}`}
             onClick={() => onOpen(c.id)}
           >
-            <div className="mb-0.5">
+            <div className="mb-1">
               <StatusBadge badge={c.badge} />
             </div>
-            <div className="text-[13px] font-medium text-[#191919] truncate">{c.title}</div>
-            <div className="flex items-center justify-between mt-0.5">
-              <div className="flex items-center gap-1 text-[11px] text-[#9ca3af]">
-                <span>{c.source}</span>
-                <span>·</span>
-                <span>{c.date}</span>
-                <span>·</span>
-                <span>{confidenceLabel(c.confidence)}</span>
-              </div>
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[11px] text-[#9ca3af] flex-shrink-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="text-[13px] font-medium text-[#191919] leading-snug">{c.title}</div>
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[11px] text-[#9ca3af] flex-shrink-0 mt-0.5">
                 Open →
               </span>
             </div>
+            <div className="flex items-center gap-1 text-[11px] text-[#9ca3af] mt-1">
+              <span>{c.source}</span>
+              <span>·</span>
+              <span>{c.date}</span>
+            </div>
+            <div className="text-[11px] text-[#6b7280] italic mt-0.5">{c.rationale}</div>
           </div>
         ))}
       </div>
@@ -754,7 +788,8 @@ function StatusBar() {
           <span className="text-[12px] text-[#6b7280]">Calendar</span>
         </div>
       </div>
-      <div className="flex items-center gap-3 text-[12px]">
+      {/* FIX 4: Added pr-4 to prevent right-side text clipping */}
+      <div className="flex items-center gap-3 text-[12px] pr-4">
         <span className="text-[#6b7280]">14 signals reviewed in the last 24 hours</span>
         <span className="text-[#e8e8e6]">|</span>
         <span className="text-[#9ca3af]">Watching 6 active threads</span>
@@ -767,7 +802,8 @@ function StatusBar() {
 
 function CenteredHeading({ heading, subline, countLine }: { heading: string; subline: string; countLine?: string }) {
   return (
-    <div className="py-5 max-w-[480px] mx-auto text-center">
+    // FIX 7: Reduced top padding from py-5 to pt-2 pb-4
+    <div className="pt-2 pb-4 max-w-[480px] mx-auto text-center">
       <div className="font-semibold text-[22px] text-[#191919]">{heading}</div>
       <div className="text-[14px] text-[#6b7280] mt-1.5">{subline}</div>
       {countLine && <div className="text-[12px] text-[#9ca3af] mt-1.5">{countLine}</div>}
@@ -803,6 +839,7 @@ function ActiveTabContent({ onOpen }: { onOpen: (id: string) => void }) {
         subline="Rippled is only surfacing the highest-priority items right now."
         countLine="Showing 3 highest-priority items"
       />
+      {/* FIX 9: Visual separation between cards and rail handled by BestNextMovesRail border-l */}
       <div className="grid grid-cols-[1fr_280px] gap-6">
         <div>
           <div className="flex flex-col gap-3">
@@ -811,7 +848,7 @@ function ActiveTabContent({ onOpen }: { onOpen: (id: string) => void }) {
             ))}
           </div>
         </div>
-        <UpNextRail onOpen={onOpen} />
+        <BestNextMovesRail onOpen={onOpen} />
       </div>
     </>
   )
@@ -831,7 +868,7 @@ function CommitmentsTabContent({ onOpen, selectedId }: { onOpen: (id: string) =>
   const clientGroups: Record<string, string[]> = {
     'Acme Corp': ['1', '3'],
     'Vertex Partners': ['2', '6'],
-    'Internal': ['4', '5', '7', '8', '9', '10', '11', '12', '13'],
+    'Internal': ['4', '5', '7', '8', '9', '10', '11', '12'],
   }
   const sourceGroups: Commitment['source'][] = ['Email', 'Slack', 'Meetings']
 
@@ -861,12 +898,13 @@ function CommitmentsTabContent({ onOpen, selectedId }: { onOpen: (id: string) =>
               </div>
             )
           })}
-          {!showDismissed && dismissedCount > 0 && (
+          {/* FIX 6: Toggle dismissed show/hide */}
+          {dismissedCount > 0 && (
             <span
               className="text-[12px] text-[#9ca3af] hover:text-[#6b7280] cursor-pointer mt-4 inline-block hover:underline underline-offset-2"
-              onClick={() => setShowDismissed(true)}
+              onClick={() => setShowDismissed(!showDismissed)}
             >
-              Show dismissed ({dismissedCount})
+              {showDismissed ? 'Hide dismissed' : `Show dismissed (${dismissedCount})`}
             </span>
           )}
         </>
@@ -961,9 +999,15 @@ export default function PrototypeDashboard() {
   const allData = [...ACTIVE_COMMITMENTS, ...UP_NEXT, ...ALL_COMMITMENTS]
   const selectedCommitment = selectedId ? allData.find((c) => c.id === selectedId) || null : null
 
+  // FIX 1: Close detail panel on tab switch
+  const handleTabChange = (t: Tab) => {
+    setActiveTab(t)
+    setSelectedId(null)
+  }
+
   return (
     <div className="min-h-screen bg-[#f9f9f8]">
-      <Header activeTab={activeTab} onTabChange={setActiveTab} />
+      <Header activeTab={activeTab} onTabChange={handleTabChange} />
       <StatusBar />
       <main className="max-w-[1100px] mx-auto px-6 py-6 pb-16">
         {activeTab === 'active' && <ActiveTabContent onOpen={(id) => setSelectedId(id)} />}
