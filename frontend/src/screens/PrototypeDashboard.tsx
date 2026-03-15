@@ -2,7 +2,9 @@ import { useState } from 'react'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-type Tab = 'active' | 'shortlist' | 'commitments'
+type Tab = 'active' | 'commitments'
+
+type GroupMode = 'status' | 'client' | 'source'
 
 type BadgeType =
   | 'At risk'
@@ -28,19 +30,12 @@ interface Commitment {
   status: CommitmentStatus
 }
 
-interface GoodCatch {
-  id: string
-  badge: BadgeType
-  title: string
-  description: string
-}
-
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 
 const ACTIVE_COMMITMENTS: Commitment[] = [
   {
     id: '1',
-    title: 'Follow up with David on contract review',
+    title: 'David contract review may need a follow-up',
     description: 'Promised 4 days ago on Slack. No response or update found since.',
     source: 'Slack',
     date: 'Last Thursday',
@@ -51,7 +46,7 @@ const ACTIVE_COMMITMENTS: Commitment[] = [
   },
   {
     id: '2',
-    title: 'Send revised proposal to Sarah Chen',
+    title: 'Revised proposal for Sarah Chen may still be outstanding',
     description: 'You mentioned sending the updated pricing proposal during yesterday\'s call. No follow-up detected yet.',
     source: 'Meetings',
     date: 'Yesterday, 3:42 PM',
@@ -62,7 +57,7 @@ const ACTIVE_COMMITMENTS: Commitment[] = [
   },
   {
     id: '3',
-    title: 'Timeline unclear for Acme onboarding',
+    title: 'Acme onboarding follow-up may need a clearer date',
     description: 'You agreed to \'get back to them next week\' but no specific date was set. Worth confirming the exact day.',
     source: 'Email',
     date: 'Monday, 11:15 AM',
@@ -84,7 +79,8 @@ const ACTIVE_COMMITMENTS: Commitment[] = [
   },
 ]
 
-const SHORTLIST_EXTRA: Commitment[] = [
+const UP_NEXT: Commitment[] = [
+  { ...ACTIVE_COMMITMENTS[3] },
   {
     id: '5',
     title: 'Review Q1 budget with finance team',
@@ -107,9 +103,42 @@ const SHORTLIST_EXTRA: Commitment[] = [
     confidence: '65%',
     status: 'worth-confirming',
   },
+  {
+    id: '11',
+    title: 'Send updated NDA to Vertex legal team',
+    description: '',
+    source: 'Email',
+    date: 'Yesterday',
+    person: 'Rachel Kim',
+    badge: 'Needs review',
+    confidence: '74%',
+    status: 'needs-review',
+  },
+  {
+    id: '12',
+    title: 'Respond to partner integration timeline request',
+    description: '',
+    source: 'Slack',
+    date: 'Monday',
+    person: 'Leo Tran',
+    badge: 'Worth confirming',
+    confidence: '66%',
+    status: 'worth-confirming',
+  },
+  {
+    id: '13',
+    title: 'Prepare demo environment for client walkthrough',
+    description: '',
+    source: 'Meetings',
+    date: 'This morning',
+    person: 'Anita Gupta',
+    badge: 'Likely missing detail',
+    confidence: '63%',
+    status: 'likely-missing',
+  },
 ]
 
-const ALL_COMMITMENTS: (Commitment & { listStatus?: 'delivered' | 'dismissed' })[] = [
+const ALL_COMMITMENTS: Commitment[] = [
   { ...ACTIVE_COMMITMENTS[0] },
   { ...ACTIVE_COMMITMENTS[1] },
   {
@@ -158,27 +187,7 @@ const ALL_COMMITMENTS: (Commitment & { listStatus?: 'delivered' | 'dismissed' })
     confidence: '61%',
     status: 'dismissed',
   },
-]
-
-const GOOD_CATCHES: GoodCatch[] = [
-  {
-    id: 'gc1',
-    badge: 'Good catch',
-    title: 'Duplicate commitment detected',
-    description: 'You may have promised the same deliverable to both Lisa and the product team.',
-  },
-  {
-    id: 'gc2',
-    badge: 'Worth confirming',
-    title: 'Meeting prep reminder',
-    description: 'Tomorrow\'s call with Vertex Partners — you mentioned preparing updated metrics.',
-  },
-  {
-    id: 'gc3',
-    badge: 'Good catch',
-    title: 'Unacknowledged reply',
-    description: 'James Miller replied 3 days ago. No response detected on your end.',
-  },
+  ...UP_NEXT.slice(1),
 ]
 
 // ─── Icons (inline SVG) ──────────────────────────────────────────────────────
@@ -386,19 +395,21 @@ function CommitmentCard({ commitment }: { commitment: Commitment }) {
             </>
           )}
         </div>
-        <div className="flex gap-2 mt-2.5 pt-2.5 border-t border-[#f0f0ef]">
+        <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-[#f0f0ef]">
           <button className="flex items-center gap-1.5 bg-[#191919] text-white text-[12px] px-3 py-1.5 rounded-md font-medium hover:bg-[#333] transition-colors">
             <IconCheck />
-            Mark done
+            Confirm
           </button>
           <button className="flex items-center gap-1.5 bg-[#f0f0ef] text-[#191919] text-[12px] px-3 py-1.5 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors">
             <IconX />
             Dismiss
           </button>
           <button className="flex items-center gap-1.5 border border-[#e8e8e6] text-[#191919] text-[12px] px-3 py-1.5 rounded-md font-medium hover:bg-[#f5f5f4] transition-colors">
-            View context
-            <IconArrow />
+            Add detail
           </button>
+          <span className="text-[12px] text-[#9ca3af] hover:text-[#191919] cursor-pointer transition-colors ml-auto flex items-center gap-1">
+            See why <IconArrow />
+          </span>
         </div>
       </div>
     </div>
@@ -407,88 +418,91 @@ function CommitmentCard({ commitment }: { commitment: Commitment }) {
 
 // ─── CompactCommitmentRow (Commitments tab) ──────────────────────────────────
 
-function CompactCommitmentRow({ commitment }: { commitment: Commitment }) {
+function CompactCommitmentRow({ commitment, isExpanded, onToggle }: { commitment: Commitment; isExpanded: boolean; onToggle: () => void }) {
   const isDelivered = commitment.status === 'delivered'
   const isDismissed = commitment.status === 'dismissed'
   const isFaded = isDelivered || isDismissed
 
   return (
-    <div className={`flex bg-white rounded-lg border border-[#e8e8e6] overflow-hidden hover:border-[#d1d1cf] transition-colors ${isFaded ? 'opacity-60' : ''}`}>
-      <div className={`w-[3px] self-stretch flex-shrink-0 ${accentClass(commitment.status)}`} style={{ borderLeftWidth: '3px', borderLeftStyle: 'solid', borderLeftColor: accentClass(commitment.status).replace('border-l-', '') }} />
-      <div className="flex-1 px-4 py-2.5 flex items-center gap-3 flex-wrap">
-        <StatusBadge badge={commitment.badge} />
-        <span className={`text-[13px] font-medium text-[#191919] flex-1 min-w-0 ${isDelivered ? 'line-through text-[#9ca3af]' : ''}`}>
-          {commitment.title}
-        </span>
-        <div className="flex items-center gap-1.5 text-[12px] text-[#9ca3af] flex-shrink-0">
-          <span>{sourceIcon(commitment.source)}</span>
-          <span>{commitment.source}</span>
-          <span>·</span>
-          <span>{commitment.date}</span>
-          {commitment.person !== '—' && (
-            <>
-              <span>·</span>
-              <span>{commitment.person}</span>
-            </>
-          )}
-        </div>
-        {!isFaded && (
-          <div className="flex gap-1.5 flex-shrink-0">
-            <button className="flex items-center gap-1 bg-[#191919] text-white text-[11px] px-2.5 py-1 rounded-md font-medium hover:bg-[#333] transition-colors">
-              <IconCheck />
-              Done
-            </button>
-            <button className="flex items-center gap-1 bg-[#f0f0ef] text-[#191919] text-[11px] px-2.5 py-1 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors">
-              <IconX />
-              Dismiss
-            </button>
+    <div className={`bg-white rounded-lg border border-[#e8e8e6] overflow-hidden hover:border-[#d1d1cf] transition-colors ${isFaded ? 'opacity-60' : ''}`}>
+      <div className="flex cursor-pointer" onClick={onToggle}>
+        <div className={`w-[3px] self-stretch flex-shrink-0 ${accentClass(commitment.status)}`} style={{ borderLeftWidth: '3px', borderLeftStyle: 'solid', borderLeftColor: accentClass(commitment.status).replace('border-l-', '') }} />
+        <div className="flex-1 px-4 py-2.5 flex items-center gap-3 flex-wrap">
+          <StatusBadge badge={commitment.badge} />
+          <span className={`text-[13px] font-medium text-[#191919] flex-1 min-w-0 ${isDelivered ? 'line-through text-[#9ca3af]' : ''}`}>
+            {commitment.title}
+          </span>
+          <div className="flex items-center gap-1.5 text-[12px] text-[#9ca3af] flex-shrink-0">
+            <span>{sourceIcon(commitment.source)}</span>
+            <span>{commitment.source}</span>
+            <span>·</span>
+            <span>{commitment.date}</span>
+            {commitment.person !== '—' && (
+              <>
+                <span>·</span>
+                <span>{commitment.person}</span>
+              </>
+            )}
           </div>
-        )}
+        </div>
       </div>
+      {isExpanded && (
+        <div className="px-4 pb-3 pt-1 border-t border-[#f0f0ef] ml-[3px]">
+          {commitment.description && (
+            <div className="text-[13px] text-[#6b7280] leading-relaxed mb-2">{commitment.description}</div>
+          )}
+          <span className="text-[12px] text-[#9ca3af] hover:text-[#191919] cursor-pointer transition-colors flex items-center gap-1">
+            See why <IconArrow />
+          </span>
+        </div>
+      )}
     </div>
   )
 }
 
-// ─── GoodCatchCard ───────────────────────────────────────────────────────────
+// ─── UpNextRail ──────────────────────────────────────────────────────────────
 
-function GoodCatchCard({ catch: c }: { catch: GoodCatch }) {
+function UpNextRail() {
   return (
-    <div className="bg-white border border-[#e8e8e6] rounded-lg p-3 hover:border-[#d1d1cf] transition-colors">
-      <div className="flex items-start justify-between">
-        <StatusBadge badge={c.badge} />
-        <button className="text-[#9ca3af] hover:text-[#191919] transition-colors ml-2 mt-0.5">
-          <IconArrow />
-        </button>
-      </div>
-      <div className="text-[13px] font-medium text-[#191919] mt-1.5 mb-1">{c.title}</div>
-      <div className="text-[12px] text-[#9ca3af] leading-relaxed">{c.description}</div>
-    </div>
-  )
-}
-
-// ─── ProofOfWork ─────────────────────────────────────────────────────────────
-
-function ProofOfWork() {
-  const stats = [
-    { icon: <IconEmails />, label: 'Emails captured', value: '89' },
-    { icon: <IconMessages />, label: 'Messages processed', value: '234' },
-    { icon: <IconMeetings />, label: 'Meetings logged', value: '12' },
-    { icon: <IconPeople />, label: 'People identified', value: '31' },
-  ]
-
-  return (
-    <div className="bg-white border border-[#e8e8e6] rounded-lg p-4">
-      <div className="text-[13px] font-semibold text-[#191919] mb-3">Proof of work</div>
-      <div className="grid grid-cols-2 gap-2">
-        {stats.map((s) => (
-          <div key={s.label} className="bg-[#f9f9f8] rounded-md p-3">
-            <div className="flex items-center gap-1.5 text-[#9ca3af]">
-              {s.icon}
-              <span className="text-[11px] text-[#9ca3af]">{s.label}</span>
+    <div>
+      <div className="text-[13px] font-semibold text-[#191919] mb-3">Up next</div>
+      <div className="flex flex-col max-h-[520px] overflow-y-auto">
+        {UP_NEXT.map((c) => (
+          <div
+            key={c.id}
+            className="group flex items-center gap-2.5 hover:bg-[#f9f9f8] rounded-md py-2 px-2.5 cursor-pointer transition-colors"
+          >
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <StatusBadge badge={c.badge} />
+              </div>
+              <div className="text-[13px] font-medium text-[#191919] truncate">{c.title}</div>
+              <div className="flex items-center gap-1.5 text-[11px] text-[#9ca3af] mt-0.5">
+                <span>{sourceIcon(c.source)}</span>
+                <span>{c.source}</span>
+                <span>·</span>
+                <span>{c.date}</span>
+              </div>
             </div>
-            <div className="font-semibold text-[20px] text-[#191919] mt-1">{s.value}</div>
+            <span className="text-[#d1d1cf] group-hover:text-[#9ca3af] transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100">
+              <IconArrow />
+            </span>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── ProofOfWork (sticky footer) ─────────────────────────────────────────────
+
+function ProofOfWork() {
+  return (
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#e8e8e6] z-10">
+      <div className="flex justify-center py-3 px-6">
+        <span className="text-[12px] text-[#9ca3af]">
+          89 emails captured · 234 messages processed · 12 meetings logged · 31 people identified
+        </span>
       </div>
     </div>
   )
@@ -499,7 +513,6 @@ function ProofOfWork() {
 function Header({ activeTab, onTabChange }: { activeTab: Tab; onTabChange: (t: Tab) => void }) {
   const tabs: { id: Tab; label: string }[] = [
     { id: 'active', label: 'Active' },
-    { id: 'shortlist', label: 'Shortlist' },
     { id: 'commitments', label: 'Commitments' },
   ]
 
@@ -579,18 +592,13 @@ function StatusBar() {
   )
 }
 
-// ─── ContextBanner ───────────────────────────────────────────────────────────
+// ─── CenteredHeading ─────────────────────────────────────────────────────────
 
-function ContextBanner() {
+function CenteredHeading({ heading, subline }: { heading: string; subline: string }) {
   return (
-    <div className="bg-white border-b border-[#e8e8e6] py-3 px-6 flex items-center gap-2.5">
-      <span className="relative flex h-2 w-2 flex-shrink-0">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-      </span>
-      <span className="text-[13px] text-[#6b7280]">
-        Rippled is monitoring your inbox, Slack, and meetings
-      </span>
+    <div className="py-8 max-w-[480px] mx-auto text-center">
+      <div className="font-semibold text-[22px] text-[#191919]">{heading}</div>
+      <div className="text-[14px] text-[#6b7280] mt-1.5">{subline}</div>
     </div>
   )
 }
@@ -611,119 +619,145 @@ function EmptyState() {
   )
 }
 
-// ─── Sidebar ─────────────────────────────────────────────────────────────────
-
-function Sidebar({ showGoodCatches = true }: { showGoodCatches?: boolean }) {
-  return (
-    <div className="flex flex-col">
-      <ProofOfWork />
-      {showGoodCatches && (
-        <div className="mt-4">
-          <div className="text-[13px] font-semibold text-[#191919] mb-3">Good catches</div>
-          <div className="flex flex-col gap-2.5">
-            {GOOD_CATCHES.map((c) => (
-              <GoodCatchCard key={c.id} catch={c} />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
 // ─── Tab Content ─────────────────────────────────────────────────────────────
 
 function ActiveTabContent() {
-  return (
-    <div className="grid grid-cols-[1fr_280px] gap-6">
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="font-semibold text-[15px] text-[#191919]">What deserves your attention</span>
-          <span className="bg-[#f0f0ef] text-[#6b7280] text-[11px] font-medium px-2 py-0.5 rounded-full">
-            {ACTIVE_COMMITMENTS.length}
-          </span>
-        </div>
-        <div className="flex flex-col gap-3">
-          {ACTIVE_COMMITMENTS.map((c) => (
-            <CommitmentCard key={c.id} commitment={c} />
-          ))}
-        </div>
-      </div>
-      <Sidebar />
-    </div>
-  )
-}
+  const surfaced = ACTIVE_COMMITMENTS.slice(0, 3)
 
-function ShortlistTabContent() {
-  const shortlist = [...ACTIVE_COMMITMENTS.slice(0, 3), ...SHORTLIST_EXTRA]
   return (
-    <div className="grid grid-cols-[1fr_280px] gap-6">
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="font-semibold text-[15px] text-[#191919]">Your shortlist — 5 most important</span>
-          <span className="bg-[#f0f0ef] text-[#6b7280] text-[11px] font-medium px-2 py-0.5 rounded-full">
-            {shortlist.length}
-          </span>
+    <>
+      <CenteredHeading
+        heading="What deserves your attention"
+        subline="Rippled is only surfacing the highest-priority items right now."
+      />
+      <div className="grid grid-cols-[1fr_280px] gap-6">
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="font-semibold text-[15px] text-[#191919]">Surfaced</span>
+            <span className="text-[12px] text-[#9ca3af]">3 items</span>
+          </div>
+          <div className="flex flex-col gap-3">
+            {surfaced.map((c) => (
+              <CommitmentCard key={c.id} commitment={c} />
+            ))}
+          </div>
         </div>
-        <div className="flex flex-col gap-2.5">
-          {shortlist.map((c) => (
-            <div key={c.id} className={`flex bg-white rounded-lg border border-[#e8e8e6] overflow-hidden hover:border-[#d1d1cf] transition-colors`}>
-              <div className={`w-[3px] self-stretch flex-shrink-0`} style={{ borderLeftWidth: '3px', borderLeftStyle: 'solid', borderLeftColor: accentClass(c.status).replace('border-l-[', '').replace(']', '') }} />
-              <div className="flex-1 px-4 py-2.5">
-                <div className="flex justify-between items-center mb-1">
-                  <StatusBadge badge={c.badge} />
-                  <span className="text-[11px] text-[#9ca3af]">{c.confidence}</span>
-                </div>
-                <div className="font-medium text-[13px] text-[#191919] mb-0.5">{c.title}</div>
-                <div className="flex items-center gap-1.5 text-[12px] text-[#9ca3af] mt-1">
-                  <span>{sourceIcon(c.source)}</span>
-                  <span>{c.source}</span>
-                  <span>·</span>
-                  <span>{c.date}</span>
-                  {c.person !== '—' && (
-                    <>
-                      <span>·</span>
-                      <span>{c.person}</span>
-                    </>
-                  )}
-                </div>
-                <div className="flex gap-2 mt-2 pt-2 border-t border-[#f0f0ef]">
-                  <button className="flex items-center gap-1.5 bg-[#191919] text-white text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#333] transition-colors">
-                    <IconCheck />
-                    Mark done
-                  </button>
-                  <button className="flex items-center gap-1.5 bg-[#f0f0ef] text-[#191919] text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors">
-                    <IconX />
-                    Dismiss
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <UpNextRail />
       </div>
-      <Sidebar showGoodCatches={false} />
-    </div>
+    </>
   )
 }
 
 function CommitmentsTabContent() {
+  const [groupMode, setGroupMode] = useState<GroupMode>('status')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  const groupModes: { id: GroupMode; label: string }[] = [
+    { id: 'status', label: 'Status' },
+    { id: 'client', label: 'Client' },
+    { id: 'source', label: 'Source' },
+  ]
+
+  const statusOrder: BadgeType[] = ['Needs review', 'Worth confirming', 'At risk', 'Delivered', 'Dismissed']
+  const clientGroups: Record<string, string[]> = {
+    'Acme Corp': ['1', '3'],
+    'Vertex Partners': ['2', '6'],
+    'Internal': ['4', '5', '7', '8', '9', '10', '11', '12', '13'],
+  }
+  const sourceGroups: Commitment['source'][] = ['Email', 'Slack', 'Meetings']
+
+  function renderGrouped() {
+    if (groupMode === 'status') {
+      return statusOrder.map((badge) => {
+        const items = ALL_COMMITMENTS.filter((c) => c.badge === badge)
+        if (items.length === 0) return null
+        return (
+          <div key={badge}>
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af] mb-2 mt-5">{badge}</div>
+            <div className="flex flex-col gap-2">
+              {items.map((c) => (
+                <CompactCommitmentRow
+                  key={c.id}
+                  commitment={c}
+                  isExpanded={expandedId === c.id}
+                  onToggle={() => setExpandedId(expandedId === c.id ? null : c.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )
+      })
+    }
+
+    if (groupMode === 'client') {
+      return Object.entries(clientGroups).map(([client, ids]) => {
+        const items = ALL_COMMITMENTS.filter((c) => ids.includes(c.id))
+        if (items.length === 0) return null
+        return (
+          <div key={client}>
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af] mb-2 mt-5">{client}</div>
+            <div className="flex flex-col gap-2">
+              {items.map((c) => (
+                <CompactCommitmentRow
+                  key={c.id}
+                  commitment={c}
+                  isExpanded={expandedId === c.id}
+                  onToggle={() => setExpandedId(expandedId === c.id ? null : c.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )
+      })
+    }
+
+    if (groupMode === 'source') {
+      return sourceGroups.map((source) => {
+        const items = ALL_COMMITMENTS.filter((c) => c.source === source)
+        if (items.length === 0) return null
+        return (
+          <div key={source}>
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af] mb-2 mt-5">{source}</div>
+            <div className="flex flex-col gap-2">
+              {items.map((c) => (
+                <CompactCommitmentRow
+                  key={c.id}
+                  commitment={c}
+                  isExpanded={expandedId === c.id}
+                  onToggle={() => setExpandedId(expandedId === c.id ? null : c.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )
+      })
+    }
+
+    return null
+  }
+
   return (
-    <div className="grid grid-cols-[1fr_280px] gap-6">
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="font-semibold text-[15px] text-[#191919]">All commitments</span>
-          <span className="bg-[#f0f0ef] text-[#6b7280] text-[11px] font-medium px-2 py-0.5 rounded-full">
-            {ALL_COMMITMENTS.length}
-          </span>
-        </div>
-        <div className="flex flex-col gap-2">
-          {ALL_COMMITMENTS.map((c) => (
-            <CompactCommitmentRow key={c.id} commitment={c} />
-          ))}
-        </div>
+    <div className="max-w-[720px] mx-auto">
+      <CenteredHeading
+        heading="All commitments"
+        subline="A broader view of likely commitments Rippled is tracking across your connected sources."
+      />
+      <div className="inline-flex gap-1 mb-5">
+        {groupModes.map((g) => (
+          <button
+            key={g.id}
+            onClick={() => setGroupMode(g.id)}
+            className={`px-3 py-1 text-[12px] font-medium rounded-full transition-colors ${
+              groupMode === g.id
+                ? 'bg-[#191919] text-white'
+                : 'text-[#6b7280] hover:text-[#191919]'
+            }`}
+          >
+            {g.label}
+          </button>
+        ))}
       </div>
-      <Sidebar />
+      <div>{renderGrouped()}</div>
     </div>
   )
 }
@@ -737,12 +771,11 @@ export default function PrototypeDashboard() {
     <div className="min-h-screen bg-[#f9f9f8]">
       <Header activeTab={activeTab} onTabChange={setActiveTab} />
       <StatusBar />
-      <ContextBanner />
-      <main className="max-w-[1100px] mx-auto px-6 py-6">
+      <main className="max-w-[1100px] mx-auto px-6 py-6 pb-16">
         {activeTab === 'active' && <ActiveTabContent />}
-        {activeTab === 'shortlist' && <ShortlistTabContent />}
         {activeTab === 'commitments' && <CommitmentsTabContent />}
       </main>
+      <ProofOfWork />
     </div>
   )
 }
