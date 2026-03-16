@@ -13,15 +13,14 @@ Critical
 The entire Rippled pipeline (ingestion, detection, clarification, surfacing) runs as Celery tasks. Railway currently only deploys the FastAPI server via `uvicorn`. There is no Celery worker service deployed, and `REDIS_URL` defaults to `localhost:6379` — meaning the task broker doesn't exist in production. No data has ever been ingested. Until the worker runs, the dashboard will remain empty regardless of source configuration or API keys.
 
 ## Problem Observed
-- `railway.toml` startCommand: `uvicorn app.main:app` only — no worker
+- `railway.toml` startCommand: `uvicorn app.main:app` only — no Celery worker service
 - No Procfile or separate Railway service for Celery worker
-- `redis_url` defaults to `redis://localhost:6379/0` — no Redis service on Railway
 - `source_items`: 0 rows, `last ingested: None`
 - `commitment_signals`: 0 rows, `candidate_commitments`: 0 rows
 - Kevin's account has 4 active sources (email ×2, Slack, meeting) — all configured, none ever polled
+- Redis and ENCRYPTION_KEY are already configured in Railway ✅
 
 ## Desired Behavior
-- Redis service running on Railway (or use Railway's Redis plugin)
 - Celery worker deployed as a separate Railway service pointing to the same repo
 - Worker picks up beat schedule: ingestion, detection, clarification, surfacing, model-detection sweeps
 - After first worker run: `source_items` contains rows for Kevin's user
@@ -32,13 +31,11 @@ The entire Rippled pipeline (ingestion, detection, clarification, surfacing) run
 - Observability §4: determine where in the chain the break is — **it's here**
 
 ## Scope
-- Add Redis service to Railway project (Railway Redis plugin or Upstash)
-- Set `REDIS_URL` environment variable in Railway for both API and worker services
-- Add Celery worker as a second Railway service with startCommand: `celery -A app.tasks worker --loglevel=info`
-- Optionally add Celery beat as a third service or combine with worker: `celery -A app.tasks worker --beat --loglevel=info`
-- Set `ANTHROPIC_API_KEY` env var in Railway (or ensure user-stored key is used by detection service — verify which path the detection service uses)
+- Add Celery worker as a second Railway service using same repo, startCommand: `celery -A app.tasks worker --beat --loglevel=info`
+- Ensure `REDIS_URL` and all required env vars are inherited by the worker service (copy from API service)
+- Verify worker connects to Redis and starts processing the beat schedule
 - Verify at least one ingestion run completes for Kevin's email source
-- Verify `source_items` rows appear
+- Verify `source_items` rows appear in DB
 
 ## Out of Scope
 - Changing the task queue architecture (Celery + Redis stays)
@@ -46,9 +43,8 @@ The entire Rippled pipeline (ingestion, detection, clarification, surfacing) run
 - UI changes
 
 ## Constraints
-- Railway worker service must point to same codebase — use same repo, different startCommand
-- Fernet encryption key (`FERNET_KEY` or equivalent) must be same across API + worker services
-- Do not alter source credentials
+- Worker service must use same repo + same env vars as API service — do not create separate config
+- Do not alter source credentials or existing Railway services
 
 ## Acceptance Criteria
 - [ ] Redis service running and reachable from both API and worker
