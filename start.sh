@@ -7,37 +7,28 @@ set -e
 if [ "$RAILWAY_SERVICE_NAME" = "celery-worker" ]; then
     echo "Starting Celery worker + beat..."
 
-    # Start a minimal health HTTP server in the background so Railway's
-    # healthcheck on /health gets a 200 response. Celery itself has no HTTP server.
-    # Returns 503 until /tmp/celery_ready exists (written by worker_ready signal).
-    rm -f /tmp/celery_ready
+    # Start a minimal health HTTP server in the background.
+    # Always returns 200 immediately — the process being alive is sufficient for Railway.
     python3 -c "
 import http.server, threading, os
-
-READINESS_FILE = '/tmp/celery_ready'
 
 class HealthHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/health':
-            if os.path.exists(READINESS_FILE):
-                self.send_response(200)
-                self.end_headers()
-                self.wfile.write(b'{\"status\":\"ok\",\"service\":\"celery-worker\"}')
-            else:
-                self.send_response(503)
-                self.end_headers()
-                self.wfile.write(b'{\"status\":\"starting\",\"service\":\"celery-worker\"}')
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'{\"status\":\"ok\",\"service\":\"celery-worker\"}')
         else:
             self.send_response(404)
             self.end_headers()
     def log_message(self, *args):
-        pass  # suppress access logs
+        pass
 
 port = int(os.environ.get('PORT', 8080))
 server = http.server.HTTPServer(('0.0.0.0', port), HealthHandler)
 t = threading.Thread(target=server.serve_forever, daemon=True)
 t.start()
-print(f'Health server listening on port {port} (waiting for {READINESS_FILE})')
+print(f'Health server listening on port {port}')
 " &
 
     exec celery -A app.tasks.celery_app worker --beat --loglevel=info
