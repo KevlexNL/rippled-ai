@@ -63,10 +63,14 @@ The entire Rippled pipeline (ingestion, detection, clarification, surfacing) run
 - DB: `SELECT COUNT(*) FROM commitment_signals`
 - Browser: dashboard reflects real data or correct empty state with data confirmed in DB
 
+## Known Environment State (confirmed)
+- Redis: already configured in Railway ✅
+- ENCRYPTION_KEY: already set in Railway ✅
+- Anthropic API key: per-user, stored via Settings UI — not a Railway env var ✅
+
 ## Escalate to Mero if
-- Railway Redis plugin requires Kevin to approve billing
-- `ANTHROPIC_API_KEY` env var for Railway needs Kevin to provide the key
-- Fernet encryption key not available in Railway env vars (needs Kevin to set it)
+- Celery worker service fails to connect to Redis (check REDIS_URL env var is inherited by worker service)
+- Worker starts but tasks fail due to missing env vars — surface the specific var name needed
 
 ## Requires Approval
 No — this is a blocker fix. Infrastructure deployment within existing architecture.
