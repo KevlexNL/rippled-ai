@@ -32,6 +32,7 @@ def _make_stats_db(
     email: int = 0,
     commitments: int = 0,
     sources: int = 0,
+    people: int = 0,
 ):
     """Build a mock DB that returns the given stat counts."""
 
@@ -54,7 +55,11 @@ def _make_stats_db(
         sources_result = MagicMock()
         sources_result.scalar = MagicMock(return_value=sources)
 
-        db.execute = AsyncMock(side_effect=[items_result, commitments_result, sources_result])
+        # Fourth execute: people count (scalar())
+        people_result = MagicMock()
+        people_result.scalar = MagicMock(return_value=people)
+
+        db.execute = AsyncMock(side_effect=[items_result, commitments_result, sources_result, people_result])
         yield db
 
     return fake_get_db
@@ -78,6 +83,7 @@ class TestStatsEndpoint:
         assert "emails_captured" in data
         assert "commitments_detected" in data
         assert "sources_connected" in data
+        assert "people_identified" in data
 
     def test_stats_returns_all_zeros_for_new_user(self):
         """GET /api/v1/stats returns zeros when user has no data."""
@@ -96,11 +102,12 @@ class TestStatsEndpoint:
         assert data["emails_captured"] == 0
         assert data["commitments_detected"] == 0
         assert data["sources_connected"] == 0
+        assert data["people_identified"] == 0
 
     def test_stats_returns_correct_counts(self):
         """GET /api/v1/stats returns non-zero counts correctly."""
         app.dependency_overrides[get_db] = _make_stats_db(
-            meetings=5, slack=12, email=3, commitments=8, sources=2
+            meetings=5, slack=12, email=3, commitments=8, sources=2, people=7
         )
         app.dependency_overrides[get_current_user_id] = lambda: USER_ID
         try:
@@ -116,6 +123,7 @@ class TestStatsEndpoint:
         assert data["emails_captured"] == 3
         assert data["commitments_detected"] == 8
         assert data["sources_connected"] == 2
+        assert data["people_identified"] == 7
 
     def test_stats_requires_auth(self):
         """GET /api/v1/stats returns 422 without X-User-ID header."""
