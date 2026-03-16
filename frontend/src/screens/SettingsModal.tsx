@@ -4,6 +4,7 @@ import { getUserSettings, patchUserSettings } from '../api/userSettings'
 import type { UserSettingsRead } from '../api/userSettings'
 import { listSources } from '../api/sources'
 import type { SourceRead } from '../api/sources'
+import { apiGet } from '../lib/apiClient'
 
 // ─── Icons ────────────────────────────────────────────────────────────────
 
@@ -89,6 +90,7 @@ export default function SettingsModal() {
   const { data: settings } = useQuery<UserSettingsRead>({
     queryKey: ['user-settings'],
     queryFn: getUserSettings,
+    staleTime: 0,
   })
 
   const { data: sources } = useQuery<SourceRead[]>({
@@ -129,12 +131,12 @@ export default function SettingsModal() {
   const activeSources = (sources ?? []).filter(s => s.is_active)
 
   return (
-    <div className="max-w-[680px] mx-auto py-8 px-8">
+    <div className="max-w-[680px] mx-auto py-8 px-4 md:px-8 pb-12">
       {/* LLM API Token */}
       <div className="mb-10">
         <h2 className="text-base font-semibold text-black">LLM API Token</h2>
         <p className="text-xs text-gray-500 mt-1 mb-5">Connect an LLM provider to power Rippled's commitment detection.</p>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Claude card */}
           <div className="rounded-xl border border-gray-100 p-4 flex flex-col gap-3">
             <div className="flex items-center gap-3">
@@ -205,7 +207,7 @@ export default function SettingsModal() {
       <div>
         <h2 className="text-base font-semibold text-black">Integrations</h2>
         <p className="text-xs text-gray-500 mt-1 mb-5">Manage your connected data sources.</p>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {activeSources.length > 0 ? (
             activeSources.map((src) => (
               <div key={src.id} className="rounded-xl border border-gray-100 p-4 flex flex-col gap-2">
@@ -228,7 +230,7 @@ export default function SettingsModal() {
               </div>
             ))
           ) : (
-            <div className="col-span-2 text-center py-6">
+            <div className="col-span-1 md:col-span-2 text-center py-6">
               <p className="text-sm text-gray-500">No sources connected yet.</p>
               <a href="/settings/integrations" className="text-sm text-black hover:underline font-medium mt-1 inline-block">Connect a source</a>
             </div>
@@ -246,9 +248,8 @@ function GoogleCalendarCard() {
   const { data: googleStatus } = useQuery<{ connected: boolean; expiry: string | null }>({
     queryKey: ['google-status'],
     queryFn: () =>
-      fetch('/api/v1/integrations/google/status', {
-        headers: { 'Content-Type': 'application/json' },
-      }).then(r => r.ok ? r.json() : { connected: false, expiry: null }),
+      apiGet<{ connected: boolean; expiry: string | null }>('/api/v1/integrations/google/status')
+        .catch(() => ({ connected: false, expiry: null })),
   })
 
   const connected = googleStatus?.connected ?? false

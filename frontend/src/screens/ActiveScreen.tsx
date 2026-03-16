@@ -349,22 +349,22 @@ function StatusBar({ sources, stats }: { sources: { source_type: string; is_acti
   ]
   const signalsCount = stats ? (stats.emails_captured + stats.messages_processed + stats.meetings_analyzed) : 0
   return (
-    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[22px] flex items-center px-5">
+    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[22px] flex items-center px-4 md:px-5">
       <div className="flex items-center gap-1.5 flex-1">
         {types.map((t, i) => {
           const connected = sources.some(s => s.source_type === t.key && s.is_active)
           return (
             <span key={t.key} className="flex items-center gap-1">
-              {i > 0 && <span className="text-[#e8e8e6] mr-1">|</span>}
+              {i > 0 && <span className="w-px h-2.5 bg-[#e8e8e6] mr-1" />}
               <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${connected ? 'bg-[#16a34a]' : 'bg-[#d1d1cf]'}`} />
               <span className="text-[11px] text-[#6b7280]">{t.label}</span>
             </span>
           )
         })}
       </div>
-      <div className="flex items-center gap-2 text-[11px] text-[#9ca3af]">
+      <div className="hidden md:flex items-center gap-2 text-[11px] text-[#9ca3af]">
         {signalsCount > 0 && <span>{signalsCount} signals reviewed in the last 24 hours</span>}
-        {signalsCount > 0 && <span className="text-[#e8e8e6]">|</span>}
+        {signalsCount > 0 && <span className="w-px h-2.5 bg-[#e8e8e6]" />}
         <span>Watching {stats?.people_identified ?? 0} active threads</span>
       </div>
     </div>
@@ -486,24 +486,24 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
   return (
     <div className="min-h-screen bg-[#f9f9f8]">
       {/* Header */}
-      <div className="bg-white border-b border-[#e8e8e6] h-[52px] flex items-center px-6">
-        <div className="flex items-center flex-1">
+      <div className="bg-white border-b border-[#e8e8e6] h-[52px] flex items-center px-4 md:px-6">
+        <div className="flex items-center flex-shrink-0">
           <span className="font-semibold text-[16px] text-[#191919] tracking-tight">rippled</span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 mx-3 md:mx-auto">
           {tabs.map((t) =>
             activeTab === t.id ? (
-              <button key={t.id} onClick={() => onTabChange(t.id)} className="bg-[#191919] text-white rounded-full px-4 py-1 text-[13px] font-medium">{t.label}</button>
+              <button key={t.id} onClick={() => onTabChange(t.id)} className="bg-[#191919] text-white rounded-full px-3 md:px-4 py-1 text-[13px] font-medium">{t.label}</button>
             ) : (
-              <button key={t.id} onClick={() => onTabChange(t.id)} className="text-[#6b7280] hover:text-[#191919] px-4 py-1 text-[13px] transition-colors">{t.label}</button>
+              <button key={t.id} onClick={() => onTabChange(t.id)} className="text-[#6b7280] hover:text-[#191919] px-3 md:px-4 py-1 text-[13px] transition-colors">{t.label}</button>
             )
           )}
         </div>
-        <div className="flex items-center gap-3 flex-1 justify-end">
-          <button onClick={() => setShowLog(true)} className="text-[#6b7280] hover:text-[#191919] border border-[#e8e8e6] hover:border-[#d1d1cf] rounded-md px-3 py-1 text-[12px] font-medium transition-colors">
+        <div className="flex items-center gap-3 ml-auto flex-shrink-0">
+          <button onClick={() => setShowLog(true)} className="hidden md:inline-flex text-[#6b7280] hover:text-[#191919] border border-[#e8e8e6] hover:border-[#d1d1cf] rounded-md px-3 py-1 text-[12px] font-medium transition-colors">
             + Log commitment
           </button>
-          <div className="w-px h-4 bg-[#e8e8e6]" />
+          <div className="hidden md:block w-px h-4 bg-[#e8e8e6]" />
           <button onClick={() => setShowSettings(true)} className="text-[#9ca3af] hover:text-[#191919] transition-colors">
             <IconGear />
           </button>
@@ -547,7 +547,7 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
               <div className="text-[13px] text-[#6b7280] mt-0.5">Rippled is only surfacing the highest-priority items right now.</div>
               <div className="text-[12px] text-[#9ca3af] mt-0.5">Showing {surfaced.length} highest-priority item{surfaced.length !== 1 ? 's' : ''}</div>
             </div>
-            <div className="grid grid-cols-[1fr_320px] gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-3">
               <div>
                 <h2 className="text-[15px] font-semibold text-[#191919] mb-1">Surfaced for review</h2>
                 <div className="flex flex-col gap-2">
@@ -568,6 +568,15 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
         )}
       </main>
 
+      {/* Mobile FAB for Log commitment */}
+      <button
+        onClick={() => setShowLog(true)}
+        className="md:hidden fixed bottom-20 right-4 z-40 w-12 h-12 rounded-full bg-[#191919] text-white shadow-lg flex items-center justify-center text-[22px] hover:bg-[#333] transition-colors"
+        aria-label="Log commitment"
+      >
+        +
+      </button>
+
       <ProofOfWork stats={stats} />
       <DetailPanel commitment={selectedCommitment} allCommitments={allCommitments} onClose={() => setSelectedId(null)} />
 
@@ -580,9 +589,9 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
       )}
 
       {showSettings && (
-        <div className="fixed inset-0 bg-black/30 z-50 flex items-start justify-center pt-16 pb-16" onClick={() => setShowSettings(false)}>
-          <div className="bg-[#f9f9f8] rounded-xl shadow-2xl w-full max-w-[760px] max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-8 pt-6 pb-4 border-b border-[#e8e8e6]">
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-start justify-center md:pt-16 md:pb-16" onClick={() => setShowSettings(false)}>
+          <div className="bg-[#f9f9f8] md:rounded-xl shadow-2xl w-full max-w-[760px] h-full md:h-auto md:max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 md:px-8 pt-6 pb-4 border-b border-[#e8e8e6] sticky top-0 bg-[#f9f9f8] z-10">
               <span className="font-semibold text-[16px] text-[#191919]">Settings</span>
               <button onClick={() => setShowSettings(false)} className="w-8 h-8 flex items-center justify-center text-[#9ca3af] hover:text-[#191919] hover:bg-[#f0f0ef] rounded-md transition-colors text-[18px]">×</button>
             </div>

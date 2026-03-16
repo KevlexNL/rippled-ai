@@ -222,13 +222,13 @@ function StatusBar({ sources }: { sources: { source_type: string; is_active: boo
     { key: 'calendar', label: 'Calendar' },
   ]
   return (
-    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[22px] flex items-center px-5">
+    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[22px] flex items-center px-4 md:px-5">
       <div className="flex items-center gap-1.5 flex-1">
         {types.map((t, i) => {
           const connected = sources.some(s => s.source_type === t.key && s.is_active)
           return (
             <span key={t.key} className="flex items-center gap-1">
-              {i > 0 && <span className="text-[#e8e8e6] mr-1">|</span>}
+              {i > 0 && <span className="w-px h-2.5 bg-[#e8e8e6] mr-1" />}
               <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${connected ? 'bg-[#16a34a]' : 'bg-[#d1d1cf]'}`} />
               <span className="text-[11px] text-[#6b7280]">{t.label}</span>
             </span>
@@ -477,24 +477,24 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
   return (
     <div className="min-h-screen bg-[#f9f9f8]">
       {/* Header */}
-      <div className="bg-white border-b border-[#e8e8e6] h-[52px] flex items-center px-6">
-        <div className="flex items-center flex-1">
+      <div className="bg-white border-b border-[#e8e8e6] h-[52px] flex items-center px-4 md:px-6">
+        <div className="flex items-center flex-shrink-0">
           <span className="font-semibold text-[16px] text-[#191919] tracking-tight">rippled</span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 mx-3 md:mx-auto">
           {tabs.map((t) =>
             activeTab === t.id ? (
-              <button key={t.id} onClick={() => onTabChange(t.id)} className="bg-[#191919] text-white rounded-full px-4 py-1 text-[13px] font-medium">{t.label}</button>
+              <button key={t.id} onClick={() => onTabChange(t.id)} className="bg-[#191919] text-white rounded-full px-3 md:px-4 py-1 text-[13px] font-medium">{t.label}</button>
             ) : (
-              <button key={t.id} onClick={() => onTabChange(t.id)} className="text-[#6b7280] hover:text-[#191919] px-4 py-1 text-[13px] transition-colors">{t.label}</button>
+              <button key={t.id} onClick={() => onTabChange(t.id)} className="text-[#6b7280] hover:text-[#191919] px-3 md:px-4 py-1 text-[13px] transition-colors">{t.label}</button>
             )
           )}
         </div>
-        <div className="flex items-center gap-3 flex-1 justify-end">
-          <button onClick={() => setShowLog(true)} className="text-[#6b7280] hover:text-[#191919] border border-[#e8e8e6] hover:border-[#d1d1cf] rounded-md px-3 py-1 text-[12px] font-medium transition-colors">
+        <div className="flex items-center gap-3 ml-auto flex-shrink-0">
+          <button onClick={() => setShowLog(true)} className="hidden md:inline-flex text-[#6b7280] hover:text-[#191919] border border-[#e8e8e6] hover:border-[#d1d1cf] rounded-md px-3 py-1 text-[12px] font-medium transition-colors">
             + Log commitment
           </button>
-          <div className="w-px h-4 bg-[#e8e8e6]" />
+          <div className="hidden md:block w-px h-4 bg-[#e8e8e6]" />
           <button onClick={() => setShowSettings(true)} className="text-[#9ca3af] hover:text-[#191919] transition-colors">
             <IconGear />
           </button>
@@ -533,7 +533,18 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
               </div>
             </div>
             <div>
-              {renderGrouped()}
+              {allCommitments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="text-[#d1d1cf] mb-4">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+                      <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+                    </svg>
+                  </div>
+                  <div className="text-[14px] text-[#6b7280] mb-1.5">No commitments tracked yet.</div>
+                  <div className="text-[13px] text-[#9ca3af]">Rippled will surface items as they're detected from your connected sources.</div>
+                </div>
+              ) : renderGrouped()}
               {dismissedCount > 0 && (
                 <span
                   className="text-[12px] text-[#9ca3af] hover:text-[#6b7280] cursor-pointer mt-4 inline-block hover:underline underline-offset-2"
@@ -547,6 +558,15 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
         )}
       </main>
 
+      {/* Mobile FAB for Log commitment */}
+      <button
+        onClick={() => setShowLog(true)}
+        className="md:hidden fixed bottom-20 right-4 z-40 w-12 h-12 rounded-full bg-[#191919] text-white shadow-lg flex items-center justify-center text-[22px] hover:bg-[#333] transition-colors"
+        aria-label="Log commitment"
+      >
+        +
+      </button>
+
       <ProofOfWork stats={stats} />
       <DetailPanel commitment={selectedCommitment} allCommitments={allCommitments} onClose={() => setSelectedId(null)} />
 
@@ -559,9 +579,9 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
       )}
 
       {showSettings && (
-        <div className="fixed inset-0 bg-black/30 z-50 flex items-start justify-center pt-16 pb-16" onClick={() => setShowSettings(false)}>
-          <div className="bg-[#f9f9f8] rounded-xl shadow-2xl w-full max-w-[760px] max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-8 pt-6 pb-4 border-b border-[#e8e8e6]">
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-start justify-center md:pt-16 md:pb-16" onClick={() => setShowSettings(false)}>
+          <div className="bg-[#f9f9f8] md:rounded-xl shadow-2xl w-full max-w-[760px] h-full md:h-auto md:max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 md:px-8 pt-6 pb-4 border-b border-[#e8e8e6] sticky top-0 bg-[#f9f9f8] z-10">
               <span className="font-semibold text-[16px] text-[#191919]">Settings</span>
               <button onClick={() => setShowSettings(false)} className="w-8 h-8 flex items-center justify-center text-[#9ca3af] hover:text-[#191919] hover:bg-[#f0f0ef] rounded-md transition-colors text-[18px]">×</button>
             </div>
