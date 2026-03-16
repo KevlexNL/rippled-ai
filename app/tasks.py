@@ -52,6 +52,10 @@ celery_app.conf.update(
             "task": "app.tasks.poll_email_imap",
             "schedule": 300.0,  # 5 minutes
         },
+        "detection-sweep": {
+            "task": "app.tasks.run_detection_sweep",
+            "schedule": 300.0,  # 5 minutes — catch items missed at ingest
+        },
         "model-detection-sweep": {
             "task": "app.tasks.run_model_detection_batch",
             "schedule": 600.0,  # 10 minutes
@@ -92,12 +96,16 @@ def detect_commitments(self, source_item_id: str) -> dict:
     Returns:
         Status dict with source_item_id and detection result summary
     """
+    logger.info(
+        "Pipeline: detection started for source_item %s",
+        source_item_id,
+    )
     try:
         with get_sync_session() as session:
             result = run_detection(source_item_id, session)
-        logger.debug(
-            "run_detection returned %s with %d item(s) for source_item %s",
-            type(result).__name__, len(result), source_item_id,
+        logger.info(
+            "Pipeline: detection complete for source_item %s — %d candidate(s) created",
+            source_item_id, len(result),
         )
         return {
             "source_item_id": source_item_id,
@@ -105,8 +113,81 @@ def detect_commitments(self, source_item_id: str) -> dict:
             "candidates_created": len(result),
         }
     except Exception as exc:
-        # Retry up to max_retries with exponential backoff
+        logger.warning(
+            "Pipeline: detection FAILED for source_item %s — %s (retry %d/%d)",
+            source_item_id, exc, self.request.retries, self.max_retries,
+        )
         raise self.retry(exc=exc)
+
+
+@celery_app.task(name="app.tasks.run_detection_sweep")
+def run_detection_sweep(limit: int = 100) -> dict:
+    """Sweep source_items that have no commitment_candidates yet.
+
+    Catches items that were ingested while Celery was down or where
+    the inline _enqueue_detection() failed silently.
+
+    Scheduled every 5 minutes via Celery Beat.
+
+    Args:
+        limit: Maximum number of items to process per sweep.
+
+    Returns:
+        Dict with 'processed' and 'candidates_created' counts.
+    """
+    from sqlalchemy import select, and_, exists
+    from app.models.orm import SourceItem, CommitmentCandidate
+
+    logger.info("Pipeline: detection sweep starting")
+
+    # Find source_items with no associated candidates
+    has_candidate = (
+        select(CommitmentCandidate.id)
+        .where(CommitmentCandidate.originating_item_id == SourceItem.id)
+        .exists()
+    )
+
+    with get_sync_session() as session:
+        unprocessed_ids = session.execute(
+            select(SourceItem.id)
+            .where(
+                and_(
+                    ~has_candidate,
+                    SourceItem.is_quoted_content.is_(False),
+                )
+            )
+            .order_by(SourceItem.ingested_at.asc())
+            .limit(limit)
+        ).scalars().all()
+
+    processed = 0
+    total_candidates = 0
+
+    for item_id in unprocessed_ids:
+        try:
+            with get_sync_session() as session:
+                result = run_detection(str(item_id), session)
+            total_candidates += len(result)
+            processed += 1
+            logger.info(
+                "Pipeline: sweep detected %d candidate(s) for source_item %s",
+                len(result), item_id,
+            )
+        except Exception:
+            logger.exception(
+                "Pipeline: sweep detection FAILED for source_item %s",
+                item_id,
+            )
+
+    logger.info(
+        "Pipeline: detection sweep complete — %d item(s) processed, %d candidate(s) created",
+        processed, total_candidates,
+    )
+    return {
+        "processed": processed,
+        "candidates_created": total_candidates,
+        "unprocessed_found": len(unprocessed_ids),
+    }
 
 
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=30, name="app.tasks.run_clarification")

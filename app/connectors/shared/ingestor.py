@@ -3,6 +3,7 @@
 Webhook routes use async DB sessions and handle ingest inline.
 Celery tasks (process_slack_event, poll_email_imap) use this sync version.
 """
+import logging
 from datetime import datetime, timezone
 
 from sqlalchemy import select
@@ -11,6 +12,8 @@ from sqlalchemy.orm import Session
 
 from app.models.orm import Source, SourceItem
 from app.models.schemas import SourceItemCreate
+
+logger = logging.getLogger(__name__)
 
 
 def get_or_create_source_sync(
@@ -96,5 +99,10 @@ def _enqueue_detection(source_item_id: str) -> None:
     try:
         from app.tasks import detect_commitments
         detect_commitments.delay(source_item_id)
+        logger.info("Pipeline: enqueued detection for source_item %s", source_item_id)
     except Exception:
-        pass
+        logger.exception(
+            "Pipeline: FAILED to enqueue detection for source_item %s — "
+            "item will be picked up by detection-sweep",
+            source_item_id,
+        )

@@ -67,4 +67,4 @@ class TestDetectCommitmentsTask:
         with caplog.at_level(logging.DEBUG, logger="app.tasks"):
             detect_commitments("item-789")
 
-        assert any("run_detection returned" in msg for msg in caplog.messages)
+        assert any("detection complete" in msg for msg in caplog.messages)

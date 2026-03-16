@@ -15,6 +15,7 @@ Endpoint overview:
   GET    /admin/events/{id}
   GET    /admin/digests
   GET    /admin/digests/{id}
+  POST   /admin/pipeline/run-detection
   POST   /admin/pipeline/run-surfacing
   POST   /admin/pipeline/run-linker
   POST   /admin/pipeline/run-nudge
@@ -52,6 +53,7 @@ from app.models.orm import (
     SurfacingAudit,
     User,
 )
+from app.services.detection import run_detection
 from app.services.digest import DigestAggregator, DigestFormatter, DigestDelivery  # noqa: F401
 from app.services.event_linker import DeadlineEventLinker
 from app.services.nudge import NudgeService
@@ -683,6 +685,87 @@ async def get_digest(digest_id: str, db: AsyncSession = Depends(get_db)):
 # ===========================================================================
 # Pipeline Triggers
 # ===========================================================================
+
+@router.post("/pipeline/run-detection")
+async def trigger_detection(user_id: str | None = None):
+    """Manually run detection on all unprocessed source_items.
+
+    Finds source_items with no associated commitment_candidates and runs
+    the detection pipeline on each. Optionally filter by user_id.
+
+    Args:
+        user_id: Optional user UUID to scope detection to a single user.
+
+    Returns:
+        Dict with processing counts and duration.
+    """
+    import logging
+
+    log = logging.getLogger(__name__)
+    start = time.monotonic()
+
+    try:
+        def _run():
+            from sqlalchemy import select, and_, exists
+            from app.models.orm import CommitmentCandidate
+
+            has_candidate = (
+                select(CommitmentCandidate.id)
+                .where(CommitmentCandidate.originating_item_id == SourceItem.id)
+                .exists()
+            )
+
+            filters = [
+                ~has_candidate,
+                SourceItem.is_quoted_content.is_(False),
+            ]
+            if user_id:
+                filters.append(SourceItem.user_id == user_id)
+
+            with get_sync_session() as session:
+                unprocessed_ids = session.execute(
+                    select(SourceItem.id, SourceItem.user_id)
+                    .where(and_(*filters))
+                    .order_by(SourceItem.ingested_at.asc())
+                ).all()
+
+            processed = 0
+            total_candidates = 0
+            errors = 0
+
+            for item_id, item_user_id in unprocessed_ids:
+                try:
+                    with get_sync_session() as session:
+                        result = run_detection(str(item_id), session)
+                    count = len(result)
+                    total_candidates += count
+                    processed += 1
+                    log.info(
+                        "Pipeline: admin detection — %d candidate(s) from source_item %s",
+                        count, item_id,
+                    )
+                except Exception:
+                    log.exception(
+                        "Pipeline: admin detection FAILED for source_item %s",
+                        item_id,
+                    )
+                    errors += 1
+
+            return {
+                "unprocessed_found": len(unprocessed_ids),
+                "processed": processed,
+                "candidates_created": total_candidates,
+                "errors": errors,
+            }
+
+        result = await run_in_threadpool(_run)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    duration_ms = int((time.monotonic() - start) * 1000)
+    result["duration_ms"] = duration_ms
+    return result
+
 
 @router.post("/pipeline/run-surfacing")
 async def trigger_surfacing():
