@@ -16,16 +16,17 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from openai import OpenAI, RateLimitError
+import anthropic
 from sqlalchemy import and_, func, select, update
 from sqlalchemy.orm import Session
 
-from app.core.config import get_settings
+from app.connectors.shared.credentials_utils import decrypt_value
 from app.models.orm import (
     Commitment,
     CommitmentSignal,
     SourceItem,
     UserCommitmentProfile,
+    UserSettings,
 )
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,7 @@ logger = logging.getLogger(__name__)
 _BATCH_SIZE = 20
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0
+_DEFAULT_MODEL = "claude-sonnet-4-6"
 
 _SYSTEM_PROMPT = """You are a commitment extraction engine for a workplace intelligence system.
 
@@ -107,12 +109,26 @@ def run_seed_pass(user_id: str, db: Session) -> SeedPassResult:
     Returns:
         SeedPassResult with processing stats.
     """
-    settings = get_settings()
-    if not settings.openai_api_key:
-        logger.error("Seed pass: no OPENAI_API_KEY configured")
-        return SeedPassResult(error_details=["No OPENAI_API_KEY configured"])
+    # Load Anthropic API key from user_settings
+    user_settings = db.execute(
+        select(UserSettings).where(UserSettings.user_id == user_id)
+    ).scalar_one_or_none()
 
-    client = OpenAI(api_key=settings.openai_api_key)
+    if not user_settings or not user_settings.anthropic_api_key_encrypted:
+        logger.error("Seed pass: no Anthropic API key stored for user %s", user_id)
+        return SeedPassResult(
+            error_details=[
+                "No Anthropic API key configured. "
+                "Go to Settings and add your Anthropic API key."
+            ]
+        )
+
+    api_key = decrypt_value(user_settings.anthropic_api_key_encrypted)
+    if not api_key:
+        logger.error("Seed pass: failed to decrypt Anthropic API key for user %s", user_id)
+        return SeedPassResult(error_details=["Failed to decrypt Anthropic API key"])
+
+    client = anthropic.Anthropic(api_key=api_key)
     start = time.monotonic()
     result = SeedPassResult()
 
@@ -150,7 +166,7 @@ def run_seed_pass(user_id: str, db: Session) -> SeedPassResult:
 
         for item in batch:
             try:
-                commitments_data = _extract_commitments(client, settings.openai_model, item)
+                commitments_data = _extract_commitments(client, _DEFAULT_MODEL, item)
 
                 if not commitments_data:
                     result.items_skipped += 1
@@ -192,9 +208,9 @@ def run_seed_pass(user_id: str, db: Session) -> SeedPassResult:
 
 
 def _extract_commitments(
-    client: OpenAI, model: str, item: SourceItem
+    client: anthropic.Anthropic, model: str, item: SourceItem
 ) -> list[dict]:
-    """Call LLM to extract commitments from a source item. Returns list of dicts."""
+    """Call Anthropic LLM to extract commitments from a source item. Returns list of dicts."""
     content = item.content or ""
     if len(content.strip()) < 10:
         return []
@@ -210,31 +226,31 @@ def _extract_commitments(
 
     for attempt in range(_MAX_RETRIES):
         try:
-            response = client.chat.completions.create(
+            response = client.messages.create(
                 model=model,
+                max_tokens=4096,
+                system=_SYSTEM_PROMPT,
                 messages=[
-                    {"role": "system", "content": _SYSTEM_PROMPT},
                     {"role": "user", "content": user_message},
                 ],
-                response_format={"type": "json_object"},
                 temperature=0.1,
             )
 
             usage = response.usage
             if usage:
                 logger.debug(
-                    "Seed pass LLM usage — model=%s prompt=%d completion=%d item=%s",
+                    "Seed pass LLM usage — model=%s input=%d output=%d item=%s",
                     model,
-                    usage.prompt_tokens,
-                    usage.completion_tokens,
+                    usage.input_tokens,
+                    usage.output_tokens,
                     item.id,
                 )
 
-            raw = response.choices[0].message.content
+            raw = response.content[0].text
             data = json.loads(raw)
             return data.get("commitments", [])
 
-        except RateLimitError as exc:
+        except anthropic.RateLimitError:
             if attempt < _MAX_RETRIES - 1:
                 backoff = _INITIAL_BACKOFF * (2**attempt)
                 logger.warning(
