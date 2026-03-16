@@ -45,10 +45,7 @@ async def _ensure_user_exists(user_id: str, db: AsyncSession, email: str = "") -
         stmt = pg_insert(User).values(
             id=user_id,
             email=email,
-        ).on_conflict_do_update(
-            index_elements=["id"],
-            set_={"email": email},
-        )
+        ).on_conflict_do_nothing()
     else:
         stmt = pg_insert(User).values(
             id=user_id,
