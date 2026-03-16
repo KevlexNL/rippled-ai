@@ -211,8 +211,9 @@ If the escalation cannot be expressed this way, it is probably not sufficiently 
 ---
 
 ## Work-Order Dispatch Protocol
-Work orders are dispatched by placing them in `ops/work-orders/` and committing to the repo.
-Trinity picks them up on her next cycle — do NOT send work orders as direct messages or prompts.
+Work orders are dispatched by placing them in `~/.openclaw/workspace/workorders/WO-RIPPLED-*_PENDING.md`.
+Trinity's driver cron picks them up automatically — do NOT send work orders as direct messages or prompts.
+The `ops/work-orders/` folder in this repo is the archive copy after dispatch — not the pickup location.
 Direct dispatch is reserved for genuine urgent blockers only, and only when Trinity is idle.
 
 ## Work-Order Production Rules
