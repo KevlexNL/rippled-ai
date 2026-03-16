@@ -311,11 +311,11 @@ function BestNextMovesRail({ groups, onOpen }: { groups: BestNextMovesGroup[]; o
   return (
     <div>
       <div className="text-[15px] font-semibold text-[#191919]">Best next moves</div>
-      <div className="text-[12px] text-[#9ca3af] mt-0.5 mb-1.5">Unblock work or move commitments forward.</div>
-      <div className="flex flex-col gap-1.5">
+      <div className="text-[12px] text-[#9ca3af] mt-0.5 mb-1">Unblock work or move commitments forward.</div>
+      <div className="flex flex-col gap-1">
         {groups.map((group, gi) => (
           <div key={gi}>
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium mb-1.5 mt-0 ${groupPillClasses(group.label)}`}>
+            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium mb-1 mt-0 ${groupPillClasses(group.label)}`}>
               {group.label} | {group.items.length}
             </span>
             <div className="bg-white border border-[#e8e8e6] rounded-lg overflow-hidden">
@@ -512,7 +512,7 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
 
       <StatusBar sources={sources ?? []} stats={stats} />
 
-      <main className="max-w-[1100px] mx-auto px-6 pt-0 pb-14">
+      <main className="max-w-[1100px] mx-auto px-6 pt-0 pb-12">
         {error && (
           <div className="mb-4 rounded-md bg-[#fee2e2] border border-[#fca5a5] px-4 py-3 text-[13px] text-[#991b1b] font-medium">
             {error}
@@ -542,14 +542,14 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
           </div>
         ) : (
           <>
-            <div className="pt-1 pb-0 max-w-[480px] mx-auto text-center">
+            <div className="pt-0.5 pb-0 max-w-[480px] mx-auto text-center">
               <div className="font-semibold text-[22px] text-[#191919]">What deserves your attention</div>
               <div className="text-[13px] text-[#6b7280] mt-0.5">Rippled is only surfacing the highest-priority items right now.</div>
               <div className="text-[12px] text-[#9ca3af] mt-0.5">Showing {surfaced.length} highest-priority item{surfaced.length !== 1 ? 's' : ''}</div>
             </div>
-            <div className="grid grid-cols-[1fr_320px] gap-4">
+            <div className="grid grid-cols-[1fr_320px] gap-3">
               <div>
-                <h2 className="text-[15px] font-semibold text-[#191919] mb-1.5">Surfaced for review</h2>
+                <h2 className="text-[15px] font-semibold text-[#191919] mb-1">Surfaced for review</h2>
                 <div className="flex flex-col gap-2">
                   {surfaced.map((c) => (
                     <CommitmentCard key={c.id} commitment={c} onOpen={setSelectedId} onConfirm={handleConfirm} onDismiss={handleDismiss} />

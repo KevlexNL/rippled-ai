@@ -374,7 +374,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             </div>
             <div className="flex flex-col gap-2">
               {filtered.map(c => (
-                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
+                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
               ))}
             </div>
           </div>
@@ -396,7 +396,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             </div>
             <div className="flex flex-col gap-2">
               {items.map(c => (
-                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
+                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
               ))}
             </div>
           </div>
@@ -510,7 +510,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
           </div>
         ) : (
           <div className="max-w-[720px] mx-auto">
-            <div className="pt-1 pb-3 max-w-[480px] mx-auto text-center">
+            <div className="pt-0.5 pb-2 max-w-[480px] mx-auto text-center">
               <div className="font-semibold text-[22px] text-[#191919]">All commitments</div>
               <div className="text-[13px] text-[#6b7280] mt-1">A broader view of likely commitments Rippled is tracking across your connected sources.</div>
             </div>
