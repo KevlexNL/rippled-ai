@@ -181,8 +181,8 @@ function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss }: {
     >
       <div className="flex">
         <div className="w-[3px] self-stretch flex-shrink-0" style={{ borderLeftWidth: '3px', borderLeftStyle: 'solid', borderLeftColor: color }} />
-        <div className="flex-1 px-4 py-2.5">
-          <div className="flex justify-between items-start mb-1">
+        <div className="flex-1 px-4 py-2">
+          <div className="flex justify-between items-start mb-0.5">
             <div className="flex items-center gap-2">
               <StatusBadge label={badge.label} classes={badge.classes} />
               <span className="text-[11px] text-[#b0b0ae]">{confidenceLabel(commitment.confidence_commitment)}</span>
@@ -202,9 +202,9 @@ function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss }: {
           </div>
           <div className="font-semibold text-[14px] text-[#191919] mb-0.5">{commitment.title}</div>
           {commitment.description && (
-            <div className="text-[12px] text-[#6b7280] leading-relaxed mb-1.5">{commitment.description}</div>
+            <div className="text-[12px] text-[#6b7280] leading-relaxed mb-1">{commitment.description}</div>
           )}
-          <div className="flex items-center gap-2 pt-1.5 border-t border-[#f0f0ef]">
+          <div className="flex items-center gap-2 pt-1 border-t border-[#f0f0ef]">
             <button
               className="flex items-center gap-1.5 bg-[#191919] text-white text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#333] transition-colors"
               onClick={(e) => { e.stopPropagation(); onConfirm(commitment.id) }}
@@ -236,9 +236,9 @@ function BestNextMovesRail({ groups, onOpen }: { groups: BestNextMovesGroup[]; o
   if (groups.length === 0) return null
   return (
     <div>
-      <div className="text-[17px] font-semibold text-[#191919]">Best next moves</div>
-      <div className="text-[12px] text-[#9ca3af] mt-0.5 mb-4">Unblock work or move commitments forward.</div>
-      <div className="flex flex-col gap-3">
+      <div className="text-[15px] font-semibold text-[#191919]">Best next moves</div>
+      <div className="text-[12px] text-[#9ca3af] mt-0.5 mb-3">Unblock work or move commitments forward.</div>
+      <div className="flex flex-col gap-2.5">
         {groups.map((group, gi) => (
           <div key={gi}>
             <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium mb-2 mt-0 ${groupPillClasses(group.label)}`}>
@@ -248,7 +248,7 @@ function BestNextMovesRail({ groups, onOpen }: { groups: BestNextMovesGroup[]; o
               {group.items.map((item, i) => (
                 <div
                   key={item.id}
-                  className={`px-4 py-2.5 hover:bg-[#f5f5f4] cursor-pointer transition-colors ${i > 0 ? 'border-t border-[#f0f0ef]' : ''}`}
+                  className={`px-3.5 py-2 hover:bg-[#f5f5f4] cursor-pointer transition-colors ${i > 0 ? 'border-t border-[#f0f0ef]' : ''}`}
                   onClick={() => onOpen(item.id)}
                 >
                   <div className="text-[13px] font-semibold text-[#191919] mb-0.5">{item.title}</div>
@@ -275,7 +275,7 @@ function StatusBar({ sources, stats }: { sources: { source_type: string; is_acti
   ]
   const signalsCount = stats ? (stats.emails_captured + stats.messages_processed + stats.meetings_analyzed) : 0
   return (
-    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[28px] flex items-center px-5">
+    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[26px] flex items-center px-5">
       <div className="flex items-center gap-2 flex-1">
         {types.map((t, i) => {
           const connected = sources.some(s => s.source_type === t.key && s.is_active)
@@ -423,7 +423,7 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
 
       <StatusBar sources={sources ?? []} stats={stats} />
 
-      <main className="max-w-[1100px] mx-auto px-6 py-4 pb-16">
+      <main className="max-w-[1100px] mx-auto px-6 py-2 pb-16">
         {error && (
           <div className="mb-4 rounded-md bg-[#fee2e2] border border-[#fca5a5] px-4 py-3 text-[13px] text-[#991b1b] font-medium">
             {error}
@@ -453,15 +453,15 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
           </div>
         ) : (
           <>
-            <div className="pt-1 pb-3 max-w-[480px] mx-auto text-center">
-              <div className="font-semibold text-[24px] text-[#191919]">What deserves your attention</div>
-              <div className="text-[14px] text-[#6b7280] mt-1">Rippled is only surfacing the highest-priority items right now.</div>
-              <div className="text-[12px] text-[#9ca3af] mt-1">Showing {surfaced.length} highest-priority item{surfaced.length !== 1 ? 's' : ''}</div>
+            <div className="pt-0 pb-2 max-w-[480px] mx-auto text-center">
+              <div className="font-semibold text-[22px] text-[#191919]">What deserves your attention</div>
+              <div className="text-[13px] text-[#6b7280] mt-0.5">Rippled is only surfacing the highest-priority items right now.</div>
+              <div className="text-[12px] text-[#9ca3af] mt-0.5">Showing {surfaced.length} highest-priority item{surfaced.length !== 1 ? 's' : ''}</div>
             </div>
-            <div className="grid grid-cols-[1fr_320px] gap-8">
+            <div className="grid grid-cols-[1fr_320px] gap-6">
               <div>
-                <h2 className="text-[17px] font-semibold text-[#191919] mb-3">Surfaced for review</h2>
-                <div className="flex flex-col gap-3">
+                <h2 className="text-[15px] font-semibold text-[#191919] mb-2">Surfaced for review</h2>
+                <div className="flex flex-col gap-2.5">
                   {surfaced.map((c) => (
                     <CommitmentCard key={c.id} commitment={c} onOpen={setSelectedId} onConfirm={handleConfirm} onDismiss={handleDismiss} />
                   ))}

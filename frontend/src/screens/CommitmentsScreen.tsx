@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getCommitments } from '../api/commitments'
-import { patchCommitment } from '../api/commitments'
 import { getStats } from '../api/stats'
 import type { StatsRead } from '../api/stats'
 import { listSources } from '../api/sources'
@@ -113,17 +112,14 @@ function StatusBadge({ label, classes }: { label: string; classes: string }) {
   )
 }
 
-function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDismiss }: {
+function CompactCommitmentRow({ commitment, selected, onClick }: {
   commitment: CommitmentRead
   selected: boolean
   onClick: () => void
-  onConfirm: (id: string) => void
-  onDismiss: (id: string) => void
 }) {
   const badge = badgeFromState(commitment)
   const isDelivered = commitment.lifecycle_state === 'delivered'
   const isDismissed = commitment.lifecycle_state === 'discarded' || commitment.lifecycle_state === 'closed'
-  const isOpen = !isDelivered && !isDismissed
   const person = commitment.resolved_owner || commitment.suggested_owner || null
 
   return (
@@ -156,23 +152,6 @@ function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDism
               )}
             </div>
           </div>
-          {selected && isOpen && (
-            <div className="flex items-center gap-2 pt-2 mt-2 border-t border-[#f0f0ef]">
-              <button
-                className="flex items-center gap-1.5 bg-[#191919] text-white text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#333] transition-colors"
-                onClick={(e) => { e.stopPropagation(); onConfirm(commitment.id) }}
-              >
-                Confirm
-              </button>
-              <button
-                className="flex items-center gap-1.5 bg-[#f0f0ef] text-[#191919] text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors"
-                onClick={(e) => { e.stopPropagation(); onDismiss(commitment.id) }}
-              >
-                Dismiss
-              </button>
-              <span className="text-[12px] text-[#9ca3af] ml-auto">Click to open detail panel</span>
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -187,7 +166,7 @@ function StatusBar({ sources }: { sources: { source_type: string; is_active: boo
     { key: 'calendar', label: 'Calendar' },
   ]
   return (
-    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[28px] flex items-center px-5">
+    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[26px] flex items-center px-5">
       <div className="flex items-center gap-2 flex-1">
         {types.map((t, i) => {
           const connected = sources.some(s => s.source_type === t.key && s.is_active)
@@ -236,8 +215,6 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
   const [showSettings, setShowSettings] = useState(false)
   const queryClient = useQueryClient()
 
-  const [error, setError] = useState<string | null>(null)
-
   const { data: commitments, isLoading } = useQuery({
     queryKey: ['commitments'],
     queryFn: () => getCommitments({ limit: 200 }),
@@ -261,26 +238,6 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
 
   const allCommitments = commitments ?? []
   const selectedCommitment = selectedId ? allCommitments.find(c => c.id === selectedId) ?? null : null
-
-  async function handleConfirm(id: string) {
-    try {
-      setError(null)
-      await patchCommitment(id, { lifecycle_state: 'delivered' })
-      queryClient.invalidateQueries({ queryKey: ['commitments'] })
-    } catch {
-      setError('Failed to confirm commitment')
-    }
-  }
-
-  async function handleDismiss(id: string) {
-    try {
-      setError(null)
-      await patchCommitment(id, { lifecycle_state: 'discarded' })
-      queryClient.invalidateQueries({ queryKey: ['commitments'] })
-    } catch {
-      setError('Failed to dismiss commitment')
-    }
-  }
 
   const dismissedCount = allCommitments.filter(c => c.lifecycle_state === 'discarded' || c.lifecycle_state === 'closed').length
 
@@ -315,13 +272,13 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             if (label === 'Dismissed' && !showDismissed) return null
             return (
               <div key={label}>
-                <div className="text-[13px] font-bold text-[#4b5563] mt-8 mb-2.5 flex items-center gap-2">
+                <div className="text-[14px] font-bold text-[#374151] mt-10 mb-3 flex items-center gap-2">
                   <span>{label}</span>
                   <span className="text-[12px] font-medium text-[#9ca3af]">· {items.length}</span>
                 </div>
                 <div className="flex flex-col gap-2">
                   {items.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
                   ))}
                 </div>
               </div>
@@ -343,13 +300,13 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
         if (filtered.length === 0) return null
         return (
           <div key={client}>
-            <div className="text-[13px] font-bold text-[#4b5563] mt-8 mb-2.5 flex items-center gap-2">
+            <div className="text-[14px] font-bold text-[#374151] mt-10 mb-3 flex items-center gap-2">
               <span>{client}</span>
               <span className="text-[12px] font-medium text-[#9ca3af]">· {filtered.length}</span>
             </div>
             <div className="flex flex-col gap-2">
               {filtered.map(c => (
-                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
+                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
               ))}
             </div>
           </div>
@@ -365,13 +322,13 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
         if (items.length === 0) return null
         return (
           <div key={st}>
-            <div className="text-[13px] font-bold text-[#4b5563] mt-8 mb-2.5 flex items-center gap-2">
+            <div className="text-[14px] font-bold text-[#374151] mt-10 mb-3 flex items-center gap-2">
               <span>{labels[st]}</span>
               <span className="text-[12px] font-medium text-[#9ca3af]">· {items.length}</span>
             </div>
             <div className="flex flex-col gap-2">
               {items.map(c => (
-                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
+                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
               ))}
             </div>
           </div>
@@ -404,8 +361,8 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             const contextLabel = ctxId.slice(0, 8)
             return (
               <div key={ctxId}>
-                <div className="mt-8 mb-2.5">
-                  <div className="text-[13px] font-bold text-[#4b5563] flex items-center gap-2">
+                <div className="mt-10 mb-3">
+                  <div className="text-[14px] font-bold text-[#374151] flex items-center gap-2">
                     <span>Context {contextLabel}</span>
                     <span className="text-[12px] font-medium text-[#9ca3af]">· {filtered.length}</span>
                   </div>
@@ -415,7 +372,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                 </div>
                 <div className="flex flex-col gap-2">
                   {filtered.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
                   ))}
                 </div>
               </div>
@@ -426,13 +383,13 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             if (filtered.length === 0) return null
             return (
               <div>
-                <div className="text-[13px] font-bold text-[#4b5563] mt-8 mb-2.5 flex items-center gap-2">
+                <div className="text-[14px] font-bold text-[#374151] mt-10 mb-3 flex items-center gap-2">
                   <span>No context</span>
                   <span className="text-[12px] font-medium text-[#9ca3af]">· {filtered.length}</span>
                 </div>
                 <div className="flex flex-col gap-2">
                   {filtered.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
                   ))}
                 </div>
               </div>
@@ -478,21 +435,16 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
 
       <StatusBar sources={sources ?? []} />
 
-      <main className="max-w-[1100px] mx-auto px-6 py-4 pb-16">
-        {error && (
-          <div className="mb-4 rounded-md bg-[#fee2e2] border border-[#fca5a5] px-4 py-3 text-[13px] text-[#991b1b] font-medium">
-            {error}
-          </div>
-        )}
+      <main className="max-w-[1100px] mx-auto px-6 py-2 pb-16">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-2 border-[#191919] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <div className="max-w-[720px] mx-auto">
-            <div className="pt-2 pb-4 max-w-[480px] mx-auto text-center">
-              <div className="font-semibold text-[24px] text-[#191919]">All commitments</div>
-              <div className="text-[14px] text-[#6b7280] mt-1.5">A broader view of likely commitments Rippled is tracking across your connected sources.</div>
+            <div className="pt-1 pb-3 max-w-[480px] mx-auto text-center">
+              <div className="font-semibold text-[22px] text-[#191919]">All commitments</div>
+              <div className="text-[13px] text-[#6b7280] mt-1">A broader view of likely commitments Rippled is tracking across your connected sources.</div>
             </div>
             <div className="flex items-center mb-5">
               <span className="text-[13px] text-[#4b5563] font-semibold mr-3">Group by:</span>
