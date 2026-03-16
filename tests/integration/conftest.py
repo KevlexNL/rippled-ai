@@ -119,7 +119,7 @@ async def _delete_test_user(user_id: str) -> None:
     try:
         async with engine.begin() as conn:
             # Delete non-cascading FK references first
-            for table in ("lifecycle_transitions", "commitment_signals", "commitment_ambiguities"):
+            for table in ("lifecycle_transitions", "commitment_signals", "commitment_ambiguities", "commitment_contexts"):
                 await conn.execute(
                     text(f"DELETE FROM {table} WHERE user_id = :id").bindparams(
                         bindparam("id", type_=PGUUID(as_uuid=False))

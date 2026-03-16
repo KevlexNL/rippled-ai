@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 type Tab = 'active' | 'commitments'
 
-type GroupMode = 'status' | 'client' | 'source'
+type GroupMode = 'status' | 'client' | 'source' | 'context'
 
 type BadgeType =
   | 'At risk'
@@ -28,6 +28,7 @@ interface Commitment {
   badge: BadgeType
   confidence: number
   status: CommitmentStatus
+  context_name?: string
 }
 
 type BestNextItem = {
@@ -40,6 +41,7 @@ type BestNextItem = {
   confidence: number
   person: string
   status: CommitmentStatus
+  context_name?: string
 }
 
 type BestNextGroup = {
@@ -61,6 +63,7 @@ const ACTIVE_COMMITMENTS: Commitment[] = [
     badge: 'At risk',
     confidence: 91,
     status: 'at-risk',
+    context_name: 'Acme onboarding',
   },
   {
     id: '2',
@@ -72,6 +75,7 @@ const ACTIVE_COMMITMENTS: Commitment[] = [
     badge: 'Likely missing detail',
     confidence: 72,
     status: 'likely-missing',
+    context_name: 'Acme onboarding',
   },
   {
     id: '3',
@@ -83,6 +87,7 @@ const ACTIVE_COMMITMENTS: Commitment[] = [
     badge: 'Needs review',
     confidence: 87,
     status: 'needs-review',
+    context_name: 'Vertex legal / NDA',
   },
 ]
 
@@ -101,6 +106,7 @@ const BEST_NEXT_MOVES: BestNextGroup[] = [
         confidence: 68,
         person: 'Lisa Chen',
         status: 'worth-confirming',
+        context_name: 'Marketing team deliverables',
       },
       {
         id: '5',
@@ -112,6 +118,7 @@ const BEST_NEXT_MOVES: BestNextGroup[] = [
         confidence: 79,
         person: 'Maria Reyes',
         status: 'needs-review',
+        context_name: 'Q1 finance review',
       },
     ],
   },
@@ -129,6 +136,7 @@ const BEST_NEXT_MOVES: BestNextGroup[] = [
         confidence: 65,
         person: 'Kevin B',
         status: 'worth-confirming',
+        context_name: 'Company all-hands prep',
       },
     ],
   },
@@ -146,6 +154,7 @@ const BEST_NEXT_MOVES: BestNextGroup[] = [
         confidence: 74,
         person: 'Rachel Kim',
         status: 'needs-review',
+        context_name: 'Acme onboarding',
       },
       {
         id: '12',
@@ -157,6 +166,7 @@ const BEST_NEXT_MOVES: BestNextGroup[] = [
         confidence: 66,
         person: 'Leo Tran',
         status: 'worth-confirming',
+        context_name: 'Vertex legal / NDA',
       },
     ],
   },
@@ -198,6 +208,7 @@ const ALL_COMMITMENTS: Commitment[] = [
     badge: 'Worth confirming',
     confidence: 68,
     status: 'worth-confirming',
+    context_name: 'Marketing team deliverables',
   },
   {
     id: '9',
@@ -231,6 +242,7 @@ const ALL_COMMITMENTS: Commitment[] = [
     badge: 'Needs review',
     confidence: 79,
     status: 'needs-review',
+    context_name: 'Q1 finance review',
   },
   {
     id: '6',
@@ -242,6 +254,7 @@ const ALL_COMMITMENTS: Commitment[] = [
     badge: 'Worth confirming',
     confidence: 65,
     status: 'worth-confirming',
+    context_name: 'Company all-hands prep',
   },
   {
     id: '11',
@@ -253,6 +266,7 @@ const ALL_COMMITMENTS: Commitment[] = [
     badge: 'Needs review',
     confidence: 74,
     status: 'needs-review',
+    context_name: 'Acme onboarding',
   },
   {
     id: '12',
@@ -264,6 +278,7 @@ const ALL_COMMITMENTS: Commitment[] = [
     badge: 'Worth confirming',
     confidence: 66,
     status: 'worth-confirming',
+    context_name: 'Vertex legal / NDA',
   },
 ]
 
@@ -603,6 +618,36 @@ function DetailPanel({ commitment, onClose }: { commitment: Commitment | null; o
               ))}
             </div>
           </div>
+
+          {/* Context */}
+          {commitment.context_name && (
+            <div className="px-5 py-3 border-b border-[#f0f0ef]">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1.5">Context</div>
+              <div className="text-[13px] font-medium text-[#191919] mb-1">{commitment.context_name}</div>
+              {(() => {
+                const related = ALL_COMMITMENTS.filter(
+                  (c) => c.context_name === commitment.context_name && c.id !== commitment.id
+                )
+                return (
+                  <>
+                    <div className="text-[12px] text-[#6b7280] mb-2">
+                      {related.length + 1} related commitment{related.length + 1 !== 1 ? 's' : ''} in this context
+                    </div>
+                    {related.length > 0 && (
+                      <div className="flex flex-col gap-1">
+                        {related.slice(0, 3).map((c) => (
+                          <div key={c.id} className="text-[12px] text-[#6b7280] flex items-center gap-1.5">
+                            <span className="text-[#d1d1cf]">·</span>
+                            <span>{c.title}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
+            </div>
+          )}
 
           {/* Related */}
           <div className="px-5 py-3 border-b border-[#f0f0ef]">
@@ -948,6 +993,7 @@ function CommitmentsTabContent({ onOpen, selectedId }: { onOpen: (id: string) =>
     { id: 'status', label: 'Status' },
     { id: 'client', label: 'Client' },
     { id: 'source', label: 'Source' },
+    { id: 'context', label: 'Context' },
   ]
 
   const statusOrder: BadgeType[] = ['Needs review', 'Worth confirming', 'At risk', 'Delivered', 'Dismissed']
@@ -1040,6 +1086,76 @@ function CommitmentsTabContent({ onOpen, selectedId }: { onOpen: (id: string) =>
           </div>
         )
       })
+    }
+
+    if (groupMode === 'context') {
+      // Collect unique context names
+      const contextNames = Array.from(
+        new Set(ALL_COMMITMENTS.filter((c) => c.context_name).map((c) => c.context_name!))
+      )
+      return (
+        <>
+          {contextNames.map((ctx) => {
+            let items = ALL_COMMITMENTS.filter((c) => c.context_name === ctx)
+            if (!showDismissed) items = items.filter((c) => c.badge !== 'Dismissed')
+            if (items.length === 0) return null
+            const openCount = items.filter((c) => c.status !== 'delivered' && c.status !== 'dismissed').length
+            const atRiskCount = items.filter((c) => c.status === 'at-risk').length
+            const summaryParts = []
+            if (openCount > 0) summaryParts.push(`${openCount} open`)
+            if (atRiskCount > 0) summaryParts.push(`${atRiskCount} at risk`)
+            return (
+              <div key={ctx}>
+                <div className="mt-6 mb-1">
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-[#6b7280]">{ctx} · {items.length}</div>
+                  {summaryParts.length > 0 && (
+                    <div className="text-[11px] text-[#9ca3af] mt-0.5">{summaryParts.join(' · ')}</div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  {items.map((c) => (
+                    <CompactCommitmentRow
+                      key={c.id}
+                      commitment={c}
+                      selected={selectedId === c.id}
+                      onClick={() => onOpen(c.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+          {/* No-context group at bottom */}
+          {(() => {
+            let noCtx = ALL_COMMITMENTS.filter((c) => !c.context_name)
+            if (!showDismissed) noCtx = noCtx.filter((c) => c.badge !== 'Dismissed')
+            if (noCtx.length === 0) return null
+            return (
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-[#6b7280] mt-6 mb-2">No context · {noCtx.length}</div>
+                <div className="flex flex-col gap-2">
+                  {noCtx.map((c) => (
+                    <CompactCommitmentRow
+                      key={c.id}
+                      commitment={c}
+                      selected={selectedId === c.id}
+                      onClick={() => onOpen(c.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
+          {dismissedCount > 0 && (
+            <span
+              className="text-[12px] text-[#9ca3af] hover:text-[#6b7280] cursor-pointer mt-4 inline-block hover:underline underline-offset-2"
+              onClick={() => setShowDismissed(!showDismissed)}
+            >
+              {showDismissed ? 'Hide dismissed' : `Show dismissed (${dismissedCount})`}
+            </span>
+          )}
+        </>
+      )
     }
 
     return null

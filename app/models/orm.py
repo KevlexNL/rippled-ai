@@ -122,11 +122,23 @@ class SourceItem(Base):
     is_quoted_content: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
 
 
+class CommitmentContext(Base):
+    __tablename__ = "commitment_contexts"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
 class Commitment(Base):
     __tablename__ = "commitments"
 
     id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
     user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    context_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("commitment_contexts.id", ondelete="SET NULL"), nullable=True, index=True)
     version: Mapped[int] = mapped_column(Integer, server_default="1", nullable=False)
     title: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)

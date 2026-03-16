@@ -114,6 +114,7 @@ async def create_commitment(
     commitment = Commitment(
         user_id=user_id,
         title=body.title,
+        context_id=body.context_id,
         description=body.description,
         commitment_text=body.commitment_text,
         commitment_type=body.commitment_type,
@@ -188,6 +189,8 @@ async def update_commitment(
         )
         db.add(transition)
 
+    if body.context_id is not None:
+        commitment.context_id = body.context_id
     if body.title is not None:
         commitment.title = body.title
     if body.description is not None:

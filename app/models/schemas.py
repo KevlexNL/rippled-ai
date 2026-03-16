@@ -149,12 +149,32 @@ class SourceItemCreate(_Base):
 
 
 # ---------------------------------------------------------------------------
+# CommitmentContext
+# ---------------------------------------------------------------------------
+
+class CommitmentContextRead(_Base):
+    id: str
+    user_id: str
+    name: str
+    summary: str | None
+    commitment_count: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+
+class CommitmentContextCreate(_Base):
+    name: str
+    summary: str | None = None
+
+
+# ---------------------------------------------------------------------------
 # Commitment
 # ---------------------------------------------------------------------------
 
 class CommitmentRead(_Base):
     id: str
     user_id: str
+    context_id: str | None = None
     version: int
     title: str
     description: str | None
@@ -212,6 +232,7 @@ class CommitmentRead(_Base):
 
 class CommitmentCreate(_Base):
     title: str
+    context_id: str | None = None
     description: str | None = None
     commitment_text: str | None = None
     commitment_type: CommitmentType | None = None
@@ -240,6 +261,7 @@ class CommitmentCreate(_Base):
 
 class CommitmentUpdate(_Base):
     title: str | None = None
+    context_id: str | None = None
     description: str | None = None
     lifecycle_state: LifecycleState | None = None
     resolved_owner: str | None = None

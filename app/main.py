@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
 from app.api.routes import sources, source_items, commitments, surface, candidates, digest as digest_routes
+from app.api.routes import contexts as contexts_routes
 from app.api.routes import events as events_routes, integrations as integrations_routes
 from app.api.routes import admin as admin_routes
 from app.api.routes import user_settings as user_settings_routes
@@ -41,6 +42,7 @@ async def health():
 app.include_router(sources.router, prefix=settings.api_prefix, tags=["sources"])
 app.include_router(source_items.router, prefix=settings.api_prefix, tags=["ingestion"])
 app.include_router(commitments.router, prefix=settings.api_prefix, tags=["commitments"])
+app.include_router(contexts_routes.router, prefix=settings.api_prefix, tags=["contexts"])
 app.include_router(surface.router, prefix=settings.api_prefix, tags=["surfacing"])
 app.include_router(candidates.router, prefix=settings.api_prefix, tags=["candidates"])
 app.include_router(webhook_email.router, prefix=settings.api_prefix, tags=["webhooks"])
