@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './lib/auth'
-import Dashboard from './screens/Dashboard'
+import ActiveScreen from './screens/ActiveScreen'
+import CommitmentsScreen from './screens/CommitmentsScreen'
 import Review from './screens/Review'
 import Log from './screens/Log'
 import CommitmentDetail from './screens/CommitmentDetail'
@@ -19,6 +21,17 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   if (loading) return <div className="flex h-screen items-center justify-center">Loading…</div>
   if (!session) return <Navigate to="/login" replace />
   return <>{children}</>
+}
+
+type Tab = 'active' | 'commitments'
+
+function AuthenticatedApp() {
+  const [activeTab, setActiveTab] = useState<Tab>('active')
+
+  if (activeTab === 'commitments') {
+    return <CommitmentsScreen activeTab={activeTab} onTabChange={setActiveTab} />
+  }
+  return <ActiveScreen activeTab={activeTab} onTabChange={setActiveTab} />
 }
 
 export default function App() {
@@ -40,7 +53,7 @@ export default function App() {
         path="/"
         element={
           <AuthGuard>
-            <Dashboard />
+            <AuthenticatedApp />
           </AuthGuard>
         }
       />

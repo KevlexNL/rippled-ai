@@ -62,7 +62,10 @@ export interface CommitmentRead {
   delivery_state: string | null
   counterparty_type: string | null
   counterparty_email: string | null
+  counterparty_name: string | null
   post_event_reviewed: boolean
+  // Context layer
+  context_id: string | null
   // Phase C5 — linked events
   linked_events: LinkedEventRead[] | null
   created_at: string
@@ -99,6 +102,7 @@ export interface CommitmentCreate {
   resolved_owner?: string | null
   resolved_deadline?: string | null
   target_entity?: string | null
+  counterparty_name?: string | null
 }
 
 export function getStatusColor(c: CommitmentRead): 'red' | 'yellow' | 'green' {

@@ -6,6 +6,7 @@ export interface StatsRead {
   emails_captured: number
   commitments_detected: number
   sources_connected: number
+  people_identified: number
 }
 
 export const getStats = () =>
