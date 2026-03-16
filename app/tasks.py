@@ -12,7 +12,7 @@ import logging
 
 from celery import Celery
 from celery.schedules import crontab
-from celery.signals import worker_process_init
+from celery.signals import worker_process_init, worker_ready
 from app.core.config import get_settings
 from app.db.session import get_sync_session
 from app.services.detection import run_detection
@@ -23,6 +23,9 @@ from app.services.digest import DigestAggregator, DigestFormatter, DigestDeliver
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
+
+CELERY_READINESS_FILE = "/tmp/celery_ready"
 
 
 @worker_process_init.connect
@@ -36,6 +39,18 @@ def _dispose_pool_after_fork(**kwargs):
     from app.db.session import _sync_engine
     _sync_engine.dispose(close=False)
     logger.info("Worker process init: disposed sync engine pool after fork")
+
+
+@worker_ready.connect
+def _mark_celery_ready(**kwargs):
+    """Touch readiness marker so the health server can return 200.
+
+    Called once the Celery worker pool is fully initialised.
+    The health HTTP server in start.sh checks for this file.
+    """
+    import pathlib
+    pathlib.Path(CELERY_READINESS_FILE).touch()
+    logger.info("Worker ready: created readiness marker %s", CELERY_READINESS_FILE)
 
 
 celery_app = Celery(
@@ -211,6 +226,10 @@ def run_clarification_task(self, candidate_id: str) -> dict:
 
     Analyzes the candidate, promotes if warranted, creates Clarification row.
 
+    FK race condition guard: if the candidate row isn't visible yet
+    (promotion transaction not committed), retry quickly (5s) instead
+    of the default 30s delay.
+
     Args:
         candidate_id: UUID of the CommitmentCandidate to process.
 
@@ -221,6 +240,13 @@ def run_clarification_task(self, candidate_id: str) -> dict:
         with get_sync_session() as session:
             result = run_clarification(candidate_id, session)
         return result
+    except ValueError as exc:
+        # FK race: candidate not yet visible — short retry
+        logger.warning(
+            "Clarification task: candidate %s not found (FK race?), retrying in 5s — %s",
+            candidate_id, exc,
+        )
+        raise self.retry(exc=exc, countdown=5)
     except Exception as exc:
         raise self.retry(exc=exc)
 
