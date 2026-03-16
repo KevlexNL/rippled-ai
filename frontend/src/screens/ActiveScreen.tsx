@@ -255,8 +255,8 @@ function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss }: {
     >
       <div className="flex">
         <div className="w-[3px] self-stretch flex-shrink-0" style={{ borderLeftWidth: '3px', borderLeftStyle: 'solid', borderLeftColor: color }} />
-        <div className="flex-1 px-4 py-1">
-          <div className="flex justify-between items-start mb-0.5">
+        <div className="flex-1 px-4 py-2.5">
+          <div className="flex justify-between items-start mb-1">
             <div className="flex items-center gap-2">
               <StatusBadge label={badge.label} classes={badge.classes} />
               <span className="text-[11px] text-[#b0b0ae]">{confidenceLabel(commitment.confidence_commitment)}</span>
@@ -276,9 +276,9 @@ function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss }: {
           </div>
           <div className="font-semibold text-[14px] text-[#191919] mb-0.5">{commitment.title}</div>
           {commitment.description && (
-            <div className="text-[12px] text-[#6b7280] leading-relaxed mb-0.5">{commitment.description}</div>
+            <div className="text-[12px] text-[#6b7280] leading-relaxed mb-1">{commitment.description}</div>
           )}
-          <div className="flex items-center gap-2 pt-0.5 border-t border-[#f0f0ef]">
+          <div className="flex items-center gap-2 pt-1 border-t border-[#f0f0ef]">
             <button
               className="flex items-center gap-1.5 bg-[#191919] text-white text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#333] transition-colors"
               onClick={(e) => { e.stopPropagation(); onConfirm(commitment.id) }}
@@ -542,12 +542,12 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
           </div>
         ) : (
           <>
-            <div className="pt-0.5 pb-0 max-w-[480px] mx-auto text-center">
+            <div className="pt-4 pb-2 max-w-[480px] mx-auto text-center">
               <div className="font-semibold text-[22px] text-[#191919]">What deserves your attention</div>
               <div className="text-[13px] text-[#6b7280] mt-0.5">Rippled is only surfacing the highest-priority items right now.</div>
               <div className="text-[12px] text-[#9ca3af] mt-0.5">Showing {surfaced.length} highest-priority item{surfaced.length !== 1 ? 's' : ''}</div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-2">
               <div>
                 <h2 className="text-[15px] font-semibold text-[#191919] mb-1">Surfaced for review</h2>
                 <div className="flex flex-col gap-2">

@@ -368,7 +368,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
         if (filtered.length === 0) return null
         return (
           <div key={client}>
-            <div className="text-[15px] font-bold text-[#1f2937] mt-10 mb-3 flex items-center gap-2">
+            <div className="text-[16px] font-bold text-[#111827] mt-10 mb-3 flex items-center gap-2 border-b border-[#f0f0ef] pb-2">
               <span>{client}</span>
               <span className="text-[13px] font-medium text-[#9ca3af]">· {filtered.length}</span>
             </div>
@@ -390,7 +390,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
         if (items.length === 0) return null
         return (
           <div key={st}>
-            <div className="text-[15px] font-bold text-[#1f2937] mt-10 mb-3 flex items-center gap-2">
+            <div className="text-[16px] font-bold text-[#111827] mt-10 mb-3 flex items-center gap-2 border-b border-[#f0f0ef] pb-2">
               <span>{labels[st]}</span>
               <span className="text-[13px] font-medium text-[#9ca3af]">· {items.length}</span>
             </div>
