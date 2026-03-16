@@ -1,0 +1,218 @@
+# Rippled Product Truth
+
+## Purpose
+This document captures the locked product truth that should guide OpenClaw orchestration and Trinity execution.
+
+It is intentionally compact. It is not the full spec library.
+It defines what Rippled is, what problem it solves, what the first-wave MVP is trying to prove, and which product assumptions should be treated as stable versus revisable.
+
+This structure follows the same layered approach already established in the Rippled brief: fully specify the foundational systems, semi-spec the dependent systems, and avoid overcommitting on later surfaces before live behavior exists.
+
+---
+
+## 1. Product Definition
+Rippled is an assistant that helps users avoid dropping commitments made in communication.
+
+Rippled observes communication signals, detects likely commitments, tracks their status, and surfaces the most useful ones back to the user.
+
+Rippled is not a traditional task manager whose value depends on manual entry and perfect user maintenance.
+
+---
+
+## 2. Core Problem
+The product exists to reduce cognitive load.
+
+Users casually make commitments in meetings, Slack, email, and similar communication streams. Those commitments are easy to forget, especially when they are:
+- made informally
+- missing a clear due date
+- buried in threads
+- spread across tools
+- not yet important enough to manually enter into a task system
+
+Rippled's job is not to replace judgment. Its job is to help the user notice, clarify, and follow through on likely commitments before they are missed.
+
+---
+
+## 3. Core Promise
+Rippled should help users:
+- forget fewer commitments
+- see what they likely promised
+- identify what still lacks clarity
+- notice what appears delivered or complete
+- trust the system enough to use it as a cognitive support layer
+
+The product promise is assistance, not perfect certainty.
+
+---
+
+## 4. Product Stance
+### Rippled is:
+- a commitment detection and tracking assistant
+- communication-native
+- suggestion-based
+- confidence-aware
+- low-friction
+
+### Rippled is not:
+- a standard task manager
+- a project management system
+- a system that should speak in absolutes when evidence is incomplete
+- a tool that should force the user into extra cognitive overhead just to maintain usefulness
+
+The product vision and principles underlying this stance were already identified as foundational and should be locked earlier and more tightly than downstream logic.
+
+---
+
+## 5. Product Principles
+These are the non-negotiable operating principles.
+
+### 5.1 Capture more than you show
+Rippled should observe broadly and surface selectively.
+Not every detected signal becomes a surfaced item.
+
+### 5.2 Infer more than you assert
+Rippled may infer likely meaning, but should avoid pretending to know more than the evidence supports.
+
+### 5.3 Never speak in absolutes when confidence is incomplete
+The product should favor suggestion language over brittle certainty.
+
+### 5.4 Reduce cognitive burden, do not increase it
+If Rippled creates more triage overhead than value, it is failing.
+
+### 5.5 Trust beats cleverness
+A simpler, more understandable suggestion is better than a magical but erratic one.
+
+### 5.6 Clarity beats comprehensiveness
+Users should get the most useful signal, not the most exhaustive interpretation.
+
+These principles are directly aligned with the Rippled briefing recommendations for the Product Principles / Design Philosophy Brief and the suggestion-not-truth positioning.
+
+---
+
+## 6. Initial User Context
+The earliest user context should be treated as:
+- founders or owner-operators
+- service businesses
+- client-facing operators
+- people who make many informal commitments across Slack, email, and meetings
+- users whose pain is less about planning and more about remembering, clarifying, and not letting things slip
+
+This matches the initial user/persona framing recommended for the first spec layer.
+
+---
+
+## 7. MVP Goal
+The MVP should prove that Rippled can do all of the following with enough trust to matter:
+1. ingest signals from first-wave communication sources
+2. detect likely commitments with acceptable usefulness
+3. surface the right subset of those commitments
+4. show meaningful state and evidence around them
+5. support real testing with live or backfilled data
+
+If the product is not processing real data, the MVP is not being tested meaningfully.
+
+---
+
+## 8. MVP Source Priority
+### First-wave sources
+- Slack
+- email
+- meetings
+
+### Later sources
+- calendar systems
+- task systems
+- other structured provider inputs
+
+The source model was explicitly called out as foundational, and those first-wave communication sources should be treated as core, not optional nice-to-haves, for the MVP.
+
+---
+
+## 9. Core User-Facing Surfaces
+The MVP should revolve around a small number of meaningful surfaces.
+
+### Main commitments view
+Where the user sees the most relevant likely commitments.
+
+### Shortlist or prioritization layer
+Where the most important or time-sensitive items are emphasized.
+
+### Clarification view
+Where incomplete, ambiguous, or uncertain items can be reviewed.
+
+These user-facing surfaces were already identified as the core surfaces that matter first.
+
+---
+
+## 10. Commitment Truth Model
+The product revolves around commitments, not generic tasks.
+
+A commitment is a likely promise, responsibility, or follow-up that can be inferred from communication.
+
+A commitment may be:
+- explicit or implicit
+- complete or incomplete
+- active, delivered, closed, or reopened
+- supported by one or more linked signals
+
+The exact commitment model should eventually be specified in the dedicated domain model and lifecycle briefs, but it is already clear from the Rippled spec map that commitments, sources, lifecycle, clarification, completion, and surfacing are the core product objects and behaviors.
+
+---
+
+## 11. Locked vs Revisable Truth
+### Locked now
+Treat the following as stable unless Kevin explicitly changes them:
+- Rippled is a commitment assistant, not a generic task manager
+- the product reduces cognitive load rather than demanding more manual upkeep
+- the system should suggest rather than over-assert
+- first-wave sources are communication sources
+- trust and usefulness matter more than exhaustiveness
+- the product should capture more than it surfaces
+- real data readiness is essential for meaningful MVP testing
+- main commitments, shortlist, and clarification are the key initial surfaces
+
+### Revisable after live testing
+Treat the following as adjustable:
+- exact detection rules
+- confidence thresholds
+- clarification timing
+- completion heuristics
+- notification logic
+- prioritization scoring details
+- edge-case UX states
+
+This locked-versus-revisable split is directly consistent with the recommended three-depth model for Rippled's spec library.
+
+---
+
+## 12. What Good MVP Progress Looks Like
+The product is progressing well when:
+- the app shows real signals and commitments rather than empty shells
+- integrations reflect realistic production-shaped setup, not misleading shortcuts
+- a user can understand why something is surfaced
+- a user can see what is still unclear
+- the system behaves consistently across core flows
+- debugging a missing commitment or empty dashboard is possible without guesswork
+
+---
+
+## 13. What To Avoid
+Avoid work that pushes Rippled toward:
+- heavy manual task entry
+- overconfident language
+- broad workflow bloat
+- speculative personalization before real usefulness is proven
+- surface sprawl before the core commitment loop is trustworthy
+- hacks that make MVP testing feel successful while hiding true integration limitations
+
+---
+
+## 14. Decision Standard
+When evaluating candidate work, ask:
+- does this help Rippled function more like a real commitment assistant?
+- does this reduce user cognitive load?
+- does this improve trust, realism, or debuggability?
+- is this aligned with the locked truths above?
+- is this unlikely to require strategic reversal later?
+
+If the answer is mostly no, the work is probably not a priority.
