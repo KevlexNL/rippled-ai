@@ -12,7 +12,7 @@ DECLARE
     v_ctx_finance UUID;
 BEGIN
     -- Look up Kevin's user ID (adjust email if needed)
-    SELECT id INTO v_user_id FROM users WHERE email = 'kevin@kevlex.digital' LIMIT 1;
+    SELECT id INTO v_user_id FROM users WHERE email = 'kevin.beeftink@gmail.com' LIMIT 1;
 
     IF v_user_id IS NULL THEN
         RAISE NOTICE 'User not found — skipping seed';
