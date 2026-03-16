@@ -15,12 +15,14 @@ def _make_source(
     user_id: str = "user-001",
     credentials: dict | None = None,
     is_active: bool = True,
+    last_synced_at=None,
 ):
     s = MagicMock()
     s.id = source_id
     s.user_id = user_id
     s.is_active = is_active
     s.credentials = credentials
+    s.last_synced_at = last_synced_at
     return s
 
 
@@ -97,6 +99,15 @@ class TestPollAllEmailSources:
 
 
 class TestPollSource:
+    def _mock_sync_session(self):
+        """Return a mock get_sync_session that handles the last_synced_at update."""
+        mock_db = MagicMock()
+        mock_db.get.return_value = MagicMock()  # mock Source for last_synced_at update
+        cm = MagicMock()
+        cm.__enter__ = MagicMock(return_value=mock_db)
+        cm.__exit__ = MagicMock(return_value=False)
+        return cm
+
     def test_per_source_credentials_used(self):
         """Source credentials override env-var defaults."""
         source = _make_source(
@@ -111,7 +122,7 @@ class TestPollSource:
 
         mock_conn = MagicMock()
         mock_conn.select.return_value = ("OK", [b"5"])
-        mock_conn.search.return_value = ("OK", [b""])  # no unseen messages
+        mock_conn.search.return_value = ("OK", [b""])  # no messages
         mock_conn.login.return_value = ("OK", [b"Logged in"])
 
         with patch(
@@ -125,11 +136,8 @@ class TestPollSource:
             },
         ):
             with patch("app.connectors.email.imap_poller.imaplib.IMAP4_SSL", return_value=mock_conn):
-                result = imap_poller._poll_source(source)
-
-        # IMAP4_SSL should be called with the per-source credentials, not env vars
-        import app.connectors.email.imap_poller as mod
-        from unittest.mock import call as _call
+                with patch("app.connectors.email.imap_poller.get_sync_session", return_value=self._mock_sync_session()):
+                    result = imap_poller._poll_source(source)
 
         # Verify the result is a dict (no exception, credentials were used)
         assert isinstance(result, dict)
@@ -154,7 +162,8 @@ class TestPollSource:
 
         with patch("app.connectors.email.imap_poller.get_settings", return_value=mock_settings):
             with patch("app.connectors.email.imap_poller.imaplib.IMAP4_SSL", return_value=mock_conn) as mock_imap:
-                result = imap_poller._poll_source(source)
+                with patch("app.connectors.email.imap_poller.get_sync_session", return_value=self._mock_sync_session()):
+                    result = imap_poller._poll_source(source)
 
         # Verify IMAP4_SSL called with env-var host
         mock_imap.assert_called_once_with("env-imap.example.com", 993)

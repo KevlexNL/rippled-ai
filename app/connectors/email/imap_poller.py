@@ -6,7 +6,7 @@ and ingests into the pipeline.
 import email as email_lib
 import imaplib
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.header import decode_header
 from email.utils import parseaddr, parsedate_to_datetime
 
@@ -21,6 +21,23 @@ from app.db.session import get_sync_session
 from app.models.orm import Source
 
 logger = logging.getLogger(__name__)
+
+BACKFILL_DAYS = 30
+
+
+def _build_search_criteria(last_synced_at: datetime | None) -> str:
+    """Build IMAP search criteria based on sync state.
+
+    - First sync (last_synced_at is None): SINCE <30 days ago>
+    - Subsequent syncs: SINCE <last_synced_at date>
+    """
+    if last_synced_at is None:
+        since_date = datetime.now(timezone.utc) - timedelta(days=BACKFILL_DAYS)
+    else:
+        since_date = last_synced_at
+    # IMAP SINCE uses dd-Mon-yyyy format
+    date_str = since_date.strftime("%d-%b-%Y")
+    return f'SINCE {date_str}'
 
 
 def _decode_header_value(value: str | None) -> str:
@@ -133,7 +150,11 @@ def _poll_source(source: Source) -> dict:
     """Poll a single email Source. Returns {ingested, duplicates, errors}.
 
     Reads credentials from source.credentials (with env-var fallback for
-    backward compatibility), then connects via IMAP and ingests unseen messages.
+    backward compatibility), then connects via IMAP and ingests messages.
+
+    First sync (last_synced_at is null): fetches emails from the last 30 days.
+    Subsequent syncs: fetches emails since last_synced_at (incremental).
+    Updates source.last_synced_at after a successful sync.
     """
     settings = get_settings()
 
@@ -169,6 +190,14 @@ def _poll_source(source: Source) -> dict:
 
         conn.login(user, password)
 
+        search_criteria = _build_search_criteria(source.last_synced_at)
+        is_backfill = source.last_synced_at is None
+        if is_backfill:
+            logger.info(
+                "First sync for source %s — backfilling last %d days",
+                source_id, BACKFILL_DAYS,
+            )
+
         folders = [("INBOX", "inbound"), (sent_folder, "outbound")]
 
         for folder, direction in folders:
@@ -178,7 +207,7 @@ def _poll_source(source: Source) -> dict:
                     logger.warning("IMAP folder %s not found for source %s — skipping", folder, source_id)
                     continue
 
-                _, data = conn.search(None, "UNSEEN")
+                _, data = conn.search(None, search_criteria)
                 message_nums = data[0].split() if data[0] else []
 
                 for num in message_nums:
@@ -215,6 +244,12 @@ def _poll_source(source: Source) -> dict:
                 conn.logout()
             except Exception:
                 pass
+
+    # Update last_synced_at after successful sync
+    with get_sync_session() as db:
+        db_source = db.get(Source, source_id)
+        if db_source:
+            db_source.last_synced_at = datetime.now(timezone.utc)
 
     return {"ingested": ingested, "duplicates": duplicates, "errors": errors}
 
