@@ -6,6 +6,8 @@ and ingests into the pipeline.
 import email as email_lib
 import imaplib
 import logging
+import socket
+import time
 from datetime import datetime, timedelta, timezone
 from email.header import decode_header
 from email.utils import parseaddr, parsedate_to_datetime
@@ -23,6 +25,13 @@ from app.models.orm import Source
 logger = logging.getLogger(__name__)
 
 BACKFILL_DAYS = 30
+
+# Retry config for transient DNS / connection errors
+_MAX_CONNECT_ATTEMPTS = 3
+_RETRY_BACKOFF_SECONDS = 2  # doubles each retry: 2s, 4s
+
+# Errors worth retrying (DNS resolution, transient network)
+_RETRYABLE_ERRORS = (socket.gaierror, ConnectionRefusedError, ConnectionResetError, OSError)
 
 
 def _build_search_criteria(last_synced_at: datetime | None) -> str:
@@ -162,12 +171,13 @@ def _poll_source(source: Source) -> dict:
     if source.credentials:
         creds = decrypt_credentials(source.credentials)
 
-    host = creds.get("imap_host") or settings.imap_host
+    # Sanitize hostname and user — strip whitespace to prevent DNS failures
+    host = (creds.get("imap_host") or settings.imap_host or "").strip()
     port = int(creds.get("imap_port") or settings.imap_port or 993)
     ssl = creds.get("imap_ssl", None)
     if ssl is None:
         ssl = settings.imap_ssl if settings.imap_ssl is not None else True
-    user = creds.get("imap_user") or settings.imap_user
+    user = (creds.get("imap_user") or settings.imap_user or "").strip()
     password = creds.get("imap_password") or settings.imap_password
     sent_folder = creds.get("imap_sent_folder") or settings.imap_sent_folder or "Sent"
 
@@ -183,10 +193,32 @@ def _poll_source(source: Source) -> dict:
 
     conn = None
     try:
-        if ssl:
-            conn = imaplib.IMAP4_SSL(host, port)
-        else:
-            conn = imaplib.IMAP4(host, port)
+        # Retry IMAP connection on transient DNS/network errors
+        logger.info(
+            "Connecting to IMAP host=%s port=%d ssl=%s for source %s",
+            host, port, ssl, source_id,
+        )
+        for attempt in range(1, _MAX_CONNECT_ATTEMPTS + 1):
+            try:
+                if ssl:
+                    conn = imaplib.IMAP4_SSL(host, port)
+                else:
+                    conn = imaplib.IMAP4(host, port)
+                break  # connected successfully
+            except _RETRYABLE_ERRORS as exc:
+                if attempt < _MAX_CONNECT_ATTEMPTS:
+                    wait = _RETRY_BACKOFF_SECONDS * (2 ** (attempt - 1))
+                    logger.warning(
+                        "IMAP connection attempt %d/%d failed for host=%s source=%s: %s — retrying in %ds",
+                        attempt, _MAX_CONNECT_ATTEMPTS, host, source_id, exc, wait,
+                    )
+                    time.sleep(wait)
+                else:
+                    logger.error(
+                        "IMAP connection failed after %d attempts for host=%s source=%s: %s",
+                        _MAX_CONNECT_ATTEMPTS, host, source_id, exc,
+                    )
+                    raise
 
         conn.login(user, password)
 
