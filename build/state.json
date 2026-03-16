@@ -20,10 +20,10 @@
     "C5-user-ui",
     "C6-fixes"
   ],
-  "last_action": "Phase C6 build complete — QA fixes live, awaiting Trinity review",
-  "last_action_time": "2026-03-15T00:00:00Z",
-  "next_action": "Trinity review of C6-fixes. 11 issues resolved: stats endpoint, events user_id scoping, per-source meeting webhook auth, frontend UX fixes (Gmail copy, Slack webhook URL, Dashboard 3-state empty + Upcoming events + stats row, Integrations sources management).",
+  "last_action": "WO-001 complete — Celery worker deployed to Railway, REDIS_URL fixed on both services, pipeline operational",
+  "last_action_time": "2026-03-16T09:50:00Z",
+  "next_action": "Monitor pipeline: email polling active (Kevin's Gmail connects, 0 unseen messages on first run). Next beat cycle in 5min. Deactivate test source (updated@example.com) to stop spurious errors.",
   "claude_code_session": null,
   "blockers_for_kevin": [],
-  "notes": "C6 QA fix cycle: 646 tests passing (14 new), ruff clean, frontend build clean. All 11 issues from QA sweep resolved."
+  "notes": "WO-001: Celery worker service created + deployed on Railway. REDIS_URL fixed from localhost to redis.railway.internal on both API and worker. Beat schedule running, tasks executing. Email poll succeeded for Kevin's source (0 new messages). Test source (imap.example.com) fails DNS as expected."
 }

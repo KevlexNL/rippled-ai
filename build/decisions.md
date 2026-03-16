@@ -80,3 +80,26 @@
 **Edge case:** If the candidate's `observe_until` has already elapsed by promotion time, promotion should recompute a fresh window rather than copy an expired value. Implementation note added to Phase 03 brief.
 
 **Rationale:** Clean separation of concerns. Detection sets intent; promotion enforces it at the time commitment objects are created.
+
+---
+
+## WO-001 — Celery Worker Deployment
+*Date: 2026-03-16 | Owner: Trinity*
+
+### D-WO001-01: Worker deployment strategy
+**Question:** How to deploy Celery worker as a second Railway service?
+
+**Decision:** Create empty Railway service via CLI (`railway add --service celery-worker`), set env vars to match API service, deploy via `railway up` with a temporary `railway.toml` override for the worker start command.
+
+**Start command:** `celery -A app.tasks worker --beat --loglevel=info`
+
+**Key fix:** `REDIS_URL` on both API and worker services was set to `redis://localhost:6379/0` (default). Changed to Railway's internal Redis URL: `redis://default:<password>@redis.railway.internal:6379`.
+
+**Rationale:** Railway's service model requires each service to have its own deployment. The worker shares the same repo and env vars but runs a different start command. Using `railway up` with a temporary config avoids needing GitHub-linked auto-deploy for the worker.
+
+### D-WO001-02: REDIS_URL was misconfigured on API service
+**Question:** Why was the pipeline not processing tasks even with Redis deployed?
+
+**Decision:** Fixed `REDIS_URL` on the API service from `redis://localhost:6379/0` to the Railway internal Redis URL. This was the root cause — the API could enqueue tasks to Redis, but was sending them to a non-existent localhost Redis.
+
+**Rationale:** The `settings.redis_url` default in `app/core/config.py` is `redis://localhost:6379/0`. This was never overridden in Railway env vars with the actual Redis service URL.
