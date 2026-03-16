@@ -340,7 +340,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             if (label === 'Dismissed' && !showDismissed) return null
             return (
               <div key={label}>
-                <div className="text-[15px] font-bold text-[#1f2937] mt-10 mb-3 flex items-center gap-2">
+                <div className="text-[16px] font-bold text-[#111827] mt-8 mb-3 flex items-center gap-2 border-b border-[#f0f0ef] pb-2">
                   <span>{label}</span>
                   <span className="text-[13px] font-medium text-[#9ca3af]">· {items.length}</span>
                 </div>
@@ -429,8 +429,8 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             const contextLabel = ctxId.slice(0, 8)
             return (
               <div key={ctxId}>
-                <div className="mt-10 mb-3">
-                  <div className="text-[15px] font-bold text-[#1f2937] flex items-center gap-2">
+                <div className="mt-8 mb-3 border-b border-[#f0f0ef] pb-2">
+                  <div className="text-[16px] font-bold text-[#111827] flex items-center gap-2">
                     <span>Context {contextLabel}</span>
                     <span className="text-[13px] font-medium text-[#9ca3af]">· {filtered.length}</span>
                   </div>
@@ -451,7 +451,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             if (filtered.length === 0) return null
             return (
               <div>
-                <div className="text-[15px] font-bold text-[#1f2937] mt-10 mb-3 flex items-center gap-2">
+                <div className="text-[16px] font-bold text-[#111827] mt-8 mb-3 flex items-center gap-2 border-b border-[#f0f0ef] pb-2">
                   <span>No context</span>
                   <span className="text-[13px] font-medium text-[#9ca3af]">· {filtered.length}</span>
                 </div>
@@ -503,7 +503,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
 
       <StatusBar sources={sources ?? []} />
 
-      <main className="max-w-[1100px] mx-auto px-6 py-1 pb-14">
+      <main className="max-w-[1100px] mx-auto px-6 pt-0 pb-14">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-2 border-[#191919] border-t-transparent rounded-full animate-spin" />
