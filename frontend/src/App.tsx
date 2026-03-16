@@ -11,7 +11,6 @@ import SignUpScreen from './screens/SignUpScreen'
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen'
 import ResetPasswordScreen from './screens/ResetPasswordScreen'
 import OnboardingScreen from './screens/OnboardingScreen'
-import SourcesSettingsScreen from './screens/settings/SourcesSettingsScreen'
 import AccountSettingsScreen from './screens/settings/AccountSettingsScreen'
 import IntegrationsSettingsScreen from './screens/settings/IntegrationsSettingsScreen'
 import PrototypeDashboard from './screens/PrototypeDashboard'
@@ -83,11 +82,7 @@ export default function App() {
       />
       <Route
         path="/settings/sources"
-        element={
-          <AuthGuard>
-            <SourcesSettingsScreen />
-          </AuthGuard>
-        }
+        element={<Navigate to="/settings/integrations" replace />}
       />
       <Route
         path="/settings/account"
