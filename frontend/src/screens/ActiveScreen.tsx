@@ -181,10 +181,13 @@ function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss }: {
     >
       <div className="flex">
         <div className="w-[3px] self-stretch flex-shrink-0" style={{ borderLeftWidth: '3px', borderLeftStyle: 'solid', borderLeftColor: color }} />
-        <div className="flex-1 px-4 py-3">
-          <div className="flex justify-between items-start mb-1.5">
-            <StatusBadge label={badge.label} classes={badge.classes} />
-            <div className="flex items-center gap-1 text-[12px] text-[#9ca3af] text-right flex-shrink-0 ml-3">
+        <div className="flex-1 px-4 py-2.5">
+          <div className="flex justify-between items-start mb-1">
+            <div className="flex items-center gap-2">
+              <StatusBadge label={badge.label} classes={badge.classes} />
+              <span className="text-[11px] text-[#b0b0ae]">{confidenceLabel(commitment.confidence_commitment)}</span>
+            </div>
+            <div className="flex items-center gap-1 text-[11px] text-[#9ca3af] text-right flex-shrink-0 ml-3">
               <span>{sourceIcon(commitment.context_type)}</span>
               <span>{sourceLabel(commitment.context_type)}</span>
               {person && (
@@ -197,27 +200,27 @@ function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss }: {
               <span>{formatDate(commitment.created_at)}</span>
             </div>
           </div>
-          <div className="font-semibold text-[15px] text-[#191919] mb-0.5">{commitment.title}</div>
+          <div className="font-semibold text-[14px] text-[#191919] mb-0.5">{commitment.title}</div>
           {commitment.description && (
-            <div className="text-[13px] text-[#6b7280] leading-relaxed mb-2">{commitment.description}</div>
+            <div className="text-[12px] text-[#6b7280] leading-relaxed mb-1.5">{commitment.description}</div>
           )}
-          <div className="flex items-center gap-2 pt-2 border-t border-[#f0f0ef]">
+          <div className="flex items-center gap-2 pt-1.5 border-t border-[#f0f0ef]">
             <button
-              className="flex items-center gap-1.5 bg-[#191919] text-white text-[12px] px-3 py-1.5 rounded-md font-medium hover:bg-[#333] transition-colors"
+              className="flex items-center gap-1.5 bg-[#191919] text-white text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#333] transition-colors"
               onClick={(e) => { e.stopPropagation(); onConfirm(commitment.id) }}
             >
               <IconCheck />
               Confirm
             </button>
             <button
-              className="flex items-center gap-1.5 bg-[#f0f0ef] text-[#191919] text-[12px] px-3 py-1.5 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors"
+              className="flex items-center gap-1.5 bg-[#f0f0ef] text-[#191919] text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors"
               onClick={(e) => { e.stopPropagation(); onDismiss(commitment.id) }}
             >
               <IconXMark />
               Dismiss
             </button>
             <button
-              className="flex items-center gap-1.5 border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919] text-[12px] px-3 py-1.5 rounded-md transition-colors ml-auto"
+              className="flex items-center gap-1.5 border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919] text-[12px] px-3 py-1 rounded-md transition-colors ml-auto"
               onClick={(e) => { e.stopPropagation(); onOpen(commitment.id) }}
             >
               Details <IconArrow />
@@ -234,18 +237,18 @@ function BestNextMovesRail({ groups, onOpen }: { groups: BestNextMovesGroup[]; o
   return (
     <div>
       <div className="text-[17px] font-semibold text-[#191919]">Best next moves</div>
-      <div className="text-[12px] text-[#9ca3af] mt-0.5 mb-5">Unblock work or move commitments forward.</div>
-      <div className="flex flex-col gap-4">
+      <div className="text-[12px] text-[#9ca3af] mt-0.5 mb-4">Unblock work or move commitments forward.</div>
+      <div className="flex flex-col gap-3">
         {groups.map((group, gi) => (
           <div key={gi}>
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium mb-3 mt-0 ${groupPillClasses(group.label)}`}>
-              {group.label} · {group.items.length}
+            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium mb-2 mt-0 ${groupPillClasses(group.label)}`}>
+              {group.label} | {group.items.length}
             </span>
             <div className="bg-white border border-[#e8e8e6] rounded-lg overflow-hidden">
               {group.items.map((item, i) => (
                 <div
                   key={item.id}
-                  className={`px-4 py-3 hover:bg-[#f5f5f4] cursor-pointer transition-colors ${i > 0 ? 'border-t border-[#f0f0ef]' : ''}`}
+                  className={`px-4 py-2.5 hover:bg-[#f5f5f4] cursor-pointer transition-colors ${i > 0 ? 'border-t border-[#f0f0ef]' : ''}`}
                   onClick={() => onOpen(item.id)}
                 >
                   <div className="text-[13px] font-semibold text-[#191919] mb-0.5">{item.title}</div>
@@ -263,25 +266,32 @@ function BestNextMovesRail({ groups, onOpen }: { groups: BestNextMovesGroup[]; o
   )
 }
 
-function StatusBar({ sources }: { sources: { source_type: string; is_active: boolean }[] }) {
+function StatusBar({ sources, stats }: { sources: { source_type: string; is_active: boolean }[]; stats?: StatsRead }) {
   const types = [
     { key: 'email', label: 'Email' },
     { key: 'slack', label: 'Slack' },
     { key: 'meeting', label: 'Meetings' },
+    { key: 'calendar', label: 'Calendar' },
   ]
+  const signalsCount = stats ? (stats.emails_captured + stats.messages_processed + stats.meetings_analyzed) : 0
   return (
-    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[32px] flex items-center px-5">
+    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[28px] flex items-center px-5">
       <div className="flex items-center gap-2 flex-1">
         {types.map((t, i) => {
           const connected = sources.some(s => s.source_type === t.key && s.is_active)
           return (
             <span key={t.key} className="flex items-center gap-1">
-              {i > 0 && <span className="text-[#e8e8e6] mr-2">|</span>}
+              {i > 0 && <span className="text-[#e8e8e6] mr-1.5">|</span>}
               <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${connected ? 'bg-[#16a34a]' : 'bg-[#d1d1cf]'}`} />
-              <span className="text-[12px] text-[#6b7280]">{t.label}</span>
+              <span className="text-[11px] text-[#6b7280]">{t.label}</span>
             </span>
           )
         })}
+      </div>
+      <div className="flex items-center gap-2 text-[11px] text-[#9ca3af]">
+        {signalsCount > 0 && <span>{signalsCount} signals reviewed in the last 24 hours</span>}
+        {signalsCount > 0 && <span className="text-[#e8e8e6]">|</span>}
+        <span>Watching {stats?.people_identified ?? 0} active threads</span>
       </div>
     </div>
   )
@@ -411,9 +421,9 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
         </div>
       </div>
 
-      <StatusBar sources={sources ?? []} />
+      <StatusBar sources={sources ?? []} stats={stats} />
 
-      <main className="max-w-[1100px] mx-auto px-6 py-6 pb-16">
+      <main className="max-w-[1100px] mx-auto px-6 py-4 pb-16">
         {error && (
           <div className="mb-4 rounded-md bg-[#fee2e2] border border-[#fca5a5] px-4 py-3 text-[13px] text-[#991b1b] font-medium">
             {error}
@@ -443,14 +453,14 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
           </div>
         ) : (
           <>
-            <div className="pt-2 pb-4 max-w-[480px] mx-auto text-center">
+            <div className="pt-1 pb-3 max-w-[480px] mx-auto text-center">
               <div className="font-semibold text-[24px] text-[#191919]">What deserves your attention</div>
-              <div className="text-[14px] text-[#6b7280] mt-1.5">Rippled is only surfacing the highest-priority items right now.</div>
-              <div className="text-[12px] text-[#9ca3af] mt-1.5">Showing {surfaced.length} highest-priority item{surfaced.length !== 1 ? 's' : ''}</div>
+              <div className="text-[14px] text-[#6b7280] mt-1">Rippled is only surfacing the highest-priority items right now.</div>
+              <div className="text-[12px] text-[#9ca3af] mt-1">Showing {surfaced.length} highest-priority item{surfaced.length !== 1 ? 's' : ''}</div>
             </div>
             <div className="grid grid-cols-[1fr_320px] gap-8">
               <div>
-                <h2 className="text-[17px] font-semibold text-[#191919] mb-4">Surfaced for review</h2>
+                <h2 className="text-[17px] font-semibold text-[#191919] mb-3">Surfaced for review</h2>
                 <div className="flex flex-col gap-3">
                   {surfaced.map((c) => (
                     <CommitmentCard key={c.id} commitment={c} onOpen={setSelectedId} onConfirm={handleConfirm} onDismiss={handleDismiss} />

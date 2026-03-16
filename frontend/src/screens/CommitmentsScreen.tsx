@@ -113,41 +113,66 @@ function StatusBadge({ label, classes }: { label: string; classes: string }) {
   )
 }
 
-function CompactCommitmentRow({ commitment, selected, onClick }: { commitment: CommitmentRead; selected: boolean; onClick: () => void }) {
+function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDismiss }: {
+  commitment: CommitmentRead
+  selected: boolean
+  onClick: () => void
+  onConfirm: (id: string) => void
+  onDismiss: (id: string) => void
+}) {
   const badge = badgeFromState(commitment)
   const isDelivered = commitment.lifecycle_state === 'delivered'
   const isDismissed = commitment.lifecycle_state === 'discarded' || commitment.lifecycle_state === 'closed'
-  const isFaded = isDelivered || isDismissed
+  const isOpen = !isDelivered && !isDismissed
   const person = commitment.resolved_owner || commitment.suggested_owner || null
 
   return (
     <div
       className={`rounded-lg border overflow-hidden transition-colors cursor-pointer ${
-        isDelivered ? 'bg-[#f0fdf4]' : 'bg-white'
+        isDelivered ? 'bg-[#f0fdf4] border-[#d5f0d5]' : isDismissed ? 'bg-[#fafafa] border-[#ececec]' : 'bg-white'
       } ${
-        selected ? 'bg-[#f5f5f4] border-[#d1d1cf]' : 'border-[#e8e8e6] hover:border-[#d1d1cf]'
-      } ${isFaded ? 'opacity-60' : ''}`}
+        selected ? 'bg-[#f5f5f4] border-[#d1d1cf] ring-1 ring-[#d1d1cf]' : 'border-[#e8e8e6] hover:border-[#d1d1cf]'
+      } ${isDismissed ? 'opacity-50' : ''}`}
       onClick={onClick}
     >
       <div className="flex">
         <div className="w-[3px] self-stretch flex-shrink-0" style={{ borderLeftWidth: '3px', borderLeftStyle: 'solid', borderLeftColor: accentColor(badge.status) }} />
-        <div className="flex-1 px-4 py-2.5 flex items-center gap-3 flex-wrap">
-          <StatusBadge label={badge.label} classes={badge.classes} />
-          <span className={`text-[13px] font-medium text-[#191919] flex-1 min-w-0 ${isDelivered ? 'line-through text-[#9ca3af]' : ''}`}>
-            {commitment.title}
-          </span>
-          <div className="flex items-center gap-1.5 text-[12px] text-[#9ca3af] flex-shrink-0">
-            <span>{sourceIcon(commitment.context_type)}</span>
-            <span>{sourceLabel(commitment.context_type)}</span>
-            <span>·</span>
-            <span>{formatDate(commitment.created_at)}</span>
-            {person && (
-              <>
-                <span>·</span>
-                <span>{person}</span>
-              </>
-            )}
+        <div className="flex-1 px-4 py-2.5">
+          <div className="flex items-center gap-3 flex-wrap">
+            <StatusBadge label={badge.label} classes={badge.classes} />
+            <span className={`text-[13px] font-medium flex-1 min-w-0 ${isDelivered ? 'line-through text-[#9ca3af]' : isDismissed ? 'text-[#9ca3af]' : 'text-[#191919]'}`}>
+              {commitment.title}
+            </span>
+            <div className="flex items-center gap-1.5 text-[11px] text-[#9ca3af] flex-shrink-0">
+              <span>{sourceIcon(commitment.context_type)}</span>
+              <span>{sourceLabel(commitment.context_type)}</span>
+              <span>·</span>
+              <span>{formatDate(commitment.created_at)}</span>
+              {person && (
+                <>
+                  <span>·</span>
+                  <span>{person}</span>
+                </>
+              )}
+            </div>
           </div>
+          {selected && isOpen && (
+            <div className="flex items-center gap-2 pt-2 mt-2 border-t border-[#f0f0ef]">
+              <button
+                className="flex items-center gap-1.5 bg-[#191919] text-white text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#333] transition-colors"
+                onClick={(e) => { e.stopPropagation(); onConfirm(commitment.id) }}
+              >
+                Confirm
+              </button>
+              <button
+                className="flex items-center gap-1.5 bg-[#f0f0ef] text-[#191919] text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors"
+                onClick={(e) => { e.stopPropagation(); onDismiss(commitment.id) }}
+              >
+                Dismiss
+              </button>
+              <span className="text-[12px] text-[#9ca3af] ml-auto">Click to open detail panel</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -159,17 +184,18 @@ function StatusBar({ sources }: { sources: { source_type: string; is_active: boo
     { key: 'email', label: 'Email' },
     { key: 'slack', label: 'Slack' },
     { key: 'meeting', label: 'Meetings' },
+    { key: 'calendar', label: 'Calendar' },
   ]
   return (
-    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[32px] flex items-center px-5">
+    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[28px] flex items-center px-5">
       <div className="flex items-center gap-2 flex-1">
         {types.map((t, i) => {
           const connected = sources.some(s => s.source_type === t.key && s.is_active)
           return (
             <span key={t.key} className="flex items-center gap-1">
-              {i > 0 && <span className="text-[#e8e8e6] mr-2">|</span>}
+              {i > 0 && <span className="text-[#e8e8e6] mr-1.5">|</span>}
               <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${connected ? 'bg-[#16a34a]' : 'bg-[#d1d1cf]'}`} />
-              <span className="text-[12px] text-[#6b7280]">{t.label}</span>
+              <span className="text-[11px] text-[#6b7280]">{t.label}</span>
             </span>
           )
         })}
@@ -210,6 +236,8 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
   const [showSettings, setShowSettings] = useState(false)
   const queryClient = useQueryClient()
 
+  const [error, setError] = useState<string | null>(null)
+
   const { data: commitments, isLoading } = useQuery({
     queryKey: ['commitments'],
     queryFn: () => getCommitments({ limit: 200 }),
@@ -233,6 +261,26 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
 
   const allCommitments = commitments ?? []
   const selectedCommitment = selectedId ? allCommitments.find(c => c.id === selectedId) ?? null : null
+
+  async function handleConfirm(id: string) {
+    try {
+      setError(null)
+      await patchCommitment(id, { lifecycle_state: 'delivered' })
+      queryClient.invalidateQueries({ queryKey: ['commitments'] })
+    } catch {
+      setError('Failed to confirm commitment')
+    }
+  }
+
+  async function handleDismiss(id: string) {
+    try {
+      setError(null)
+      await patchCommitment(id, { lifecycle_state: 'discarded' })
+      queryClient.invalidateQueries({ queryKey: ['commitments'] })
+    } catch {
+      setError('Failed to dismiss commitment')
+    }
+  }
 
   const dismissedCount = allCommitments.filter(c => c.lifecycle_state === 'discarded' || c.lifecycle_state === 'closed').length
 
@@ -267,10 +315,13 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             if (label === 'Dismissed' && !showDismissed) return null
             return (
               <div key={label}>
-                <div className="text-[11px] font-semibold uppercase tracking-wide text-[#6b7280] mt-6 mb-2">{label} · {items.length}</div>
+                <div className="text-[13px] font-bold text-[#4b5563] mt-8 mb-2.5 flex items-center gap-2">
+                  <span>{label}</span>
+                  <span className="text-[12px] font-medium text-[#9ca3af]">· {items.length}</span>
+                </div>
                 <div className="flex flex-col gap-2">
                   {items.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
                   ))}
                 </div>
               </div>
@@ -292,10 +343,13 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
         if (filtered.length === 0) return null
         return (
           <div key={client}>
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#6b7280] mt-6 mb-2">{client} · {filtered.length}</div>
+            <div className="text-[13px] font-bold text-[#4b5563] mt-8 mb-2.5 flex items-center gap-2">
+              <span>{client}</span>
+              <span className="text-[12px] font-medium text-[#9ca3af]">· {filtered.length}</span>
+            </div>
             <div className="flex flex-col gap-2">
               {filtered.map(c => (
-                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
+                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
               ))}
             </div>
           </div>
@@ -311,10 +365,13 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
         if (items.length === 0) return null
         return (
           <div key={st}>
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#6b7280] mt-6 mb-2">{labels[st]} · {items.length}</div>
+            <div className="text-[13px] font-bold text-[#4b5563] mt-8 mb-2.5 flex items-center gap-2">
+              <span>{labels[st]}</span>
+              <span className="text-[12px] font-medium text-[#9ca3af]">· {items.length}</span>
+            </div>
             <div className="flex flex-col gap-2">
               {items.map(c => (
-                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
+                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
               ))}
             </div>
           </div>
@@ -344,19 +401,21 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             const summaryParts: string[] = []
             if (openCount > 0) summaryParts.push(`${openCount} open`)
             if (atRiskCount > 0) summaryParts.push(`${atRiskCount} at risk`)
-            // Use first item's title context or the context_id
             const contextLabel = ctxId.slice(0, 8)
             return (
               <div key={ctxId}>
-                <div className="mt-6 mb-1">
-                  <div className="text-[11px] font-semibold uppercase tracking-wide text-[#6b7280]">Context {contextLabel} · {filtered.length}</div>
+                <div className="mt-8 mb-2.5">
+                  <div className="text-[13px] font-bold text-[#4b5563] flex items-center gap-2">
+                    <span>Context {contextLabel}</span>
+                    <span className="text-[12px] font-medium text-[#9ca3af]">· {filtered.length}</span>
+                  </div>
                   {summaryParts.length > 0 && (
                     <div className="text-[11px] text-[#9ca3af] mt-0.5">{summaryParts.join(' · ')}</div>
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
                   {filtered.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
                   ))}
                 </div>
               </div>
@@ -367,10 +426,13 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             if (filtered.length === 0) return null
             return (
               <div>
-                <div className="text-[11px] font-semibold uppercase tracking-wide text-[#6b7280] mt-6 mb-2">No context · {filtered.length}</div>
+                <div className="text-[13px] font-bold text-[#4b5563] mt-8 mb-2.5 flex items-center gap-2">
+                  <span>No context</span>
+                  <span className="text-[12px] font-medium text-[#9ca3af]">· {filtered.length}</span>
+                </div>
                 <div className="flex flex-col gap-2">
                   {filtered.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
                   ))}
                 </div>
               </div>
@@ -416,7 +478,12 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
 
       <StatusBar sources={sources ?? []} />
 
-      <main className="max-w-[1100px] mx-auto px-6 py-6 pb-16">
+      <main className="max-w-[1100px] mx-auto px-6 py-4 pb-16">
+        {error && (
+          <div className="mb-4 rounded-md bg-[#fee2e2] border border-[#fca5a5] px-4 py-3 text-[13px] text-[#991b1b] font-medium">
+            {error}
+          </div>
+        )}
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-2 border-[#191919] border-t-transparent rounded-full animate-spin" />
@@ -428,20 +495,22 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
               <div className="text-[14px] text-[#6b7280] mt-1.5">A broader view of likely commitments Rippled is tracking across your connected sources.</div>
             </div>
             <div className="flex items-center mb-5">
-              <span className="text-[12px] text-[#6b7280] font-medium mr-2">Group by:</span>
-              {groupModes.map((g) => (
-                <button
-                  key={g.id}
-                  onClick={() => setGroupMode(g.id)}
-                  className={`px-3 py-1 rounded-full text-[12px] font-medium transition-colors mr-1 ${
-                    groupMode === g.id
-                      ? 'bg-[#191919] text-white'
-                      : 'border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919]'
-                  }`}
-                >
-                  {g.label}
-                </button>
-              ))}
+              <span className="text-[13px] text-[#4b5563] font-semibold mr-3">Group by:</span>
+              <div className="inline-flex rounded-lg border border-[#e8e8e6] overflow-hidden">
+                {groupModes.map((g) => (
+                  <button
+                    key={g.id}
+                    onClick={() => setGroupMode(g.id)}
+                    className={`px-3.5 py-1.5 text-[13px] font-medium transition-colors border-r border-[#e8e8e6] last:border-r-0 ${
+                      groupMode === g.id
+                        ? 'bg-[#191919] text-white'
+                        : 'bg-white text-[#6b7280] hover:text-[#191919] hover:bg-[#f5f5f4]'
+                    }`}
+                  >
+                    {g.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
               {renderGrouped()}
