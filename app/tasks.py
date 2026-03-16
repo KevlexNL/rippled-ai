@@ -8,6 +8,8 @@ Model detection: model-assisted re-classification of ambiguous candidates (Phase
 Daily digest: morning summary of surfaced commitments via email (Phase C2).
 """
 
+import logging
+
 from celery import Celery
 from celery.schedules import crontab
 from app.core.config import get_settings
@@ -18,6 +20,7 @@ from app.services.completion import run_auto_close_sweep, run_completion_detecti
 from app.services.surfacing_runner import run_surfacing_sweep
 from app.services.digest import DigestAggregator, DigestFormatter, DigestDelivery
 
+logger = logging.getLogger(__name__)
 settings = get_settings()
 
 celery_app = Celery(
@@ -92,11 +95,14 @@ def detect_commitments(self, source_item_id: str) -> dict:
     try:
         with get_sync_session() as session:
             result = run_detection(source_item_id, session)
+        logger.debug(
+            "run_detection returned %s with %d item(s) for source_item %s",
+            type(result).__name__, len(result), source_item_id,
+        )
         return {
             "source_item_id": source_item_id,
             "status": "complete",
-            "candidates_created": result.get("candidates_created", 0),
-            "summary": result.get("summary"),
+            "candidates_created": len(result),
         }
     except Exception as exc:
         # Retry up to max_retries with exponential backoff
