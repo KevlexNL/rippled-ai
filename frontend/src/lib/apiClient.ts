@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || ''
 
-async function getUserId(): Promise<string> {
+export async function getUserId(): Promise<string> {
   const { data } = await supabase.auth.getSession()
   const userId = data.session?.user?.id
   if (!userId) throw new Error('Not authenticated')

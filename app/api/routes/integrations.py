@@ -25,7 +25,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.connectors.shared.credentials_utils import encrypt_credentials
 from app.core.config import get_settings
-from app.core.dependencies import get_current_user_id
+from app.core.dependencies import get_current_user_id, get_user_id_for_redirect
 from app.db.deps import get_db
 from app.models.orm import Source, UserSettings
 
@@ -76,7 +76,7 @@ async def _get_or_create_user_settings(user_id: str, db: AsyncSession) -> UserSe
 
 @router.get("/google/auth")
 async def google_auth(
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(get_user_id_for_redirect),
 ) -> RedirectResponse:
     """Redirect to Google OAuth consent screen."""
     _require_google_enabled()
@@ -192,7 +192,7 @@ def _require_slack_oauth_enabled():
 
 @router.get("/slack/oauth/start")
 async def slack_oauth_start(
-    user_id: str = Depends(get_current_user_id),
+    user_id: str = Depends(get_user_id_for_redirect),
 ) -> RedirectResponse:
     """Redirect to Slack's OAuth authorization page."""
     _require_slack_oauth_enabled()

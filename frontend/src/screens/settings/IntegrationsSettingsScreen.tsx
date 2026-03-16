@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getUserSettings, patchUserSettings } from '../../api/userSettings'
 import { listSources, deleteSource } from '../../api/sources'
 import type { SourceRead } from '../../api/sources'
-import { apiGet } from '../../lib/apiClient'
+import { apiGet, apiDelete, getUserId } from '../../lib/apiClient'
 
 interface GoogleStatus {
   connected: boolean
@@ -41,8 +41,15 @@ export default function IntegrationsSettingsScreen() {
   const [digestEmail, setDigestEmail] = useState('')
   const [emailEditing, setEmailEditing] = useState(false)
   const [disconnecting, setDisconnecting] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
 
   const API_BASE = import.meta.env.VITE_API_URL || ''
+
+  // Fetch authenticated user ID for OAuth redirect URLs (browser navigations
+  // cannot carry custom HTTP headers, so we pass user_id as a query param).
+  useEffect(() => {
+    getUserId().then(setUserId).catch(() => {})
+  }, [])
 
   // Read ?calendar= and ?slack= params on mount (OAuth redirect results)
   useEffect(() => {
@@ -152,17 +159,16 @@ export default function IntegrationsSettingsScreen() {
                   Token expires: {new Date(googleStatus.expiry).toLocaleDateString()}
                 </p>
               )}
-              <a
-                href={`${API_BASE}/api/v1/integrations/google/disconnect`}
+              <button
+                type="button"
                 className="text-xs text-red-500 hover:text-red-700 transition-colors"
-                onClick={(e) => {
-                  e.preventDefault()
-                  fetch(`${API_BASE}/api/v1/integrations/google/disconnect`, { method: 'DELETE' })
+                onClick={() => {
+                  apiDelete('/api/v1/integrations/google/disconnect')
                     .then(() => queryClient.invalidateQueries({ queryKey: ['google-status'] }))
                 }}
               >
                 Disconnect
-              </a>
+              </button>
             </div>
           ) : (
             <div>
@@ -170,8 +176,9 @@ export default function IntegrationsSettingsScreen() {
                 Connect Google Calendar so Rippled can surface commitments around your events.
               </p>
               <a
-                href={`${API_BASE}/api/v1/integrations/google/auth`}
+                href={userId ? `${API_BASE}/api/v1/integrations/google/auth?user_id=${userId}` : '#'}
                 className="inline-block px-4 py-2 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900 transition-colors"
+                onClick={(e) => { if (!userId) e.preventDefault() }}
               >
                 Connect Google Calendar
               </a>
@@ -200,7 +207,7 @@ export default function IntegrationsSettingsScreen() {
             <div>
               <p className="text-sm text-gray-600 mb-3">No Slack workspace connected.</p>
               <a
-                href={`${API_BASE}/api/v1/integrations/slack/oauth/start`}
+                href={userId ? `${API_BASE}/api/v1/integrations/slack/oauth/start?user_id=${userId}` : '#'}
                 className="inline-block px-4 py-2 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900 transition-colors"
               >
                 Connect Slack
@@ -231,7 +238,7 @@ export default function IntegrationsSettingsScreen() {
                       {disconnecting === activeSlack.id ? 'Disconnecting…' : 'Disconnect'}
                     </button>
                     <a
-                      href={`${API_BASE}/api/v1/integrations/slack/oauth/start`}
+                      href={userId ? `${API_BASE}/api/v1/integrations/slack/oauth/start?user_id=${userId}` : '#'}
                       className="text-xs text-gray-500 hover:text-black transition-colors"
                     >
                       Reconnect
@@ -242,7 +249,7 @@ export default function IntegrationsSettingsScreen() {
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-gray-500">Workspace disconnected</p>
                   <a
-                    href={`${API_BASE}/api/v1/integrations/slack/oauth/start`}
+                    href={userId ? `${API_BASE}/api/v1/integrations/slack/oauth/start?user_id=${userId}` : '#'}
                     className="text-xs font-medium text-black underline"
                   >
                     Reconnect

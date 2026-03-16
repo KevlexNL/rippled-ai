@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { apiPost } from '../lib/apiClient'
+import { apiPost, getUserId } from '../lib/apiClient'
 
 // IMAP auto-detection
 function detectImapHost(email: string): string {
@@ -109,6 +109,11 @@ function StepLayout({
 export default function OnboardingScreen() {
   const navigate = useNavigate()
   const API_BASE = import.meta.env.VITE_API_URL || ''
+  const [userId, setUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    getUserId().then(setUserId).catch(() => {})
+  }, [])
 
   const [step, setStep] = useState(0)
   const [connectedSources, setConnectedSources] = useState<string[]>([])
@@ -452,7 +457,7 @@ export default function OnboardingScreen() {
             <button
               onClick={() => {
                 setSlackConnecting(true)
-                window.location.href = `${API_BASE}/api/v1/integrations/slack/oauth/start`
+                window.location.href = `${API_BASE}/api/v1/integrations/slack/oauth/start${userId ? `?user_id=${userId}` : ''}`
               }}
               disabled={slackConnecting}
               className="w-full py-2.5 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900 active:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -602,7 +607,7 @@ export default function OnboardingScreen() {
         <div className="space-y-3">
           <button
             onClick={() => {
-              window.open(`${API_BASE}/api/v1/integrations/google/auth`, '_blank')
+              window.open(`${API_BASE}/api/v1/integrations/google/auth${userId ? `?user_id=${userId}` : ''}`, '_blank')
             }}
             className="w-full py-2.5 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900 active:bg-gray-800 transition-colors"
           >
