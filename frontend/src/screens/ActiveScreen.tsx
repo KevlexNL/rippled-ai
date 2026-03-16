@@ -426,7 +426,7 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
     staleTime: 55_000,
   })
 
-  const { data: sources } = useQuery({
+  const { data: sources, isLoading: sourcesLoading } = useQuery({
     queryKey: ['sources'],
     queryFn: listSources,
     refetchInterval: 30_000,
@@ -481,7 +481,7 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
     { id: 'commitments', label: 'Commitments' },
   ]
 
-  const hasConnectedSources = (sources ?? []).some(s => s.is_active)
+  const hasConnectedSources = sourcesLoading || (sources ?? []).some(s => s.is_active)
 
   return (
     <div className="min-h-screen bg-[#f9f9f8]">

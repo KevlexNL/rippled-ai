@@ -212,17 +212,17 @@ def run_clarification_task(self, candidate_id: str) -> dict:
 
 @celery_app.task(name="app.tasks.run_clarification_batch")
 def run_clarification_batch() -> dict:
-    """Sweep candidates whose observation window has expired and enqueue clarification.
+    """Sweep candidates eligible for promotion and enqueue clarification.
 
-    Queries commitment_candidates where:
-      - observe_until <= now()
-      - was_promoted = False
-      - was_discarded = False
+    Eligible candidates (all must be was_promoted=False, was_discarded=False):
+      A) observe_until <= now  (observation window expired)
+      B) confidence_score >= 0.75  (high-confidence direct promotion)
 
     Enqueues run_clarification_task for each. Returns count of enqueued tasks.
     """
+    from decimal import Decimal as D
     from datetime import datetime, timezone
-    from sqlalchemy import select, and_
+    from sqlalchemy import select, and_, or_
     from app.models.orm import CommitmentCandidate
 
     enqueued = 0
@@ -230,9 +230,12 @@ def run_clarification_batch() -> dict:
         now = datetime.now(timezone.utc)
         stmt = select(CommitmentCandidate.id).where(
             and_(
-                CommitmentCandidate.observe_until <= now,
                 CommitmentCandidate.was_promoted.is_(False),
                 CommitmentCandidate.was_discarded.is_(False),
+                or_(
+                    CommitmentCandidate.observe_until <= now,
+                    CommitmentCandidate.confidence_score >= D("0.75"),
+                ),
             )
         )
         candidate_ids = session.execute(stmt).scalars().all()

@@ -70,10 +70,13 @@ def run_clarification(candidate_id: str, db: Session) -> dict:
     )
 
     # Step 4 — defer if window is open and no critical issues
+    # High-confidence candidates (>= 0.75) skip the observation window
+    from decimal import Decimal as D
     from app.services.clarification.analyzer import _is_critical
     critical_issues = [i for i in analysis.issue_types if _is_critical(i)]
+    high_confidence = (candidate.confidence_score or D("0")) >= D("0.75")
 
-    if analysis.observation_window_status == "open" and not critical_issues:
+    if analysis.observation_window_status == "open" and not critical_issues and not high_confidence:
         logger.info("Candidate %s deferred — observation window open, no critical issues", candidate_id)
         return {"status": "deferred", "candidate_id": str(candidate_id)}
 
