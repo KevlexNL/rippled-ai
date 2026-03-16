@@ -3,8 +3,8 @@
 Add user_id column to events table to scope events per user.
 Required fix: GET /events was returning all users' events (C3 bug).
 
-Revision ID: a1b2c3d4e5f6
-Revises: f0a1b2c3d4e5
+Revision ID: a1b2c3d4e5f7
+Revises: a1b2c3d4e5f6
 Create Date: 2026-03-15
 
 """
@@ -15,8 +15,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
 
 # revision identifiers, used by Alembic.
-revision: str = 'a1b2c3d4e5f6'
-down_revision: Union[str, Sequence[str], None] = 'f0a1b2c3d4e5'
+revision: str = 'a1b2c3d4e5f7'
+down_revision: Union[str, Sequence[str], None] = 'a1b2c3d4e5f6'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

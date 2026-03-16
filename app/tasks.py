@@ -721,3 +721,50 @@ def run_post_event_resolution() -> dict:
         pairs, source_item_map = PostEventResolver.load_pairs(db, now_dt)
         resolver = PostEventResolver()
         return resolver.run(db, commitment_event_pairs=pairs, source_item_map=source_item_map, now=now_dt)
+
+
+@celery_app.task(
+    bind=True,
+    max_retries=1,
+    default_retry_delay=60,
+    name="app.tasks.run_seed_pass_task",
+)
+def run_seed_pass_task(self, user_id: str) -> dict:
+    """Run LLM seed pass across all source items for a user — WO-RIPPLED-SEED-PASS.
+
+    Creates Commitment + CommitmentSignal rows directly, bypassing pattern detection.
+    After extraction, builds a user commitment profile for the learning loop.
+
+    Args:
+        user_id: UUID string of the target user.
+
+    Returns:
+        Dict with processing stats.
+    """
+    from app.services.detection.seed_detector import run_seed_pass, build_user_profile
+
+    try:
+        with get_sync_session() as db:
+            result = run_seed_pass(user_id, db)
+
+        # Build profile in a separate session (seed pass already committed)
+        if result.commitments_created > 0:
+            with get_sync_session() as db:
+                profile = build_user_profile(user_id, db)
+        else:
+            profile = {}
+
+        return {
+            "user_id": user_id,
+            "items_processed": result.items_processed,
+            "items_skipped": result.items_skipped,
+            "commitments_created": result.commitments_created,
+            "signals_created": result.signals_created,
+            "errors": result.errors,
+            "duration_ms": result.duration_ms,
+            "profile": profile,
+            "error_details": result.error_details[:10],  # cap for serialization
+        }
+    except Exception as exc:
+        logger.error("Seed pass task failed for user %s: %s", user_id, exc)
+        raise self.retry(exc=exc)

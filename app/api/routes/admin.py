@@ -21,6 +21,7 @@ Endpoint overview:
   POST   /admin/pipeline/run-nudge
   POST   /admin/pipeline/run-digest-preview
   POST   /admin/pipeline/run-post-event-resolver
+  POST   /admin/seed-detection
   POST   /admin/test/seed-commitment
   DELETE /admin/test/cleanup
 """
@@ -938,6 +939,52 @@ async def trigger_post_event_resolver():
         "processed": result.get("processed", 0),
         "escalated": result.get("escalated", 0),
         "duration_ms": duration_ms,
+    }
+
+
+# ===========================================================================
+# Seed Detection — WO-RIPPLED-SEED-PASS
+# ===========================================================================
+
+@router.post("/seed-detection")
+async def run_seed_detection(user_id: str):
+    """Run LLM seed pass across all source items for a user.
+
+    Bypasses pattern detection entirely and sends each item to the LLM
+    for direct commitment extraction. Creates Commitment + CommitmentSignal rows.
+    Idempotent: safe to re-run without duplicates.
+
+    Query params:
+        user_id: UUID of the target user.
+    """
+    start = time.monotonic()
+    try:
+        def _run():
+            from app.services.detection.seed_detector import run_seed_pass, build_user_profile
+            with get_sync_session() as db:
+                result = run_seed_pass(user_id, db)
+
+            profile = {}
+            if result.commitments_created > 0:
+                with get_sync_session() as db:
+                    profile = build_user_profile(user_id, db)
+
+            return result, profile
+
+        result, profile = await run_in_threadpool(_run)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    duration_ms = int((time.monotonic() - start) * 1000)
+    return {
+        "items_processed": result.items_processed,
+        "items_skipped": result.items_skipped,
+        "commitments_created": result.commitments_created,
+        "signals_created": result.signals_created,
+        "errors": result.errors,
+        "duration_ms": duration_ms,
+        "profile": profile,
+        "error_details": result.error_details[:10],
     }
 
 

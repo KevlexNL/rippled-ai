@@ -121,6 +121,7 @@ class SourceItem(Base):
     ingested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, nullable=True)
     is_quoted_content: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    seed_processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class CommitmentContext(Base):
@@ -357,6 +358,21 @@ class UserSettings(Base):
     # LLM API key storage (Fernet-encrypted)
     anthropic_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
     openai_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class UserCommitmentProfile(Base):
+    __tablename__ = "user_commitment_profiles"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    trigger_phrases: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    high_signal_senders: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    domains: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    total_items_processed: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
+    total_commitments_found: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
+    last_seed_pass_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
