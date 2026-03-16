@@ -1,7 +1,7 @@
 # Work Order
 
 ## Title
-Diagnose and fix empty ingestion pipeline for Kevin's account
+Deploy Celery worker + Redis to Railway and unblock the ingestion pipeline
 
 ## Primary Type
 Blocker
@@ -10,57 +10,66 @@ Blocker
 Critical
 
 ## Why This Matters
-Kevin's account has 4 active sources configured (email ×2, Slack, meeting) but zero source_items and zero commitment_signals in the database. All 8 existing commitments are test fixtures seeded against other users. The dashboard being empty is not a UI problem — it's a pipeline problem. Until real data flows, MVP testing is meaningless.
+The entire Rippled pipeline (ingestion, detection, clarification, surfacing) runs as Celery tasks. Railway currently only deploys the FastAPI server via `uvicorn`. There is no Celery worker service deployed, and `REDIS_URL` defaults to `localhost:6379` — meaning the task broker doesn't exist in production. No data has ever been ingested. Until the worker runs, the dashboard will remain empty regardless of source configuration or API keys.
 
 ## Problem Observed
-- `source_items` table: 0 rows, `last ingested: None`
-- `commitment_signals` table: 0 rows
-- `candidate_commitments` table: 0 rows
-- Sources registered: email (kevin.beeftink@gmail.com, active), Slack (Kevlex Academy, active), meeting (active)
-- Credentials are present and encrypted in sources table
-- No evidence the ingestor has ever run for Kevin's user
+- `railway.toml` startCommand: `uvicorn app.main:app` only — no worker
+- No Procfile or separate Railway service for Celery worker
+- `redis_url` defaults to `redis://localhost:6379/0` — no Redis service on Railway
+- `source_items`: 0 rows, `last ingested: None`
+- `commitment_signals`: 0 rows, `candidate_commitments`: 0 rows
+- Kevin's account has 4 active sources (email ×2, Slack, meeting) — all configured, none ever polled
 
 ## Desired Behavior
-- At least one source (email is lowest-friction to verify) successfully ingests source items
-- `source_items` table contains rows with Kevin's user_id
-- Pipeline continues through normalization → commitment_signals → candidate_commitments
-- Dashboard shows real commitment candidates for Kevin's account
+- Redis service running on Railway (or use Railway's Redis plugin)
+- Celery worker deployed as a separate Railway service pointing to the same repo
+- Worker picks up beat schedule: ingestion, detection, clarification, surfacing, model-detection sweeps
+- After first worker run: `source_items` contains rows for Kevin's user
+- Pipeline continues: signals → candidates → surfaced commitments visible in dashboard
 
 ## Relevant Product Truth
 - MVP Goal §7: "If the product is not processing real data, the MVP is not being tested meaningfully"
-- Observability §4 in inspection-cycle.md: determine where in the chain the break is
+- Observability §4: determine where in the chain the break is — **it's here**
 
 ## Scope
-- Identify whether the ingestor is configured to run (cron/celery/manual trigger)
-- Trace the pipeline for Kevin's email source end-to-end
-- Fix the specific failure point (misconfiguration, unstarted worker, missing trigger, credential decrypt failure, etc.)
-- Add a log entry or observable state that confirms successful ingestion
-- Verify at least one source_item appears for kevin.beeftink@gmail.com
+- Add Redis service to Railway project (Railway Redis plugin or Upstash)
+- Set `REDIS_URL` environment variable in Railway for both API and worker services
+- Add Celery worker as a second Railway service with startCommand: `celery -A app.tasks worker --loglevel=info`
+- Optionally add Celery beat as a third service or combine with worker: `celery -A app.tasks worker --beat --loglevel=info`
+- Set `ANTHROPIC_API_KEY` env var in Railway (or ensure user-stored key is used by detection service — verify which path the detection service uses)
+- Verify at least one ingestion run completes for Kevin's email source
+- Verify `source_items` rows appear
 
 ## Out of Scope
-- Fixing Slack DM limitations (separate WO)
-- Meeting source (lower priority until email is proven)
+- Changing the task queue architecture (Celery + Redis stays)
+- Slack OAuth (WO-002)
 - UI changes
-- Changing credential storage method
 
 ## Constraints
-- Credentials are Fernet-encrypted in the DB — verify decrypt works in current environment
-- Do not alter Kevin's source config or credentials without confirming they still work
+- Railway worker service must point to same codebase — use same repo, different startCommand
+- Fernet encryption key (`FERNET_KEY` or equivalent) must be same across API + worker services
+- Do not alter source credentials
 
 ## Acceptance Criteria
-- [ ] `source_items` contains at least 1 row for Kevin's user_id after trigger
-- [ ] Pipeline continues: at least 1 `commitment_signals` row derived from that source_item
-- [ ] Trinity can describe exactly where the chain was broken and what fixed it
+- [ ] Redis service running and reachable from both API and worker
+- [ ] Celery worker logs show task receipt and execution
+- [ ] `source_items` contains at least 1 row for Kevin's user_id after worker runs
+- [ ] At least 1 `commitment_signals` row derived from ingested source item
+- [ ] Dashboard shows at least one surfaced item (or clear empty state with real data behind it)
 
 ## Verification
-- Direct DB query: `SELECT COUNT(*) FROM source_items WHERE user_id = '441f9c1f-9428-477e-a04f-fb8d5e654ec2'`
-- Pipeline log trace shows successful ingest → normalize → signal steps
-- Dashboard shows at least one commitment candidate for Kevin
+- Railway service logs: worker shows `[celery@...] ready` and task execution logs
+- DB: `SELECT COUNT(*) FROM source_items WHERE user_id = '441f9c1f-9428-477e-a04f-fb8d5e654ec2'`
+- DB: `SELECT COUNT(*) FROM commitment_signals`
+- Browser: dashboard reflects real data or correct empty state with data confirmed in DB
 
 ## Escalate to Mero if
-- Credential decryption fails and requires a credential refresh from Kevin
-- The ingestor requires a running Celery worker that is not deployed on Railway
-- Source config is structurally broken and requires Kevin to reconnect the integration
+- Railway Redis plugin requires Kevin to approve billing
+- `ANTHROPIC_API_KEY` env var for Railway needs Kevin to provide the key
+- Fernet encryption key not available in Railway env vars (needs Kevin to set it)
 
 ## Requires Approval
-No — this is a blocker fix aligned with existing source strategy.
+No — this is a blocker fix. Infrastructure deployment within existing architecture.
+
+---
+*Updated 2026-03-16 after codebase + visual inspection confirmed root cause.*
