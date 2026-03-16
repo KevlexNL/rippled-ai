@@ -12,6 +12,7 @@ import logging
 
 from celery import Celery
 from celery.schedules import crontab
+from celery.signals import worker_process_init
 from app.core.config import get_settings
 from app.db.session import get_sync_session
 from app.services.detection import run_detection
@@ -22,6 +23,20 @@ from app.services.digest import DigestAggregator, DigestFormatter, DigestDeliver
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
+
+@worker_process_init.connect
+def _dispose_pool_after_fork(**kwargs):
+    """Dispose sync engine's connection pool after Celery prefork.
+
+    SQLAlchemy connection pools are not safe across fork() boundaries.
+    Disposing with close=False lets the parent keep its connections while
+    forcing each child worker to create fresh ones on demand.
+    """
+    from app.db.session import _sync_engine
+    _sync_engine.dispose(close=False)
+    logger.info("Worker process init: disposed sync engine pool after fork")
+
 
 celery_app = Celery(
     "rippled",
