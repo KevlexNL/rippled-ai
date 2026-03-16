@@ -37,13 +37,14 @@ export default function IntegrationsSettingsScreen() {
   const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
   const [calendarBanner, setCalendarBanner] = useState<'connected' | 'error' | null>(null)
+  const [slackBanner, setSlackBanner] = useState<'connected' | 'error' | null>(null)
   const [digestEmail, setDigestEmail] = useState('')
   const [emailEditing, setEmailEditing] = useState(false)
   const [disconnecting, setDisconnecting] = useState<string | null>(null)
 
   const API_BASE = import.meta.env.VITE_API_URL || ''
 
-  // Read ?calendar= param on mount (OAuth redirect result)
+  // Read ?calendar= and ?slack= params on mount (OAuth redirect results)
   useEffect(() => {
     const calendarParam = searchParams.get('calendar')
     if (calendarParam === 'connected') {
@@ -51,6 +52,13 @@ export default function IntegrationsSettingsScreen() {
       queryClient.invalidateQueries({ queryKey: ['google-status'] })
     } else if (calendarParam === 'error') {
       setCalendarBanner('error')
+    }
+    const slackParam = searchParams.get('slack')
+    if (slackParam === 'connected') {
+      setSlackBanner('connected')
+      queryClient.invalidateQueries({ queryKey: ['sources'] })
+    } else if (slackParam === 'error') {
+      setSlackBanner('error')
     }
   }, [searchParams, queryClient])
 
@@ -172,6 +180,18 @@ export default function IntegrationsSettingsScreen() {
         </div>
       </div>
 
+      {/* Slack OAuth banner */}
+      {slackBanner === 'connected' && (
+        <div className="mx-4 mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">
+          Slack connected successfully.
+        </div>
+      )}
+      {slackBanner === 'error' && (
+        <div className="mx-4 mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+          Failed to connect Slack. Please try again.
+        </div>
+      )}
+
       {/* Slack section */}
       <div className="px-4 mb-6">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Slack</p>
@@ -179,13 +199,12 @@ export default function IntegrationsSettingsScreen() {
           {slackSources.length === 0 ? (
             <div>
               <p className="text-sm text-gray-600 mb-3">No Slack workspace connected.</p>
-              <button
-                type="button"
-                onClick={() => navigate('/onboarding?step=2')}
-                className="text-sm font-medium text-black underline hover:text-gray-700 transition-colors"
+              <a
+                href={`${API_BASE}/api/v1/integrations/slack/oauth/start`}
+                className="inline-block px-4 py-2 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900 transition-colors"
               >
                 Connect Slack
-              </button>
+              </a>
             </div>
           ) : (
             <div className="space-y-3">
@@ -211,25 +230,23 @@ export default function IntegrationsSettingsScreen() {
                     >
                       {disconnecting === activeSlack.id ? 'Disconnecting…' : 'Disconnect'}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/onboarding?step=2')}
+                    <a
+                      href={`${API_BASE}/api/v1/integrations/slack/oauth/start`}
                       className="text-xs text-gray-500 hover:text-black transition-colors"
                     >
                       Reconnect
-                    </button>
+                    </a>
                   </div>
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-gray-500">Workspace disconnected</p>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/onboarding?step=2')}
+                  <a
+                    href={`${API_BASE}/api/v1/integrations/slack/oauth/start`}
                     className="text-xs font-medium text-black underline"
                   >
                     Reconnect
-                  </button>
+                  </a>
                 </div>
               )}
 

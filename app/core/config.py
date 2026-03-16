@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     slack_team_id: str = ""
     slack_user_id: str = ""  # the Rippled user's Slack user ID
 
+    # Slack OAuth
+    slack_client_id: str = ""
+    slack_client_secret: str = ""
+    slack_oauth_redirect_uri: str = ""  # e.g. https://rippled-ai-production.up.railway.app/api/v1/integrations/slack/oauth/callback
+
     # Meeting connector
     meeting_webhook_secret: str = ""
 

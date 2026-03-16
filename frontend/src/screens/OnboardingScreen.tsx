@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { apiPost } from '../lib/apiClient'
@@ -125,15 +125,8 @@ export default function OnboardingScreen() {
   const [emailConnectLoading, setEmailConnectLoading] = useState(false)
   const [emailAccessExpanded, setEmailAccessExpanded] = useState(false)
 
-  // Step 2 — Slack
-  const [slackForm, setSlackForm] = useState({
-    botToken: '',
-    signingSecret: '',
-    slackUserId: '',
-  })
-  const [slackTestResult, setSlackTestResult] = useState<TestResult | null>(null)
-  const [slackTestLoading, setSlackTestLoading] = useState(false)
-  const [slackConnectLoading, setSlackConnectLoading] = useState(false)
+  // Step 2 — Slack (OAuth flow)
+  const [slackConnecting, setSlackConnecting] = useState(false)
 
   // Step 3 — Meetings
   const [meetingPlatform, setMeetingPlatform] = useState<MeetingPlatform>('fireflies')
@@ -200,46 +193,6 @@ export default function OnboardingScreen() {
       })
     } finally {
       setEmailConnectLoading(false)
-    }
-  }
-
-  async function testSlack() {
-    setSlackTestLoading(true)
-    setSlackTestResult(null)
-    try {
-      const result = await apiPost<TestResult>('/api/v1/sources/test/slack', {
-        bot_token: slackForm.botToken,
-        signing_secret: slackForm.signingSecret,
-        slack_user_id: slackForm.slackUserId,
-      })
-      setSlackTestResult({ success: true, message: result.message, workspace: result.workspace, bot_user: result.bot_user })
-    } catch (err) {
-      setSlackTestResult({
-        success: false,
-        error: err instanceof Error ? err.message : 'Connection test failed',
-      })
-    } finally {
-      setSlackTestLoading(false)
-    }
-  }
-
-  async function connectSlack() {
-    setSlackConnectLoading(true)
-    try {
-      await apiPost('/api/v1/sources/setup/slack', {
-        bot_token: slackForm.botToken,
-        signing_secret: slackForm.signingSecret,
-        slack_user_id: slackForm.slackUserId,
-      })
-      setConnectedSources((prev) => [...prev, 'slack'])
-      setStep(3)
-    } catch (err) {
-      setSlackTestResult({
-        success: false,
-        error: err instanceof Error ? err.message : 'Failed to connect Slack',
-      })
-    } finally {
-      setSlackConnectLoading(false)
     }
   }
 
@@ -420,9 +373,8 @@ export default function OnboardingScreen() {
     )
   }
 
-  // Step 2 — Slack
+  // Step 2 — Slack (OAuth)
   if (step === 2) {
-    const canConnectSlack = slackTestResult?.success || (slackForm.botToken.length > 0 && slackForm.signingSecret.length > 0)
     return (
       <StepLayout>
         <div className="mb-6">
@@ -436,27 +388,20 @@ export default function OnboardingScreen() {
         </div>
 
         <div className="mb-6 p-4 rounded-lg bg-gray-50 border border-gray-200">
-          <p className="text-sm font-medium text-black mb-3">Setup instructions</p>
-          <ol className="space-y-2 text-sm text-gray-600">
+          <p className="text-sm font-medium text-black mb-3">What happens when you connect</p>
+          <ul className="space-y-2 text-sm text-gray-600">
             <li className="flex gap-2">
-              <span className="shrink-0 font-medium text-black">1.</span>
-              <span>
-                Go to{' '}
-                <a
-                  href="https://api.slack.com/apps"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:text-black"
-                >
-                  api.slack.com/apps
-                </a>{' '}
-                and create a new app
-              </span>
+              <span className="shrink-0 text-green-600 font-medium">&#10003;</span>
+              <span>Rippled reads channel messages and DMs to detect commitments</span>
             </li>
             <li className="flex gap-2">
-              <span className="shrink-0 font-medium text-black">2.</span>
+              <span className="shrink-0 text-green-600 font-medium">&#10003;</span>
+              <span>It only reads — never sends or modifies messages</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="shrink-0 text-green-600 font-medium">&#10003;</span>
               <span>
-                Under &quot;OAuth &amp; Permissions&quot;, add scopes:{' '}
+                Scopes requested:{' '}
                 <code className="text-xs bg-white border border-gray-200 rounded px-1 py-0.5">
                   channels:history
                 </code>
@@ -466,11 +411,11 @@ export default function OnboardingScreen() {
                 </code>
                 ,{' '}
                 <code className="text-xs bg-white border border-gray-200 rounded px-1 py-0.5">
-                  groups:history
+                  im:history
                 </code>
                 ,{' '}
                 <code className="text-xs bg-white border border-gray-200 rounded px-1 py-0.5">
-                  im:history
+                  im:read
                 </code>
                 ,{' '}
                 <code className="text-xs bg-white border border-gray-200 rounded px-1 py-0.5">
@@ -478,99 +423,47 @@ export default function OnboardingScreen() {
                 </code>
               </span>
             </li>
-            <li className="flex gap-2">
-              <span className="shrink-0 font-medium text-black">3.</span>
-              <span>
-                Install the app to your workspace and copy the Bot User OAuth Token (starts with{' '}
-                <code className="text-xs bg-white border border-gray-200 rounded px-1 py-0.5">
-                  xoxb-
-                </code>
-                )
-              </span>
-            </li>
-            <li className="flex gap-2">
-              <span className="shrink-0 font-medium text-black">4.</span>
-              <span>
-                Under &quot;Event Subscriptions&quot;, enable events and enter your webhook URL:
-              </span>
-            </li>
-          </ol>
-          <div className="mt-2 ml-6 p-2 rounded bg-white border border-gray-200">
-            <p className="text-xs font-mono text-black break-all">
-              {API_BASE}/api/v1/webhooks/slack/events
-            </p>
-          </div>
-          <p className="mt-2 ml-6 text-xs text-gray-500">
-            Copy the Signing Secret shown on that page and paste it below.
-          </p>
+          </ul>
         </div>
 
-        {connectedSources.includes('slack') && (
-          <div className="mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
-            <p className="text-sm font-medium text-black mb-1">Step 2: Invite bot to channels</p>
-            <p className="text-sm text-gray-600">
-              To receive signals from a channel, type this in that channel:
-            </p>
-            <p className="mt-1 font-mono text-sm text-black">
-              /invite @Rippled
+        {connectedSources.includes('slack') ? (
+          <div className="space-y-4">
+            <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+              <p className="text-sm text-green-700 font-medium">Slack connected successfully</p>
+            </div>
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm font-medium text-black mb-1">Invite bot to channels</p>
+              <p className="text-sm text-gray-600">
+                To receive signals from a channel, type this in that channel:
+              </p>
+              <p className="mt-1 font-mono text-sm text-black">
+                /invite @Rippled
+              </p>
+            </div>
+            <button
+              onClick={() => setStep(3)}
+              className="w-full py-2.5 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900 active:bg-gray-800 transition-colors"
+            >
+              Continue
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <button
+              onClick={() => {
+                setSlackConnecting(true)
+                window.location.href = `${API_BASE}/api/v1/integrations/slack/oauth/start`
+              }}
+              disabled={slackConnecting}
+              className="w-full py-2.5 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900 active:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {slackConnecting ? 'Redirecting to Slack…' : 'Connect Slack'}
+            </button>
+            <p className="text-xs text-gray-400 text-center">
+              You&apos;ll be redirected to Slack to authorize Rippled, then sent back here.
             </p>
           </div>
         )}
-
-        <div className="space-y-4">
-          <FormField
-            label="Bot token"
-            id="bot-token"
-            value={slackForm.botToken}
-            onChange={(v) => setSlackForm((prev) => ({ ...prev, botToken: v }))}
-            placeholder="xoxb-..."
-          />
-          <FormField
-            label="Signing secret"
-            id="signing-secret"
-            type="password"
-            value={slackForm.signingSecret}
-            onChange={(v) => setSlackForm((prev) => ({ ...prev, signingSecret: v }))}
-            placeholder="••••••••••••"
-          />
-          <p className="text-xs text-gray-500 -mt-2">
-            Found in your Slack App &rarr; Basic Information &rarr; App Credentials &rarr; Signing Secret
-          </p>
-          <FormField
-            label="Your Slack user ID"
-            id="slack-user-id"
-            value={slackForm.slackUserId}
-            onChange={(v) => setSlackForm((prev) => ({ ...prev, slackUserId: v }))}
-            placeholder="U12345678"
-          />
-
-          {slackTestResult && (
-            <Banner
-              success={slackTestResult.success}
-              message={
-                slackTestResult.success
-                  ? `Connected to ${slackTestResult.workspace ?? 'workspace'} as ${slackTestResult.bot_user ?? 'bot'}`
-                  : (slackTestResult.error ?? 'Connection test failed')
-              }
-            />
-          )}
-
-          <button
-            onClick={testSlack}
-            disabled={slackTestLoading || !slackForm.botToken || !slackForm.signingSecret}
-            className="w-full py-2.5 rounded-lg border border-gray-200 text-black text-sm font-medium hover:bg-gray-50 active:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {slackTestLoading ? 'Testing…' : 'Test connection'}
-          </button>
-
-          <button
-            onClick={connectSlack}
-            disabled={slackConnectLoading || !canConnectSlack}
-            className="w-full py-2.5 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-900 active:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {slackConnectLoading ? 'Connecting…' : 'Connect Slack'}
-          </button>
-        </div>
 
         <div className="mt-6 text-center">
           <button
