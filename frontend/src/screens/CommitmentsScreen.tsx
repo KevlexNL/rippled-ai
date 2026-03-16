@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getCommitments } from '../api/commitments'
+import { getCommitments, patchCommitment } from '../api/commitments'
 import { getStats } from '../api/stats'
 import type { StatsRead } from '../api/stats'
 import { listSources } from '../api/sources'
@@ -112,23 +112,50 @@ function StatusBadge({ label, classes }: { label: string; classes: string }) {
   )
 }
 
-function CompactCommitmentRow({ commitment, selected, onClick }: {
+function IconCheck() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  )
+}
+
+function IconXMark() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" x2="6" y1="6" y2="18" /><line x1="6" x2="18" y1="6" y2="18" />
+    </svg>
+  )
+}
+
+function confidenceLabel(score: string | null | undefined): string {
+  if (!score) return 'Some uncertainty'
+  const n = parseFloat(score)
+  if (n >= 0.85) return 'High confidence'
+  if (n >= 0.70) return 'Medium confidence'
+  return 'Some uncertainty'
+}
+
+function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDismiss }: {
   commitment: CommitmentRead
   selected: boolean
   onClick: () => void
+  onConfirm: (id: string) => void
+  onDismiss: (id: string) => void
 }) {
   const badge = badgeFromState(commitment)
   const isDelivered = commitment.lifecycle_state === 'delivered'
   const isDismissed = commitment.lifecycle_state === 'discarded' || commitment.lifecycle_state === 'closed'
+  const isClosed = isDelivered || isDismissed
   const person = commitment.resolved_owner || commitment.suggested_owner || null
 
   return (
     <div
       className={`rounded-lg border overflow-hidden transition-colors cursor-pointer ${
-        isDelivered ? 'bg-[#f0fdf4] border-[#d5f0d5]' : isDismissed ? 'bg-[#fafafa] border-[#ececec]' : 'bg-white'
+        isDelivered ? 'bg-[#f0fdf4] border-[#bbf0bb]' : isDismissed ? 'bg-[#fafafa] border-[#ececec] opacity-50' : 'bg-white'
       } ${
-        selected ? 'bg-[#f5f5f4] border-[#d1d1cf] ring-1 ring-[#d1d1cf]' : 'border-[#e8e8e6] hover:border-[#d1d1cf]'
-      } ${isDismissed ? 'opacity-50' : ''}`}
+        selected ? 'border-[#d1d1cf] ring-1 ring-[#d1d1cf]' : 'border-[#e8e8e6] hover:border-[#d1d1cf]'
+      }`}
       onClick={onClick}
     >
       <div className="flex">
@@ -152,6 +179,35 @@ function CompactCommitmentRow({ commitment, selected, onClick }: {
               )}
             </div>
           </div>
+          {/* Selected row: show description + confidence + inline actions */}
+          {selected && (
+            <div className="mt-2 pt-2 border-t border-[#f0f0ef]">
+              {commitment.description && (
+                <div className="text-[12px] text-[#6b7280] leading-relaxed mb-1.5">{commitment.description}</div>
+              )}
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-[#b0b0ae]">{confidenceLabel(commitment.confidence_commitment)}</span>
+                {!isClosed && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="flex items-center gap-1.5 bg-[#191919] text-white text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#333] transition-colors"
+                      onClick={(e) => { e.stopPropagation(); onConfirm(commitment.id) }}
+                    >
+                      <IconCheck />
+                      Confirm
+                    </button>
+                    <button
+                      className="flex items-center gap-1.5 bg-[#f0f0ef] text-[#191919] text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors"
+                      onClick={(e) => { e.stopPropagation(); onDismiss(commitment.id) }}
+                    >
+                      <IconXMark />
+                      Dismiss
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -166,13 +222,13 @@ function StatusBar({ sources }: { sources: { source_type: string; is_active: boo
     { key: 'calendar', label: 'Calendar' },
   ]
   return (
-    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[26px] flex items-center px-5">
-      <div className="flex items-center gap-2 flex-1">
+    <div className="bg-[#fafaf9] border-b border-[#e8e8e6] h-[22px] flex items-center px-5">
+      <div className="flex items-center gap-1.5 flex-1">
         {types.map((t, i) => {
           const connected = sources.some(s => s.source_type === t.key && s.is_active)
           return (
             <span key={t.key} className="flex items-center gap-1">
-              {i > 0 && <span className="text-[#e8e8e6] mr-1.5">|</span>}
+              {i > 0 && <span className="text-[#e8e8e6] mr-1">|</span>}
               <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${connected ? 'bg-[#16a34a]' : 'bg-[#d1d1cf]'}`} />
               <span className="text-[11px] text-[#6b7280]">{t.label}</span>
             </span>
@@ -241,6 +297,18 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
 
   const dismissedCount = allCommitments.filter(c => c.lifecycle_state === 'discarded' || c.lifecycle_state === 'closed').length
 
+  async function handleConfirm(id: string) {
+    await patchCommitment(id, { lifecycle_state: 'delivered' })
+    queryClient.invalidateQueries({ queryKey: ['commitments'] })
+    queryClient.invalidateQueries({ queryKey: ['surface'] })
+  }
+
+  async function handleDismiss(id: string) {
+    await patchCommitment(id, { lifecycle_state: 'discarded' })
+    queryClient.invalidateQueries({ queryKey: ['commitments'] })
+    queryClient.invalidateQueries({ queryKey: ['surface'] })
+  }
+
   const groupModes: { id: GroupMode; label: string }[] = [
     { id: 'status', label: 'Status' },
     { id: 'client', label: 'Client' },
@@ -272,13 +340,13 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             if (label === 'Dismissed' && !showDismissed) return null
             return (
               <div key={label}>
-                <div className="text-[14px] font-bold text-[#374151] mt-10 mb-3 flex items-center gap-2">
+                <div className="text-[15px] font-bold text-[#1f2937] mt-10 mb-3 flex items-center gap-2">
                   <span>{label}</span>
-                  <span className="text-[12px] font-medium text-[#9ca3af]">· {items.length}</span>
+                  <span className="text-[13px] font-medium text-[#9ca3af]">· {items.length}</span>
                 </div>
                 <div className="flex flex-col gap-2">
                   {items.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
                   ))}
                 </div>
               </div>
@@ -300,9 +368,9 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
         if (filtered.length === 0) return null
         return (
           <div key={client}>
-            <div className="text-[14px] font-bold text-[#374151] mt-10 mb-3 flex items-center gap-2">
+            <div className="text-[15px] font-bold text-[#1f2937] mt-10 mb-3 flex items-center gap-2">
               <span>{client}</span>
-              <span className="text-[12px] font-medium text-[#9ca3af]">· {filtered.length}</span>
+              <span className="text-[13px] font-medium text-[#9ca3af]">· {filtered.length}</span>
             </div>
             <div className="flex flex-col gap-2">
               {filtered.map(c => (
@@ -322,9 +390,9 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
         if (items.length === 0) return null
         return (
           <div key={st}>
-            <div className="text-[14px] font-bold text-[#374151] mt-10 mb-3 flex items-center gap-2">
+            <div className="text-[15px] font-bold text-[#1f2937] mt-10 mb-3 flex items-center gap-2">
               <span>{labels[st]}</span>
-              <span className="text-[12px] font-medium text-[#9ca3af]">· {items.length}</span>
+              <span className="text-[13px] font-medium text-[#9ca3af]">· {items.length}</span>
             </div>
             <div className="flex flex-col gap-2">
               {items.map(c => (
@@ -362,9 +430,9 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             return (
               <div key={ctxId}>
                 <div className="mt-10 mb-3">
-                  <div className="text-[14px] font-bold text-[#374151] flex items-center gap-2">
+                  <div className="text-[15px] font-bold text-[#1f2937] flex items-center gap-2">
                     <span>Context {contextLabel}</span>
-                    <span className="text-[12px] font-medium text-[#9ca3af]">· {filtered.length}</span>
+                    <span className="text-[13px] font-medium text-[#9ca3af]">· {filtered.length}</span>
                   </div>
                   {summaryParts.length > 0 && (
                     <div className="text-[11px] text-[#9ca3af] mt-0.5">{summaryParts.join(' · ')}</div>
@@ -372,7 +440,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                 </div>
                 <div className="flex flex-col gap-2">
                   {filtered.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
                   ))}
                 </div>
               </div>
@@ -383,13 +451,13 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             if (filtered.length === 0) return null
             return (
               <div>
-                <div className="text-[14px] font-bold text-[#374151] mt-10 mb-3 flex items-center gap-2">
+                <div className="text-[15px] font-bold text-[#1f2937] mt-10 mb-3 flex items-center gap-2">
                   <span>No context</span>
-                  <span className="text-[12px] font-medium text-[#9ca3af]">· {filtered.length}</span>
+                  <span className="text-[13px] font-medium text-[#9ca3af]">· {filtered.length}</span>
                 </div>
                 <div className="flex flex-col gap-2">
                   {filtered.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
                   ))}
                 </div>
               </div>
@@ -435,7 +503,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
 
       <StatusBar sources={sources ?? []} />
 
-      <main className="max-w-[1100px] mx-auto px-6 py-2 pb-16">
+      <main className="max-w-[1100px] mx-auto px-6 py-1 pb-14">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-2 border-[#191919] border-t-transparent rounded-full animate-spin" />
