@@ -459,6 +459,13 @@ def run_model_detection_pass(self, candidate_id: str) -> dict:
                 candidate.was_discarded = True
                 candidate.discard_reason = result["discard_reason"]
 
+        # Learning loop: update user profile after LLM (Tier 3) creates a signal
+        if result.get("model_called") and not result.get("was_discarded"):
+            try:
+                update_profile_after_model_detection.delay(candidate_id)
+            except Exception:
+                logger.warning("Failed to enqueue profile update for candidate %s", candidate_id)
+
         return {
             "status": "complete",
             "candidate_id": candidate_id,
@@ -768,3 +775,96 @@ def run_seed_pass_task(self, user_id: str) -> dict:
     except Exception as exc:
         logger.error("Seed pass task failed for user %s: %s", user_id, exc)
         raise self.retry(exc=exc)
+
+
+@celery_app.task(name="app.tasks.update_profile_after_model_detection")
+def update_profile_after_model_detection(candidate_id: str) -> dict:
+    """Update user profile after model (Tier 3) detection — Learning Loop.
+
+    Extracts trigger phrases and sender weight from the candidate's source item,
+    then updates the user's commitment profile so Tier 1 catches similar items next time.
+
+    Args:
+        candidate_id: UUID of the CommitmentCandidate that was model-classified.
+
+    Returns:
+        Dict with status.
+    """
+    from app.models.orm import CommitmentCandidate, SourceItem, UserCommitmentProfile
+    from app.services.detection.learning_loop import update_profile_after_llm
+
+    with get_sync_session() as db:
+        candidate = db.get(CommitmentCandidate, candidate_id)
+        if candidate is None:
+            return {"status": "not_found"}
+
+        source_item = db.get(SourceItem, candidate.originating_item_id)
+        if source_item is None:
+            return {"status": "source_item_not_found"}
+
+        profile = db.query(UserCommitmentProfile).filter(
+            UserCommitmentProfile.user_id == candidate.user_id,
+        ).first()
+        if profile is None:
+            return {"status": "no_profile"}
+
+        commitment_data = {
+            "trigger_phrase": candidate.raw_text or "",
+        }
+        update_profile_after_llm(profile, source_item, commitment_data)
+        db.add(profile)
+
+    return {"status": "updated", "candidate_id": candidate_id}
+
+
+@celery_app.task(name="app.tasks.update_profile_after_dismissal")
+def update_profile_after_dismissal(commitment_id: str) -> dict:
+    """Downweight profile entries after user dismisses a commitment — Learning Loop.
+
+    Called when a user discards a surfaced commitment. Reduces weight of the
+    trigger phrase and sender that caused the original detection.
+
+    Args:
+        commitment_id: UUID of the dismissed Commitment.
+
+    Returns:
+        Dict with status.
+    """
+    from sqlalchemy import select
+    from app.models.orm import (
+        Commitment, CommitmentSignal, SourceItem, UserCommitmentProfile,
+    )
+    from app.services.detection.learning_loop import downweight_profile_on_dismissal
+
+    with get_sync_session() as db:
+        commitment = db.get(Commitment, commitment_id)
+        if commitment is None:
+            return {"status": "not_found"}
+
+        # Find the origin signal to get the source item
+        signal = db.execute(
+            select(CommitmentSignal).where(
+                CommitmentSignal.commitment_id == commitment_id,
+                CommitmentSignal.signal_role == "origin",
+            )
+        ).scalar_one_or_none()
+
+        if signal is None:
+            return {"status": "no_origin_signal"}
+
+        source_item = db.get(SourceItem, signal.source_item_id)
+        if source_item is None:
+            return {"status": "source_item_not_found"}
+
+        profile = db.query(UserCommitmentProfile).filter(
+            UserCommitmentProfile.user_id == commitment.user_id,
+        ).first()
+        if profile is None:
+            return {"status": "no_profile"}
+
+        # Use commitment_text as trigger phrase if available
+        trigger_phrase = commitment.commitment_text or commitment.title or ""
+        downweight_profile_on_dismissal(profile, source_item, trigger_phrase=trigger_phrase)
+        db.add(profile)
+
+    return {"status": "downweighted", "commitment_id": commitment_id}

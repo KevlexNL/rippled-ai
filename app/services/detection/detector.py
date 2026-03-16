@@ -21,13 +21,15 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from app.models.orm import CommitmentCandidate, SourceItem
+from app.models.orm import CommitmentCandidate, SourceItem, UserCommitmentProfile
+from app.services.detection.audit import write_audit_entry
 from app.services.detection.context import extract_context
 from app.services.detection.patterns import (
     TriggerPattern,
     get_patterns_for_source,
     get_suppression_patterns_for_source,
 )
+from app.services.detection.profile_matcher import run_tier1, should_skip_detection
 
 logger = logging.getLogger(__name__)
 
@@ -204,10 +206,81 @@ def run_detection(source_item_id: str, db: Session) -> list[CommitmentCandidate]
         logger.info("SourceItem %s has no content — skipping detection", source_item_id)
         return []
 
+    # --- Learning loop: load user profile for Tier 1 / sender suppression ---
+    profile: UserCommitmentProfile | None = db.query(UserCommitmentProfile).filter(
+        UserCommitmentProfile.user_id == item.user_id,
+    ).first()
+
+    # Step 0: Sender suppression — skip newsletters, no-reply, suppressed senders
+    if should_skip_detection(profile, item):
+        logger.info(
+            "SourceItem %s skipped — sender suppressed (%s)",
+            source_item_id, getattr(item, "sender_email", ""),
+        )
+        write_audit_entry(
+            db, source_item_id=source_item_id, user_id=item.user_id,
+            tier_used="suppressed",
+            matched_sender=getattr(item, "sender_email", None),
+            commitment_created=False,
+        )
+        return []
+
+    # Step 0b: Tier 1 — profile-based pattern matching (free, ~0ms)
+    tier1_result = run_tier1(profile, item)
+    if tier1_result is not None:
+        logger.info(
+            "SourceItem %s matched Tier 1 (phrase=%s, confidence=%s)",
+            source_item_id, tier1_result["matched_phrase"], tier1_result["confidence"],
+        )
+        is_ext = _is_external(item)
+        observe_until = _compute_observe_until(source_type, is_ext)
+        candidate = CommitmentCandidate(
+            user_id=item.user_id,
+            originating_item_id=item.id,
+            source_type=source_type,
+            raw_text=tier1_result["matched_phrase"],
+            trigger_class="profile_match",
+            is_explicit=True,
+            detection_explanation=(
+                f"Tier 1 profile match: phrase='{tier1_result['matched_phrase']}'"
+                f", sender={'high-signal' if tier1_result.get('matched_sender') else 'normal'}"
+            ),
+            confidence_score=tier1_result["confidence"],
+            priority_hint="medium",
+            commitment_class_hint="small_commitment",
+            context_window={
+                "trigger_text": tier1_result["matched_phrase"],
+                "source_type": source_type,
+                "tier": "tier_1",
+            },
+            linked_entities=_extract_entities(content[:500]),
+            observe_until=observe_until,
+            flag_reanalysis=False,
+            detection_method="tier_1",
+        )
+        try:
+            with db.begin_nested():
+                db.add(candidate)
+                db.flush()
+            write_audit_entry(
+                db, source_item_id=source_item_id, user_id=item.user_id,
+                tier_used="tier_1",
+                matched_phrase=tier1_result["matched_phrase"],
+                matched_sender=tier1_result.get("matched_sender"),
+                confidence=tier1_result["confidence"],
+                commitment_created=True,
+            )
+            logger.info(
+                "Tier 1 candidate %s created for item %s", candidate.id, source_item_id,
+            )
+            return [candidate]
+        except Exception as exc:
+            logger.warning("Tier 1 candidate insert failed for item %s: %s — falling through to Tier 2", source_item_id, exc)
+
     # Step 1: Strip suppression spans
     normalized = _apply_suppression(content, source_type)
 
-    # Step 2: Gather applicable patterns and run them
+    # Step 2: Gather applicable patterns and run them (Tier 2)
     patterns = get_patterns_for_source(source_type)
     is_ext = _is_external(item)
 
@@ -279,6 +352,13 @@ def run_detection(source_item_id: str, db: Session) -> list[CommitmentCandidate]
                     db.add(candidate)
                     db.flush()
                 created.append(candidate)
+                write_audit_entry(
+                    db, source_item_id=source_item_id, user_id=item.user_id,
+                    tier_used="tier_2",
+                    matched_phrase=trigger_text[:255],
+                    confidence=confidence,
+                    commitment_created=True,
+                )
                 logger.debug(
                     "Created candidate %s for item %s (pattern=%s)",
                     candidate.id, source_item_id, pattern.name,

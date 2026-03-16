@@ -370,6 +370,9 @@ class UserCommitmentProfile(Base):
     trigger_phrases: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     high_signal_senders: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     domains: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    suppressed_senders: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    sender_weights: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    phrase_weights: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     total_items_processed: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
     total_commitments_found: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
     last_seed_pass_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -387,3 +390,17 @@ class DigestLog(Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     digest_content: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+
+
+class DetectionAudit(Base):
+    __tablename__ = "detection_audit"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    source_item_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("source_items.id", ondelete="CASCADE"), nullable=False)
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    tier_used: Mapped[str] = mapped_column(String(10), nullable=False)
+    matched_phrase: Mapped[str | None] = mapped_column(Text, nullable=True)
+    matched_sender: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    confidence: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    commitment_created: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
