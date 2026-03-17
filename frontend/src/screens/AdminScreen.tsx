@@ -272,9 +272,9 @@ function SignalReviewTab() {
             </button>
           )}
 
-          {commitments.length > 0 && (
-            <div className="mt-4 pt-3 border-t border-[#f0f0ef]">
-              <div className="text-[11px] font-semibold text-[#6b7280] uppercase tracking-wide mb-2">Extracted commitments</div>
+          <div className="mt-4 pt-3 border-t border-[#f0f0ef]">
+            <div className="text-[11px] font-semibold text-[#6b7280] uppercase tracking-wide mb-2">Extracted commitments</div>
+            {commitments.length > 0 ? (
               <ul className="space-y-1">
                 {commitments.map((c, i) => (
                   <li key={i} className="flex items-start gap-2 text-[13px] text-[#191919]">
@@ -283,8 +283,14 @@ function SignalReviewTab() {
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
+            ) : (
+              <p className="text-[12px] text-[#9ca3af] italic">
+                {current.parsed_result === null
+                  ? 'No extraction data — this item was processed before logging was enabled. Re-run seed pass to populate.'
+                  : 'No commitments extracted from this item.'}
+              </p>
+            )}
+          </div>
 
           {current.model && (
             <div className="mt-3 text-[11px] text-[#b0b0ae]">
