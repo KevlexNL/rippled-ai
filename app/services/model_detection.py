@@ -32,6 +32,7 @@ future action, deliverable, or outcome. This includes:
 - Collective: "We need to get this done", "Someone should handle this"
 
 NOT a commitment:
+- Greetings and salutations: "Hi", "Hello", "Hey", "Good morning", "Dear team"
 - Casual acknowledgments: "OK", "Sounds good", "Got it"
 - Questions or hypotheticals: "Should we...?", "What if we..."
 - Past-tense descriptions: "I already did X"

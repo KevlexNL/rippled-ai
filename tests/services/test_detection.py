@@ -136,6 +136,89 @@ class TestUniversalExplicitPatterns:
             assert "email" in pattern.applies_to
 
 
+class TestFollowUpPattern:
+    """Follow-up commitment patterns fire on 'follow up on' phrases."""
+
+    def test_follow_up_on_topic_fires(self):
+        pattern = next(p for p in UNIVERSAL_EXPLICIT_PATTERNS if p.name == "follow_up_on")
+        assert pattern.pattern.search("I need to follow up on the budget")
+        assert pattern.trigger_class == "follow_up_commitment"
+
+    def test_follow_up_with_person_fires(self):
+        pattern = next(p for p in UNIVERSAL_EXPLICIT_PATTERNS if p.name == "follow_up_on")
+        assert pattern.pattern.search("will follow up with the client")
+
+    def test_follow_up_regarding_fires(self):
+        pattern = next(p for p in UNIVERSAL_EXPLICIT_PATTERNS if p.name == "follow_up_on")
+        assert pattern.pattern.search("let me follow up on this next week")
+
+    def test_follow_up_applies_to_all_sources(self):
+        pattern = next(p for p in UNIVERSAL_EXPLICIT_PATTERNS if p.name == "follow_up_on")
+        assert "meeting" in pattern.applies_to
+        assert "slack" in pattern.applies_to
+        assert "email" in pattern.applies_to
+
+
+class TestGreetingSuppression:
+    """Greetings are suppressed and never extracted as commitments."""
+
+    def test_greeting_hi_suppressed(self):
+        pattern = next(p for p in SUPPRESSION_PATTERNS if p.name == "greeting")
+        assert pattern.pattern.search("Hi team,")
+        assert pattern.suppression is True
+
+    def test_greeting_hello_suppressed(self):
+        pattern = next(p for p in SUPPRESSION_PATTERNS if p.name == "greeting")
+        assert pattern.pattern.search("Hello everyone,")
+
+    def test_greeting_good_morning_suppressed(self):
+        pattern = next(p for p in SUPPRESSION_PATTERNS if p.name == "greeting")
+        assert pattern.pattern.search("Good morning,")
+
+    def test_greeting_hey_suppressed(self):
+        pattern = next(p for p in SUPPRESSION_PATTERNS if p.name == "greeting")
+        assert pattern.pattern.search("Hey Bob")
+
+    def test_greeting_does_not_match_mid_sentence(self):
+        """Greetings should only match at line start, not mid-sentence."""
+        pattern = next(p for p in SUPPRESSION_PATTERNS if p.name == "greeting")
+        # "say hi to" should NOT trigger the greeting suppression
+        assert not pattern.pattern.search("I'll say hi to the team")
+
+
+class TestRunDetectionFollowUpAndGreeting:
+    """Integration: follow-up detected, greeting suppressed in run_detection."""
+
+    def _make_mock_db(self, item):
+        db = MagicMock()
+        db.get.return_value = item
+        savepoint = MagicMock()
+        savepoint.__enter__ = MagicMock(return_value=savepoint)
+        savepoint.__exit__ = MagicMock(return_value=False)
+        db.begin_nested.return_value = savepoint
+        db.flush = MagicMock()
+        return db
+
+    def test_follow_up_on_budget_creates_candidate(self):
+        item = _make_item(
+            source_type="email",
+            content_normalized="I need to follow up on the budget with finance.",
+        )
+        db = self._make_mock_db(item)
+        candidates = run_detection("item-001", db)
+        follow_up = [c for c in candidates if c.trigger_class == "follow_up_commitment"]
+        assert follow_up, "Expected follow_up_commitment candidate for 'follow up on the budget'"
+
+    def test_greeting_only_email_no_candidates(self):
+        item = _make_item(
+            source_type="email",
+            content_normalized="Hi there,\nHello everyone,\nGood morning team,",
+        )
+        db = self._make_mock_db(item)
+        candidates = run_detection("item-001", db)
+        assert len(candidates) == 0, "Greetings should not produce candidates"
+
+
 class TestUniversalDeliveryPatterns:
     def test_delivery_confirmation_fires(self):
         pattern = next(p for p in UNIVERSAL_DELIVERY_PATTERNS if p.name == "delivery_confirmation")

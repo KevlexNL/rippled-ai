@@ -51,12 +51,13 @@ This includes:
 - Explicit: "I will", "I'll", "We will", "I promise", "I commit to"
 - Implicit: "Consider it done", "Leave it with me", "I'll look into that"
 - Tentative: "I'll try to", "Let me check", "I'll get back to you", "I should be able to"
-- Follow-ups: "Let me circle back", "I'll send this over", "Will follow up"
+- Follow-ups: "Let me circle back", "I'll send this over", "Will follow up", "Follow up on [topic]", "Need to follow up with [person]"
 - Delegations: "Can you handle...", "Please take care of...", "Could you look into..."
 - Scheduled actions: "Let's meet Tuesday", "I'll call you tomorrow"
 - Soft promises: "I'll see what I can do", "Let me look into it", "I'll ping them"
 
 NOT a commitment:
+- Greetings and salutations: "Hi", "Hello", "Hey", "Good morning", "Dear team"
 - Casual acknowledgments with NO implied action: "OK", "Sounds good", "Got it"
 - Pure questions with no self-assignment: "Should we...?", "What if we..."
 - Past-tense descriptions: "I already did X", "We completed Y"

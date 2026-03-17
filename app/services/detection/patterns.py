@@ -72,6 +72,16 @@ SUPPRESSION_PATTERNS: list[TriggerPattern] = [
         suppression=True,
         base_confidence=0.10,
     ),
+    TriggerPattern(
+        name="greeting",
+        pattern=re.compile(r"^\s*(?:hi|hello|hey|good morning|good afternoon|good evening|dear)\b[^.\n]{0,30}[,.]?\s*$", re.IGNORECASE | re.MULTILINE),
+        trigger_class="greeting",
+        is_explicit=False,
+        base_priority_hint="low",
+        applies_to=ALL_SOURCES,
+        suppression=True,
+        base_confidence=0.05,
+    ),
 ]
 
 # Email-specific suppression (strip quoted reply chains)
@@ -185,6 +195,15 @@ UNIVERSAL_EXPLICIT_PATTERNS: list[TriggerPattern] = [
         base_priority_hint="medium",
         applies_to=ALL_SOURCES,
         base_confidence=0.65,
+    ),
+    TriggerPattern(
+        name="follow_up_on",
+        pattern=_p(r"\bfollow[- ]?up (?:on|with|regarding|about)\b.{0,80}"),
+        trigger_class="follow_up_commitment",
+        is_explicit=True,
+        base_priority_hint="medium",
+        applies_to=ALL_SOURCES,
+        base_confidence=0.70,
     ),
 ]
 

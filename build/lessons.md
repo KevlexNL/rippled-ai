@@ -30,3 +30,10 @@ Track patterns from corrections to avoid repeating mistakes.
 **Mistake:** LLM judge threshold check `avg_quality < 3.5` fires when `items_reviewed == 0` because `avg_quality` defaults to 0. This creates a prompt improvement WO with zero data — no suggestions, no sample failures, nothing actionable.
 **Pattern:** When aggregating metrics for threshold-based alerts, always guard against the zero-denominator case. An empty result set is not a quality failure — it's a no-op. Add `items_reviewed > 0` guard before threshold checks.
 **Severity:** Minor
+
+---
+
+### 2026-03-17 — Suppression regex character class matches newlines
+**Mistake:** Greeting suppression pattern used `[^.]` (negated character class), which matches any character except literal period — including newlines. This caused multi-line suppression, wiping out commitment text on subsequent lines.
+**Pattern:** In multiline regex patterns, always use `[^.\n]` instead of `[^.]` when the intent is to match within a single line. Also limit greedy quantifiers with `{0,N}` to prevent suppression patterns from consuming content that contains actual signals.
+**Severity:** Medium
