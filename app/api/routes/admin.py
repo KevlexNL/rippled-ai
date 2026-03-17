@@ -32,6 +32,7 @@ Endpoint overview:
   POST   /admin/adhoc-signals
   GET    /admin/adhoc-signals
   POST   /admin/adhoc-signals/{id}/check-match
+  POST   /admin/backfill-source
 """
 from __future__ import annotations
 
@@ -1564,3 +1565,48 @@ async def check_adhoc_signal_match(
     if "error" in result:
         raise HTTPException(status_code=404, detail=result["error"])
     return result
+
+
+# ===========================================================================
+# Source Backfill
+# ===========================================================================
+
+class BackfillSourceRequest(BaseModel):
+    user_id: str
+    source_type: str
+    days: int = 90
+
+    @field_validator("source_type")
+    @classmethod
+    def validate_source_type(cls, v: str) -> str:
+        allowed = {"meeting", "email", "slack"}
+        if v not in allowed:
+            raise ValueError(f"source_type must be one of {allowed}")
+        return v
+
+    @field_validator("days")
+    @classmethod
+    def validate_days(cls, v: int) -> int:
+        if v < 1 or v > 365:
+            raise ValueError("days must be between 1 and 365")
+        return v
+
+
+@router.post("/backfill-source")
+async def backfill_source(req: BackfillSourceRequest):
+    """Trigger a source backfill for a user.
+
+    Enqueues a Celery task that fetches historical data from the source
+    connector and ingests it into the pipeline.
+    """
+    from app.tasks import run_source_backfill
+
+    async_result = run_source_backfill.delay(req.user_id, req.source_type, req.days)
+
+    return {
+        "task_id": async_result.id,
+        "user_id": req.user_id,
+        "source_type": req.source_type,
+        "days": req.days,
+        "status": "queued",
+    }

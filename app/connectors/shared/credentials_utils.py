@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 
 # Sensitive keys that must be encrypted at rest
 _SENSITIVE_KEYS = frozenset(
-    {"imap_password", "bot_token", "signing_secret", "webhook_secret"}
+    {"imap_password", "bot_token", "signing_secret", "webhook_secret",
+     "access_token", "refresh_token", "client_secret"}
 )
 
 # Module-level flag to log the "no encryption key" warning only once

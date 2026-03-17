@@ -6,6 +6,7 @@ Completion sweep: evidence sweep + auto-close sweep (Phase 05).
 Surfacing sweep: recompute surfacing state for all active commitments (Phase 06).
 Model detection: model-assisted re-classification of ambiguous candidates (Phase C1).
 Daily digest: morning summary of surfaced commitments via email (Phase C2).
+Source backfill: generic historical data import via connector backfill (WO-RIPPLED-MEETING-BACKFILL).
 """
 
 import logging
@@ -1056,3 +1057,74 @@ def run_llm_judge_task() -> dict:
     except Exception:
         logger.exception("LLM judge: weekly sweep FAILED")
         return {"status": "failed"}
+
+
+@celery_app.task(
+    bind=True,
+    max_retries=2,
+    default_retry_delay=60,
+    name="app.tasks.run_source_backfill",
+)
+def run_source_backfill(self, user_id: str, source_type: str, days: int = 90) -> dict:
+    """Run a source backfill for historical data import.
+
+    Generic task that dispatches to the appropriate connector backfill.
+    Currently supports source_type='meeting' (Read.ai).
+
+    Args:
+        user_id: UUID of the user to backfill for.
+        source_type: Type of source ('meeting', 'email', 'slack').
+        days: How many days of history to fetch.
+
+    Returns:
+        Dict with backfill stats (fetched, created, duplicates, errors, batch_id).
+    """
+    SUPPORTED_BACKFILL = {"meeting"}
+
+    if source_type not in SUPPORTED_BACKFILL:
+        return {
+            "status": "error",
+            "reason": f"Unsupported source_type for backfill: {source_type}",
+        }
+
+    logger.info(
+        "Source backfill: starting for user=%s source_type=%s days=%d",
+        user_id, source_type, days,
+    )
+
+    try:
+        if source_type == "meeting":
+            from app.connectors.meeting.readai_backfill import backfill_meetings
+            from sqlalchemy import select
+            from app.models.orm import Source
+
+            with get_sync_session() as db:
+                source = db.execute(
+                    select(Source).where(
+                        Source.user_id == user_id,
+                        Source.source_type == "meeting",
+                        Source.is_active.is_(True),
+                    )
+                ).scalar_one_or_none()
+
+                if source is None:
+                    return {
+                        "status": "error",
+                        "reason": f"No active meeting source found for user {user_id}",
+                    }
+
+                result = backfill_meetings(source, days=days, db=db)
+
+            return {
+                "status": "complete",
+                "user_id": user_id,
+                "source_type": source_type,
+                **result,
+            }
+
+    except Exception as exc:
+        logger.error(
+            "Source backfill failed for user=%s source_type=%s: %s",
+            user_id, source_type, exc,
+        )
+        raise self.retry(exc=exc)
