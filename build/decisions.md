@@ -103,3 +103,20 @@
 **Decision:** Fixed `REDIS_URL` on the API service from `redis://localhost:6379/0` to the Railway internal Redis URL. This was the root cause — the API could enqueue tasks to Redis, but was sending them to a non-existent localhost Redis.
 
 **Rationale:** The `settings.redis_url` default in `app/core/config.py` is `redis://localhost:6379/0`. This was never overridden in Railway env vars with the actual Redis service URL.
+
+---
+
+## WO-RIPPLED-SEED-DEBUG — Seed pass: 178 processed, 0 commitments
+*Date: 2026-03-17 | Owner: Trinity*
+
+### D-SEED-DEBUG-01: Root cause — LLM markdown code fences break JSON parser
+**Question:** Why did the seed pass process 178 items with 0 commitments and 0 errors?
+
+**Root cause:** The Anthropic LLM wraps its JSON response in markdown code fences (`` ```json ... ``` ``). The `json.loads()` call failed with `JSONDecodeError` on every item. This exception was caught silently (returned `[]`), so items were marked as processed with 0 commitments and 0 errors.
+
+**Fix:**
+1. Added `_strip_markdown_json()` helper that strips markdown code fences before parsing.
+2. Added debug logging of raw LLM response and parsed commitment count.
+3. Seed-reset must be called before re-running since all 178 items now have `seed_processed_at` set.
+
+**Rationale:** This is a common LLM integration issue. Even with "Respond with valid JSON only" in the prompt, LLMs frequently wrap output in code fences. The fix is defensive parsing, not prompt engineering.

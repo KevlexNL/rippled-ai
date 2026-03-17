@@ -16,3 +16,10 @@ Track patterns from corrections to avoid repeating mistakes.
 **Mistake:** Looking up a per-source signing secret by team_id before verifying the request signature means an unauthenticated caller can probe whether a team_id is registered by observing response timing (DB hit vs. skip).
 **Pattern:** When per-tenant secret lookup must happen before auth (unavoidable for HMAC bootstrap), document it explicitly as an accepted tradeoff and note it for hardening (e.g., constant-time response, rate-limiting, or moving secret resolution to a separate verified step). Never leave silent security tradeoffs undocumented.
 **Severity:** Minor
+
+---
+
+### 2026-03-17 — LLM JSON responses wrapped in markdown code fences
+**Mistake:** `json.loads()` was called directly on raw LLM response text. LLMs frequently wrap JSON in `` ```json ... ``` `` code fences even when instructed to return "valid JSON only". The `JSONDecodeError` was caught silently (returned `[]`), making the failure invisible — 178 items processed, 0 commitments, 0 errors.
+**Pattern:** Always strip markdown code fences from LLM responses before JSON parsing. Never rely on prompt instructions alone to control LLM output format. When catching parse errors, log at WARNING level with the raw response snippet so silent failures are detectable.
+**Severity:** Critical

@@ -113,6 +113,81 @@ class TestExtractCommitments:
 
         assert result == []
 
+    def test_handles_markdown_wrapped_json(self):
+        """LLM often wraps JSON in ```json code blocks — parser must handle this."""
+        from app.services.detection.seed_detector import _extract_commitments
+
+        mock_client = MagicMock()
+        commitment_data = {
+            "commitments": [
+                {
+                    "trigger_phrase": "I will send the report",
+                    "who_committed": "Alice",
+                    "directed_at": "Bob",
+                    "urgency": "high",
+                    "commitment_type": "send",
+                    "title": "Send the report",
+                    "is_external": False,
+                    "confidence": 0.9,
+                }
+            ]
+        }
+        # Wrap in markdown code block — common LLM behavior
+        wrapped_text = f"```json\n{json.dumps(commitment_data)}\n```"
+        mock_content_block = SimpleNamespace(text=wrapped_text)
+        mock_response = SimpleNamespace(
+            content=[mock_content_block],
+            usage=SimpleNamespace(input_tokens=10, output_tokens=20),
+        )
+        mock_client.messages.create.return_value = mock_response
+
+        item = self._make_source_item()
+        result = _extract_commitments(mock_client, "claude-sonnet-4-6", item)
+
+        assert len(result) == 1
+        assert result[0]["trigger_phrase"] == "I will send the report"
+
+    def test_handles_markdown_wrapped_json_no_lang_tag(self):
+        """Handle ``` blocks without a language tag."""
+        from app.services.detection.seed_detector import _extract_commitments
+
+        mock_client = MagicMock()
+        commitment_data = {"commitments": [{"trigger_phrase": "I'll check", "who_committed": "Alice", "directed_at": None, "urgency": "low", "commitment_type": "investigate", "title": "Check something", "is_external": False, "confidence": 0.7}]}
+        wrapped_text = f"```\n{json.dumps(commitment_data)}\n```"
+        mock_content_block = SimpleNamespace(text=wrapped_text)
+        mock_response = SimpleNamespace(
+            content=[mock_content_block],
+            usage=SimpleNamespace(input_tokens=10, output_tokens=20),
+        )
+        mock_client.messages.create.return_value = mock_response
+
+        item = self._make_source_item()
+        result = _extract_commitments(mock_client, "claude-sonnet-4-6", item)
+
+        assert len(result) == 1
+        assert result[0]["trigger_phrase"] == "I'll check"
+
+    def test_debug_logging_on_extraction(self):
+        """Seed detector should log the prompt and raw response for debugging."""
+        from app.services.detection.seed_detector import _extract_commitments
+
+        mock_client = MagicMock()
+        mock_content_block = SimpleNamespace(text=json.dumps({"commitments": []}))
+        mock_response = SimpleNamespace(
+            content=[mock_content_block],
+            usage=SimpleNamespace(input_tokens=10, output_tokens=5),
+        )
+        mock_client.messages.create.return_value = mock_response
+
+        item = self._make_source_item()
+        with patch("app.services.detection.seed_detector.logger") as mock_logger:
+            _extract_commitments(mock_client, "claude-sonnet-4-6", item)
+
+            # Should log the raw LLM response at debug level
+            debug_messages = [str(call) for call in mock_logger.debug.call_args_list]
+            raw_response_logged = any("raw LLM response" in msg or "raw response" in msg for msg in debug_messages)
+            assert raw_response_logged, f"Expected debug log with raw LLM response. Got: {debug_messages}"
+
     def test_retries_on_rate_limit(self):
         """Should retry with backoff on Anthropic RateLimitError."""
         import anthropic

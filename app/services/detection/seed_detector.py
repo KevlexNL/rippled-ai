@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -81,6 +82,15 @@ Respond with valid JSON only:
 }
 
 If no commitments are found, return: {"commitments": []}"""
+
+# Regex to strip markdown code fences (```json ... ``` or ``` ... ```)
+_CODE_FENCE_RE = re.compile(r"```(?:json)?\s*\n?(.*?)\n?\s*```", re.DOTALL)
+
+
+def _strip_markdown_json(raw: str) -> str:
+    """Extract JSON from a response that may be wrapped in markdown code fences."""
+    m = _CODE_FENCE_RE.search(raw)
+    return m.group(1).strip() if m else raw.strip()
 
 
 @dataclass
@@ -260,8 +270,20 @@ def _extract_commitments(
                 )
 
             raw = response.content[0].text
-            data = json.loads(raw)
-            return data.get("commitments", [])
+            logger.debug(
+                "Seed pass raw LLM response for item %s: %s",
+                item.id,
+                raw[:500],
+            )
+            cleaned = _strip_markdown_json(raw)
+            data = json.loads(cleaned)
+            commitments = data.get("commitments", [])
+            logger.debug(
+                "Seed pass parsed %d commitments from item %s",
+                len(commitments),
+                item.id,
+            )
+            return commitments
 
         except anthropic.RateLimitError:
             if attempt < _MAX_RETRIES - 1:
