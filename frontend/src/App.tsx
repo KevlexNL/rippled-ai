@@ -14,6 +14,7 @@ import OnboardingScreen from './screens/OnboardingScreen'
 import AccountSettingsScreen from './screens/settings/AccountSettingsScreen'
 import IntegrationsSettingsScreen from './screens/settings/IntegrationsSettingsScreen'
 import PrototypeDashboard from './screens/PrototypeDashboard'
+import AdminScreen from './screens/AdminScreen'
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -101,6 +102,14 @@ export default function App() {
         }
       />
       <Route path="/prototype" element={<PrototypeDashboard />} />
+      <Route
+        path="/admin"
+        element={
+          <AuthGuard>
+            <AdminScreen />
+          </AuthGuard>
+        }
+      />
     </Routes>
   )
 }

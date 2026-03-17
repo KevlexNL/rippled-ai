@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSurface, getBestNextMoves } from '../api/surface'
 import type { BestNextMovesGroup } from '../api/surface'
@@ -9,6 +10,7 @@ import { getUpcomingEvents } from '../api/events'
 import type { EventRead } from '../api/events'
 import { patchCommitment } from '../api/commitments'
 import { apiGet } from '../lib/apiClient'
+import { useAuth } from '../lib/auth'
 import type { CommitmentRead } from '../types'
 import DetailPanel from './DetailPanel'
 import LogCommitmentModal from './LogCommitmentModal'
@@ -423,6 +425,9 @@ interface ActiveScreenProps {
 }
 
 export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenProps) {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const isAdmin = user?.id === '441f9c1f-9428-477e-a04f-fb8d5e654ec2'
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [showLog, setShowLog] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -535,6 +540,14 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
             + Log commitment
           </button>
           <div className="hidden md:block w-px h-4 bg-[#e8e8e6]" />
+          {isAdmin && (
+            <>
+              <button onClick={() => navigate('/admin')} className="hidden md:inline-flex text-[#9ca3af] hover:text-[#191919] text-[12px] font-medium transition-colors">
+                Admin
+              </button>
+              <div className="hidden md:block w-px h-4 bg-[#e8e8e6]" />
+            </>
+          )}
           <button onClick={() => setShowSettings(true)} className="text-[#9ca3af] hover:text-[#191919] transition-colors">
             <IconGear />
           </button>

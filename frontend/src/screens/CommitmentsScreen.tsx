@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getCommitments, patchCommitment } from '../api/commitments'
 import { getStats } from '../api/stats'
 import type { StatsRead } from '../api/stats'
 import { listSources } from '../api/sources'
 import type { CommitmentRead } from '../types'
+import { useAuth } from '../lib/auth'
 import DetailPanel from './DetailPanel'
 import LogCommitmentModal from './LogCommitmentModal'
 import SettingsModal from './SettingsModal'
@@ -264,6 +266,9 @@ interface CommitmentsScreenProps {
 }
 
 export default function CommitmentsScreen({ activeTab, onTabChange }: CommitmentsScreenProps) {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const isAdmin = user?.id === '441f9c1f-9428-477e-a04f-fb8d5e654ec2'
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [groupMode, setGroupMode] = useState<GroupMode>('status')
   const [showDismissed, setShowDismissed] = useState(false)
@@ -495,6 +500,14 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             + Log commitment
           </button>
           <div className="hidden md:block w-px h-4 bg-[#e8e8e6]" />
+          {isAdmin && (
+            <>
+              <button onClick={() => navigate('/admin')} className="hidden md:inline-flex text-[#9ca3af] hover:text-[#191919] text-[12px] font-medium transition-colors">
+                Admin
+              </button>
+              <div className="hidden md:block w-px h-4 bg-[#e8e8e6]" />
+            </>
+          )}
           <button onClick={() => setShowSettings(true)} className="text-[#9ca3af] hover:text-[#191919] transition-colors">
             <IconGear />
           </button>
