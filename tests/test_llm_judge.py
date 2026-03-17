@@ -288,3 +288,21 @@ class TestRunLlmJudge:
         added_objects = [call.args[0] for call in db.add.call_args_list]
         feedbacks = [o for o in added_objects if isinstance(o, SignalFeedback)]
         assert len(feedbacks) == 0
+
+    @patch("app.services.llm_judge._create_prompt_improvement_wo")
+    @patch("app.services.llm_judge.anthropic")
+    @patch("app.services.llm_judge.decrypt_value", return_value="sk-test-key")
+    def test_no_wo_when_zero_items_reviewed(self, mock_decrypt, mock_anthropic_mod, mock_create_wo):
+        """No WO when all items errored — 0 items reviewed should not trigger threshold."""
+        db = MagicMock()
+        audit = _make_audit()
+        self._setup_db_mock(db, user_settings=_make_user_settings(), audits=[audit])
+
+        mock_client = MagicMock()
+        mock_anthropic_mod.Anthropic.return_value = mock_client
+        mock_client.messages.create.side_effect = Exception("API down")
+
+        result = run_llm_judge(db)
+
+        assert result["items_reviewed"] == 0
+        mock_create_wo.assert_not_called()

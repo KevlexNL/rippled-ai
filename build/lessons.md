@@ -23,3 +23,10 @@ Track patterns from corrections to avoid repeating mistakes.
 **Mistake:** `json.loads()` was called directly on raw LLM response text. LLMs frequently wrap JSON in `` ```json ... ``` `` code fences even when instructed to return "valid JSON only". The `JSONDecodeError` was caught silently (returned `[]`), making the failure invisible — 178 items processed, 0 commitments, 0 errors.
 **Pattern:** Always strip markdown code fences from LLM responses before JSON parsing. Never rely on prompt instructions alone to control LLM output format. When catching parse errors, log at WARNING level with the raw response snippet so silent failures are detectable.
 **Severity:** Critical
+
+---
+
+### 2026-03-17 — Zero-item judge run triggers false WO
+**Mistake:** LLM judge threshold check `avg_quality < 3.5` fires when `items_reviewed == 0` because `avg_quality` defaults to 0. This creates a prompt improvement WO with zero data — no suggestions, no sample failures, nothing actionable.
+**Pattern:** When aggregating metrics for threshold-based alerts, always guard against the zero-denominator case. An empty result set is not a quality failure — it's a no-op. Add `items_reviewed > 0` guard before threshold checks.
+**Severity:** Minor

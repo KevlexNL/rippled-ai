@@ -197,8 +197,8 @@ def run_llm_judge(db: Session) -> dict:
     db.add(judge_run)
     db.flush()
 
-    # Check thresholds for auto-WO creation
-    if avg_quality < 3.5 or total_false_negatives > 5 or total_false_positives > 5:
+    # Check thresholds for auto-WO creation (skip when no items were successfully reviewed)
+    if items_reviewed > 0 and (avg_quality < 3.5 or total_false_negatives > 5 or total_false_positives > 5):
         _create_prompt_improvement_wo(
             judge_run_id=judge_run.id,
             items_reviewed=items_reviewed,
