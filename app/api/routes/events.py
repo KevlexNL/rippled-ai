@@ -84,8 +84,10 @@ def _event_to_schema(row: Event, linked_count: int = 0) -> EventRead:
     )
 
 
-async def _get_event_or_404(event_id: str, db: AsyncSession) -> Event:
-    result = await db.execute(select(Event).where(Event.id == event_id))
+async def _get_event_or_404(event_id: str, db: AsyncSession, user_id: str) -> Event:
+    result = await db.execute(
+        select(Event).where(Event.id == event_id, Event.user_id == user_id)
+    )
     event = result.scalar_one_or_none()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -142,7 +144,7 @@ async def get_event(
     db: AsyncSession = Depends(get_db),
 ) -> EventRead:
     """Get a single event with linked commitment count."""
-    event = await _get_event_or_404(event_id, db)
+    event = await _get_event_or_404(event_id, db, user_id)
 
     count_result = await db.execute(
         select(func.count()).where(CommitmentEventLink.event_id == event_id)
@@ -162,6 +164,7 @@ async def create_event(
     now = datetime.now(timezone.utc)
     event = Event(
         id=str(uuid.uuid4()),
+        user_id=user_id,
         title=body.title,
         description=body.description,
         starts_at=body.starts_at,
@@ -187,7 +190,7 @@ async def update_event(
     db: AsyncSession = Depends(get_db),
 ) -> EventRead:
     """Reschedule or cancel an event."""
-    event = await _get_event_or_404(event_id, db)
+    event = await _get_event_or_404(event_id, db, user_id)
     now = datetime.now(timezone.utc)
 
     if body.title is not None:
