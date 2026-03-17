@@ -31,6 +31,9 @@ def run_clarification(candidate_id: str, db: Session) -> dict:
     3. Analyze candidate for ambiguity issues.
     4. If observation window is open AND no critical issues → defer.
     5. Promote candidate to Commitment.
+    5a. Flush commitment immediately — ensures FK constraints are satisfied
+        before Clarification / LifecycleTransition rows are inserted.
+    5b. Enrich counterparty (C3).
     6. Generate suggested values.
     7. Create Clarification row.
     8. Create LifecycleTransition record.
@@ -83,6 +86,12 @@ def run_clarification(candidate_id: str, db: Session) -> dict:
     # Step 5 — promote
     commitment = promote_candidate(candidate, db, analysis)
     logger.info("Candidate %s promoted to commitment %s", candidate_id, commitment.id)
+
+    # Step 5a — flush commitment NOW so FK constraints on Clarification /
+    # LifecycleTransition are satisfied when those rows are inserted.
+    # Without this flush, SQLAlchemy may emit the child INSERTs before the
+    # parent Commitment INSERT, causing IntegrityError → infinite retry loop.
+    db.flush()
 
     # Step 5b — [C3] enrich counterparty before flush
     try:
