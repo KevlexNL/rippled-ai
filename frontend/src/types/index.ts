@@ -68,6 +68,10 @@ export interface CommitmentRead {
   context_id: string | null
   // Phase C5 — linked events
   linked_events: LinkedEventRead[] | null
+  // Origin source info (from CommitmentSignal → SourceItem)
+  source_sender_name: string | null
+  source_sender_email: string | null
+  source_occurred_at: string | null
   created_at: string
   updated_at: string
 }

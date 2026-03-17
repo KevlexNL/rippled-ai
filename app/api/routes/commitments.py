@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user_id
 from app.db.deps import get_db
-from app.models.orm import Commitment, CommitmentAmbiguity, CommitmentEventLink, CommitmentSignal, Event, LifecycleTransition
+from app.models.orm import Commitment, CommitmentAmbiguity, CommitmentEventLink, CommitmentSignal, Event, LifecycleTransition, SourceItem
 from app.models.schemas import (
     CommitmentAmbiguityCreate,
     CommitmentAmbiguityRead,
@@ -31,14 +31,40 @@ VALID_TRANSITIONS: dict[str, list[str]] = {
 }
 
 
-def _commitment_to_schema(row: Commitment) -> CommitmentRead:
+def _commitment_to_schema(row: Commitment, origin_source: SourceItem | None = None) -> CommitmentRead:
     schema = CommitmentRead.model_validate(row)
     schema.linked_events = []
+    if origin_source:
+        schema.source_sender_name = origin_source.sender_name
+        schema.source_sender_email = origin_source.sender_email
+        schema.source_occurred_at = origin_source.occurred_at
     return schema
 
 
+async def _fetch_origin_source_map(
+    commitment_ids: list[str], db: AsyncSession
+) -> dict[str, SourceItem]:
+    """Batch-fetch the origin source item for a list of commitment IDs."""
+    if not commitment_ids:
+        return {}
+    result = await db.execute(
+        select(CommitmentSignal.commitment_id, SourceItem)
+        .join(SourceItem, SourceItem.id == CommitmentSignal.source_item_id)
+        .where(
+            CommitmentSignal.commitment_id.in_(commitment_ids),
+            CommitmentSignal.signal_role == "origin",
+        )
+        .order_by(CommitmentSignal.created_at.asc())
+    )
+    source_map: dict[str, SourceItem] = {}
+    for commitment_id, source_item in result:
+        if commitment_id not in source_map:
+            source_map[commitment_id] = source_item
+    return source_map
+
+
 async def _build_commitment_with_events(row: Commitment, db: AsyncSession) -> CommitmentRead:
-    """Build CommitmentRead with linked_events for single-commitment endpoints."""
+    """Build CommitmentRead with linked_events and origin source for single-commitment endpoints."""
     result = await db.execute(
         select(CommitmentEventLink, Event)
         .join(Event, Event.id == CommitmentEventLink.event_id)
@@ -50,6 +76,8 @@ async def _build_commitment_with_events(row: Commitment, db: AsyncSession) -> Co
         .order_by(Event.starts_at.asc())
     )
     pairs = list(result)
+    source_map = await _fetch_origin_source_map([row.id], db)
+    origin_source = source_map.get(row.id)
     schema = CommitmentRead.model_validate(row)
     schema.linked_events = [
         LinkedEventRead(
@@ -61,6 +89,10 @@ async def _build_commitment_with_events(row: Commitment, db: AsyncSession) -> Co
         )
         for link, event in pairs
     ]
+    if origin_source:
+        schema.source_sender_name = origin_source.sender_name
+        schema.source_sender_email = origin_source.sender_email
+        schema.source_occurred_at = origin_source.occurred_at
     return schema
 
 
@@ -102,7 +134,9 @@ async def list_commitments(
         q = q.where(Commitment.priority_class == priority_class)
     q = q.order_by(Commitment.created_at.desc()).limit(limit).offset(offset)
     result = await db.execute(q)
-    return [_commitment_to_schema(row) for row in result.scalars()]
+    rows = list(result.scalars())
+    source_map = await _fetch_origin_source_map([r.id for r in rows], db)
+    return [_commitment_to_schema(row, source_map.get(row.id)) for row in rows]
 
 
 @router.post("", response_model=CommitmentRead, status_code=201)

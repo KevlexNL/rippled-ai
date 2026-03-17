@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user_id
 from app.db.deps import get_db
-from app.models.orm import Commitment, CommitmentEventLink, Event
+from app.models.orm import Commitment, CommitmentEventLink, CommitmentSignal, Event, SourceItem
 from app.models.schemas import CommitmentRead, LinkedEventRead
 
 router = APIRouter(prefix="/surface", tags=["surfacing"])
@@ -63,8 +63,36 @@ async def _fetch_event_map(commitment_ids: list[str], db: AsyncSession) -> dict[
     return event_map
 
 
-def _build_commitment_read(row: Commitment, event_map: dict[str, list[tuple]] | None = None) -> CommitmentRead:
-    """Build a CommitmentRead schema, injecting linked_events from the event_map."""
+async def _fetch_origin_source_map(
+    commitment_ids: list[str], db: AsyncSession
+) -> dict[str, SourceItem]:
+    """Batch-fetch the origin source item for a list of commitment IDs.
+    Returns dict: commitment_id → SourceItem (first origin signal's source).
+    """
+    if not commitment_ids:
+        return {}
+    result = await db.execute(
+        select(CommitmentSignal.commitment_id, SourceItem)
+        .join(SourceItem, SourceItem.id == CommitmentSignal.source_item_id)
+        .where(
+            CommitmentSignal.commitment_id.in_(commitment_ids),
+            CommitmentSignal.signal_role == "origin",
+        )
+        .order_by(CommitmentSignal.created_at.asc())
+    )
+    source_map: dict[str, SourceItem] = {}
+    for commitment_id, source_item in result:
+        if commitment_id not in source_map:
+            source_map[commitment_id] = source_item
+    return source_map
+
+
+def _build_commitment_read(
+    row: Commitment,
+    event_map: dict[str, list[tuple]] | None = None,
+    source_map: dict[str, SourceItem] | None = None,
+) -> CommitmentRead:
+    """Build a CommitmentRead schema, injecting linked_events and origin source info."""
     schema = CommitmentRead.model_validate(row)
     if event_map and row.id in event_map:
         schema.linked_events = [
@@ -79,6 +107,11 @@ def _build_commitment_read(row: Commitment, event_map: dict[str, list[tuple]] | 
         ]
     else:
         schema.linked_events = []
+    if source_map and row.id in source_map:
+        src = source_map[row.id]
+        schema.source_sender_name = src.sender_name
+        schema.source_sender_email = src.sender_email
+        schema.source_occurred_at = src.occurred_at
     return schema
 
 
@@ -99,8 +132,10 @@ async def surface_main(
         .limit(10)
     )
     rows = list(result.scalars())
-    event_map = await _fetch_event_map([r.id for r in rows], db)
-    return [_build_commitment_read(row, event_map) for row in rows]
+    ids = [r.id for r in rows]
+    event_map = await _fetch_event_map(ids, db)
+    source_map = await _fetch_origin_source_map(ids, db)
+    return [_build_commitment_read(row, event_map, source_map) for row in rows]
 
 
 @router.get("/shortlist", response_model=list[CommitmentRead])
@@ -120,8 +155,10 @@ async def surface_shortlist(
         .limit(10)
     )
     rows = list(result.scalars())
-    event_map = await _fetch_event_map([r.id for r in rows], db)
-    return [_build_commitment_read(row, event_map) for row in rows]
+    ids = [r.id for r in rows]
+    event_map = await _fetch_event_map(ids, db)
+    source_map = await _fetch_origin_source_map(ids, db)
+    return [_build_commitment_read(row, event_map, source_map) for row in rows]
 
 
 @router.get("/clarifications", response_model=list[CommitmentRead])
@@ -141,8 +178,10 @@ async def surface_clarifications(
         .limit(10)
     )
     rows = list(result.scalars())
-    event_map = await _fetch_event_map([r.id for r in rows], db)
-    return [_build_commitment_read(row, event_map) for row in rows]
+    ids = [r.id for r in rows]
+    event_map = await _fetch_event_map(ids, db)
+    source_map = await _fetch_origin_source_map(ids, db)
+    return [_build_commitment_read(row, event_map, source_map) for row in rows]
 
 
 @router.get("/best-next-moves", response_model=BestNextMovesResponse)
@@ -173,7 +212,9 @@ async def best_next_moves(
         .order_by(Commitment.priority_score.desc().nullslast(), Commitment.created_at.desc())
     )
     all_rows = list(result.scalars())
-    event_map = await _fetch_event_map([r.id for r in all_rows], db)
+    ids = [r.id for r in all_rows]
+    event_map = await _fetch_event_map(ids, db)
+    source_map = await _fetch_origin_source_map(ids, db)
 
     quick_wins: list[CommitmentRead] = []
     blockers: list[CommitmentRead] = []
@@ -192,7 +233,7 @@ async def best_next_moves(
             and float(row.confidence_for_surfacing) >= 0.65
         )
         if is_quick_type or is_shortlist_confident:
-            quick_wins.append(_build_commitment_read(row, event_map))
+            quick_wins.append(_build_commitment_read(row, event_map, source_map))
             seen_ids.add(row.id)
             total += 1
             if len(quick_wins) >= 2:
@@ -213,7 +254,7 @@ async def best_next_moves(
         )
         is_external = row.counterparty_type == "external"
         if is_overdue and is_external:
-            blockers.append(_build_commitment_read(row, event_map))
+            blockers.append(_build_commitment_read(row, event_map, source_map))
             seen_ids.add(row.id)
             total += 1
             if len(blockers) >= 2:
@@ -225,7 +266,7 @@ async def best_next_moves(
             break
         if row.id in seen_ids:
             continue
-        needs_focus.append(_build_commitment_read(row, event_map))
+        needs_focus.append(_build_commitment_read(row, event_map, source_map))
         seen_ids.add(row.id)
         total += 1
 
@@ -258,4 +299,4 @@ async def surface_internal(
     )
     rows = list(result.scalars())
     event_map = await _fetch_event_map([r.id for r in rows], db)
-    return [_build_commitment_read(row, event_map) for row in rows]
+    return [_build_commitment_read(row, event_map, source_map) for row in rows]

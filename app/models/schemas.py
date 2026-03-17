@@ -226,6 +226,10 @@ class CommitmentRead(_Base):
     post_event_reviewed: bool | None = False
     # Phase C5 — linked events (injected at query time)
     linked_events: list["LinkedEventRead"] | None = None
+    # Origin source info (injected at query time from CommitmentSignal → SourceItem)
+    source_sender_name: str | None = None
+    source_sender_email: str | None = None
+    source_occurred_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
 

@@ -228,6 +228,31 @@ function sourceIcon(contextType: string | null | undefined) {
   }
 }
 
+/** Resolve display owner — never show "recipient" as a name (Fix 5). */
+function resolveOwner(c: CommitmentRead): string | null {
+  const raw = c.resolved_owner || c.suggested_owner || null
+  if (raw && raw.toLowerCase() === 'recipient') {
+    // Fall back to source sender, counterparty, or "You"
+    return c.source_sender_name || c.counterparty_name || 'You'
+  }
+  return raw
+}
+
+/** Get the source attribution line: who sent it + when (Fix 3 & 4). */
+function sourceAttribution(c: CommitmentRead): string {
+  const parts: string[] = []
+  // Source sender or meeting title
+  if (c.source_sender_name) {
+    parts.push(c.source_sender_name)
+  } else if (c.source_sender_email) {
+    parts.push(c.source_sender_email)
+  }
+  // Use occurred_at (original signal date) instead of created_at (processing date)
+  const dateStr = formatDate(c.source_occurred_at || c.created_at)
+  if (dateStr) parts.push(dateStr)
+  return parts.join(' · ')
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────
 
 function StatusBadge({ label, classes }: { label: string; classes: string }) {
@@ -245,12 +270,12 @@ function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss }: {
   onDismiss: (id: string) => void
 }) {
   const badge = badgeFromState(commitment)
-  const person = commitment.resolved_owner || commitment.suggested_owner || null
+  const person = resolveOwner(commitment)
   const color = accentClass(badge.status)
 
   return (
     <div
-      className="bg-white rounded-lg border border-[#e8e8e6] overflow-hidden hover:border-[#d1d1cf] transition-colors cursor-pointer"
+      className="bg-white rounded-lg border border-[#e8e8e6] overflow-hidden hover:border-[#d1d1cf] transition-all duration-200 cursor-pointer"
       onClick={() => onOpen(commitment.id)}
     >
       <div className="flex">
@@ -264,14 +289,14 @@ function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss }: {
             <div className="flex items-center gap-1 text-[11px] text-[#9ca3af] text-right flex-shrink-0 ml-3">
               <span>{sourceIcon(commitment.context_type)}</span>
               <span>{sourceLabel(commitment.context_type)}</span>
-              {person && (
+              {(commitment.source_sender_name || commitment.source_sender_email) && (
                 <>
                   <span>·</span>
-                  <span>{person}</span>
+                  <span>{commitment.source_sender_name || commitment.source_sender_email}</span>
                 </>
               )}
               <span>·</span>
-              <span>{formatDate(commitment.created_at)}</span>
+              <span>{formatDate(commitment.source_occurred_at || commitment.created_at)}</span>
             </div>
           </div>
           <div className="font-semibold text-[14px] text-[#191919] mb-0.5">{commitment.title}</div>
@@ -459,20 +484,26 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
   async function handleConfirm(id: string) {
     try {
       setError(null)
-      await patchCommitment(id, { lifecycle_state: 'delivered' })
+      // Optimistic: remove from surface cache immediately
+      queryClient.setQueryData<CommitmentRead[]>(['surface', 'main'], (old) => old?.filter(c => c.id !== id))
+      await patchCommitment(id, { lifecycle_state: 'active' })
       queryClient.invalidateQueries({ queryKey: ['surface'] })
     } catch {
       setError('Failed to confirm commitment')
+      queryClient.invalidateQueries({ queryKey: ['surface'] })
     }
   }
 
   async function handleDismiss(id: string) {
     try {
       setError(null)
+      // Optimistic: remove from surface cache immediately
+      queryClient.setQueryData<CommitmentRead[]>(['surface', 'main'], (old) => old?.filter(c => c.id !== id))
       await patchCommitment(id, { lifecycle_state: 'discarded' })
       queryClient.invalidateQueries({ queryKey: ['surface'] })
     } catch {
       setError('Failed to dismiss commitment')
+      queryClient.invalidateQueries({ queryKey: ['surface'] })
     }
   }
 
