@@ -11,6 +11,7 @@ from decimal import Decimal
 
 from sqlalchemy import (
     Boolean,
+    CheckConstraint,
     DateTime,
     ForeignKey,
     Integer,
@@ -468,3 +469,83 @@ class DetectionAudit(Base):
     duration_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
     error_detail: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
+
+
+# ---------------------------------------------------------------------------
+# Feedback schema (WO-RIPPLED-FEEDBACK-SCHEMA)
+# ---------------------------------------------------------------------------
+
+class SignalFeedback(Base):
+    """Tier 2 — extraction review feedback."""
+    __tablename__ = "signal_feedback"
+    __table_args__ = (
+        CheckConstraint("rating BETWEEN 1 AND 5", name="ck_signal_feedback_rating"),
+    )
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    detection_audit_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("detection_audit.id", ondelete="SET NULL"), nullable=True)
+    source_item_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("source_items.id", ondelete="SET NULL"), nullable=True, index=True)
+    reviewer_user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    extraction_correct: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    rating: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    missed_commitments: Mapped[str | None] = mapped_column(Text, nullable=True)
+    false_positives: Mapped[str | None] = mapped_column(Text, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    reviewed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class OutcomeFeedback(Base):
+    """Tier 2 — outcome review feedback."""
+    __tablename__ = "outcome_feedback"
+    __table_args__ = (
+        CheckConstraint("usefulness_rating BETWEEN 1 AND 5", name="ck_outcome_feedback_usefulness_rating"),
+    )
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    commitment_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False, index=True)
+    reviewer_user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    was_useful: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    usefulness_rating: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    was_timely: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    reviewed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class AdhocSignal(Base):
+    """Tier 3 — Telegram ad-hoc input."""
+    __tablename__ = "adhoc_signals"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    raw_text: Mapped[str] = mapped_column(Text, nullable=False)
+    source: Mapped[str] = mapped_column(String(50), server_default="telegram", nullable=False)
+    received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    match_status: Mapped[str] = mapped_column(String(20), server_default="pending", nullable=True, index=True)
+    matched_commitment_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("commitments.id", ondelete="SET NULL"), nullable=True)
+    matched_source_item_id: Mapped[str | None] = mapped_column(_uuid(), ForeignKey("source_items.id", ondelete="SET NULL"), nullable=True)
+    match_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    match_confidence: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    was_found: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class LlmJudgeRun(Base):
+    """Tier 1 — automated LLM-as-judge self-improvement."""
+    __tablename__ = "llm_judge_runs"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    judge_model: Mapped[str] = mapped_column(String(100), nullable=False)
+    student_model: Mapped[str] = mapped_column(String(100), nullable=False)
+    items_reviewed: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
+    false_positives_found: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
+    false_negatives_found: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
+    prompt_improvement_suggestions: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    raw_judge_output: Mapped[str | None] = mapped_column(Text, nullable=True)
+    run_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
