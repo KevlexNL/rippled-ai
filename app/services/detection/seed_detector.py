@@ -29,6 +29,7 @@ from app.models.orm import (
     UserCommitmentProfile,
     UserSettings,
 )
+from app.services.detection.audit import estimate_cost, write_audit_entry
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ _BATCH_SIZE = 20
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0
 _DEFAULT_MODEL = "claude-sonnet-4-6"
+_PROMPT_VERSION = "seed-v1"
 
 _SYSTEM_PROMPT = """You are a commitment extraction engine for a workplace intelligence system.
 
@@ -91,6 +93,21 @@ def _strip_markdown_json(raw: str) -> str:
     """Extract JSON from a response that may be wrapped in markdown code fences."""
     m = _CODE_FENCE_RE.search(raw)
     return m.group(1).strip() if m else raw.strip()
+
+
+@dataclass
+class _LLMResult:
+    """Internal: captures everything from an LLM call for auditing."""
+
+    commitments: list[dict] | None  # None = skipped (content too short)
+    raw_prompt: str | None = None
+    raw_response: str | None = None
+    parsed_result: list[dict] | None = None
+    tokens_in: int | None = None
+    tokens_out: int | None = None
+    model: str | None = None
+    duration_ms: int | None = None
+    error_detail: str | None = None
 
 
 @dataclass
@@ -176,19 +193,40 @@ def run_seed_pass(user_id: str, db: Session) -> SeedPassResult:
 
         for item in batch:
             try:
-                commitments_data = _extract_commitments(client, _DEFAULT_MODEL, item)
+                llm_result = _extract_commitments(client, _DEFAULT_MODEL, item)
 
-                if commitments_data is None:
+                if llm_result.commitments is None:
                     # No content / too short — no LLM call was made.
-                    # Do NOT set seed_processed_at so a future re-run
-                    # after content enrichment can pick these up.
                     result.items_skipped += 1
                     logger.debug("Seed pass: skipped item %s (no content)", item.id)
                     continue
 
+                # Write audit row for every LLM call
+                commitment_created = bool(llm_result.commitments)
+                cost = estimate_cost(
+                    _DEFAULT_MODEL, llm_result.tokens_in, llm_result.tokens_out
+                )
+                write_audit_entry(
+                    db,
+                    source_item_id=item.id,
+                    user_id=user_id,
+                    tier_used="tier_3",
+                    commitment_created=commitment_created,
+                    prompt_version=_PROMPT_VERSION,
+                    raw_prompt=llm_result.raw_prompt,
+                    raw_response=llm_result.raw_response,
+                    parsed_result=llm_result.parsed_result,
+                    tokens_in=llm_result.tokens_in,
+                    tokens_out=llm_result.tokens_out,
+                    cost_estimate=cost,
+                    model=llm_result.model,
+                    duration_ms=llm_result.duration_ms,
+                    error_detail=llm_result.error_detail,
+                )
+
                 # LLM was called successfully
-                if commitments_data:
-                    for c_data in commitments_data:
+                if llm_result.commitments:
+                    for c_data in llm_result.commitments:
                         _create_commitment_and_signal(db, user_id, item, c_data)
                         result.commitments_created += 1
                         result.signals_created += 1
@@ -227,16 +265,15 @@ def run_seed_pass(user_id: str, db: Session) -> SeedPassResult:
 
 def _extract_commitments(
     client: anthropic.Anthropic, model: str, item: SourceItem
-) -> list[dict] | None:
+) -> _LLMResult:
     """Call Anthropic LLM to extract commitments from a source item.
 
     Returns:
-        list[dict]: Commitments found (may be empty if LLM found none).
-        None: Item was skipped — content too short, no LLM call made.
+        _LLMResult with commitments=None if item was skipped (content too short).
     """
     content = item.content or ""
     if len(content.strip()) < 10:
-        return None
+        return _LLMResult(commitments=None)
 
     # Build context message
     parts = [f"Source type: {item.source_type}"]
@@ -246,6 +283,11 @@ def _extract_commitments(
         parts.append(f"Direction: {item.direction}")
     parts.append(f"\n--- Email Content ---\n{content}")
     user_message = "\n".join(parts)
+
+    # Full prompt for audit logging
+    full_prompt = f"[system]\n{_SYSTEM_PROMPT}\n\n[user]\n{user_message}"
+
+    call_start = time.monotonic()
 
     for attempt in range(_MAX_RETRIES):
         try:
@@ -259,13 +301,18 @@ def _extract_commitments(
                 temperature=0.1,
             )
 
+            duration_ms = int((time.monotonic() - call_start) * 1000)
+            tokens_in = None
+            tokens_out = None
             usage = response.usage
             if usage:
+                tokens_in = usage.input_tokens
+                tokens_out = usage.output_tokens
                 logger.debug(
                     "Seed pass LLM usage — model=%s input=%d output=%d item=%s",
                     model,
-                    usage.input_tokens,
-                    usage.output_tokens,
+                    tokens_in,
+                    tokens_out,
                     item.id,
                 )
 
@@ -283,7 +330,16 @@ def _extract_commitments(
                 len(commitments),
                 item.id,
             )
-            return commitments
+            return _LLMResult(
+                commitments=commitments,
+                raw_prompt=full_prompt,
+                raw_response=raw,
+                parsed_result=commitments,
+                tokens_in=tokens_in,
+                tokens_out=tokens_out,
+                model=model,
+                duration_ms=duration_ms,
+            )
 
         except anthropic.RateLimitError:
             if attempt < _MAX_RETRIES - 1:
@@ -300,10 +356,21 @@ def _extract_commitments(
                 raise
 
         except (json.JSONDecodeError, KeyError, IndexError) as exc:
+            duration_ms = int((time.monotonic() - call_start) * 1000)
             logger.warning("Seed pass: malformed LLM response for item %s: %s", item.id, exc)
-            return []
+            return _LLMResult(
+                commitments=[],
+                raw_prompt=full_prompt,
+                raw_response=raw if "raw" in dir() else None,
+                parsed_result=None,
+                tokens_in=tokens_in if "tokens_in" in dir() else None,
+                tokens_out=tokens_out if "tokens_out" in dir() else None,
+                model=model,
+                duration_ms=duration_ms,
+                error_detail=f"Parse error: {exc}",
+            )
 
-    return []
+    return _LLMResult(commitments=[], raw_prompt=full_prompt, model=model)
 
 
 def _create_commitment_and_signal(

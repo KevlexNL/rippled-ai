@@ -117,6 +117,17 @@ class HybridDetectionService:
         result["model_confidence"] = model_result.confidence
         result["model_explanation"] = model_result.explanation
 
+        # Pass through audit metadata from model result
+        result["audit_raw_prompt"] = model_result.raw_prompt
+        result["audit_raw_response"] = model_result.raw_response
+        result["audit_parsed_result"] = model_result.parsed_result
+        result["audit_tokens_in"] = model_result.tokens_in
+        result["audit_tokens_out"] = model_result.tokens_out
+        result["audit_model"] = model_result.model
+        result["audit_duration_ms"] = model_result.duration_ms
+        result["audit_prompt_version"] = model_result.prompt_version
+        result["audit_error_detail"] = model_result.error_detail
+
         # Apply decision rules
         if model_result.is_commitment and model_result.confidence > MODEL_PROMOTE_THRESHOLD:
             result["detection_method"] = "model-assisted"

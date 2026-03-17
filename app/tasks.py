@@ -449,6 +449,7 @@ def run_model_detection_pass(self, candidate_id: str) -> dict:
     from app.models.orm import CommitmentCandidate
     from app.services.model_detection import ModelDetectionService
     from app.services.hybrid_detection import HybridDetectionService
+    from app.services.detection.audit import estimate_cost, write_audit_entry
 
     try:
         if not settings.model_detection_enabled:
@@ -484,6 +485,31 @@ def run_model_detection_pass(self, candidate_id: str) -> dict:
             if result["was_discarded"]:
                 candidate.was_discarded = True
                 candidate.discard_reason = result["discard_reason"]
+
+            # Write detection audit row when model was actually called
+            if result.get("model_called") and result.get("audit_raw_prompt"):
+                audit_model = result.get("audit_model")
+                audit_tokens_in = result.get("audit_tokens_in")
+                audit_tokens_out = result.get("audit_tokens_out")
+                cost = estimate_cost(audit_model, audit_tokens_in, audit_tokens_out) if audit_model else None
+                write_audit_entry(
+                    db,
+                    source_item_id=candidate.source_item_id,
+                    user_id=candidate.user_id,
+                    tier_used="tier_3",
+                    confidence=result.get("model_confidence"),
+                    commitment_created=not result.get("was_discarded", False),
+                    prompt_version=result.get("audit_prompt_version"),
+                    raw_prompt=result.get("audit_raw_prompt"),
+                    raw_response=result.get("audit_raw_response"),
+                    parsed_result=result.get("audit_parsed_result"),
+                    tokens_in=audit_tokens_in,
+                    tokens_out=audit_tokens_out,
+                    cost_estimate=cost,
+                    model=audit_model,
+                    duration_ms=result.get("audit_duration_ms"),
+                    error_detail=result.get("audit_error_detail"),
+                )
 
         # Learning loop: update user profile after LLM (Tier 3) creates a signal
         if result.get("model_called") and not result.get("was_discarded"):

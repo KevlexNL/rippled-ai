@@ -111,6 +111,31 @@ class TestModelDetectionResult:
         assert result.suggested_owner is None
         assert result.suggested_deadline is None
 
+    def test_result_has_audit_fields(self):
+        """ModelDetectionResult must have audit metadata fields."""
+        result = ModelDetectionResult(
+            is_commitment=True,
+            confidence=0.85,
+            explanation="Commitment",
+            suggested_owner=None,
+            suggested_deadline=None,
+            raw_prompt="test prompt",
+            raw_response="test response",
+            parsed_result={"is_commitment": True},
+            tokens_in=100,
+            tokens_out=50,
+            model="gpt-4.1-mini",
+            duration_ms=250,
+            prompt_version="ongoing-v1",
+        )
+        assert result.raw_prompt == "test prompt"
+        assert result.raw_response == "test response"
+        assert result.tokens_in == 100
+        assert result.tokens_out == 50
+        assert result.model == "gpt-4.1-mini"
+        assert result.duration_ms == 250
+        assert result.prompt_version == "ongoing-v1"
+
 
 # ---------------------------------------------------------------------------
 # ModelDetectionService — classify method
@@ -187,6 +212,27 @@ class TestModelDetectionServiceClassify:
         call_kwargs = mock_create.call_args.kwargs
         assert call_kwargs.get("model") == "gpt-4.1-mini"
 
+    def test_classify_returns_audit_metadata(self):
+        """classify() must populate audit metadata fields on the result."""
+        service = ModelDetectionService(api_key="test-key", model="gpt-4.1-mini")
+        mock_response = _mock_openai_response(is_commitment=True, confidence=0.85)
+        mock_response.usage.prompt_tokens = 120
+        mock_response.usage.completion_tokens = 45
+        with patch.object(service._client.chat.completions, "create", return_value=mock_response):
+            result = service.classify(_make_candidate())
+
+        assert result is not None
+        assert result.raw_prompt is not None
+        assert "[system]" in result.raw_prompt
+        assert result.raw_response is not None
+        assert result.tokens_in == 120
+        assert result.tokens_out == 45
+        assert result.model == "gpt-4.1-mini"
+        assert result.duration_ms is not None
+        assert result.duration_ms >= 0
+        assert result.prompt_version == "ongoing-v1"
+        assert result.parsed_result is not None
+
 
 # ---------------------------------------------------------------------------
 # ModelDetectionService — error handling
@@ -209,12 +255,17 @@ class TestModelDetectionServiceErrorHandling:
         bad_choice.message = bad_msg
         bad_response = MagicMock()
         bad_response.choices = [bad_choice]
+        bad_response.usage = MagicMock()
+        bad_response.usage.prompt_tokens = 50
+        bad_response.usage.completion_tokens = 10
         with patch.object(service._client.chat.completions, "create", return_value=bad_response):
             result = service.classify(_make_candidate())
-        assert result is None
+        # Should still return a result (with error_detail) rather than None
+        assert result is not None
+        assert result.error_detail is not None
 
     def test_classify_returns_none_on_missing_fields(self):
-        """JSON with missing required fields must return None."""
+        """JSON with missing required fields must return result with error_detail."""
         import json
         service = ModelDetectionService(api_key="test-key", model="gpt-4.1-mini")
         incomplete_msg = MagicMock()
@@ -228,7 +279,8 @@ class TestModelDetectionServiceErrorHandling:
         response.usage.completion_tokens = 10
         with patch.object(service._client.chat.completions, "create", return_value=response):
             result = service.classify(_make_candidate())
-        assert result is None
+        assert result is not None
+        assert result.error_detail is not None
 
     def test_classify_returns_none_on_empty_context_window(self):
         """Candidate with no context_window should not raise."""
@@ -449,6 +501,42 @@ class TestHybridDetectionDecisionRules:
         candidate = _make_candidate(confidence_score=Decimal("0.50"))
         result = service.process(candidate)
         assert result["model_classification"] == "uncertain"
+
+
+# ---------------------------------------------------------------------------
+# HybridDetectionService — audit metadata passthrough
+# ---------------------------------------------------------------------------
+
+class TestHybridDetectionAuditPassthrough:
+    """Verify hybrid result passes through audit metadata from model result."""
+
+    def test_audit_metadata_in_result(self):
+        """When model is called, audit metadata must be in the result dict."""
+        mock_model = MagicMock()
+        mock_model.classify.return_value = ModelDetectionResult(
+            is_commitment=True, confidence=0.85,
+            explanation="Commitment",
+            suggested_owner=None, suggested_deadline=None,
+            raw_prompt="test prompt",
+            raw_response='{"is_commitment": true}',
+            parsed_result={"is_commitment": True},
+            tokens_in=100,
+            tokens_out=50,
+            model="gpt-4.1-mini",
+            duration_ms=200,
+            prompt_version="ongoing-v1",
+        )
+        service = HybridDetectionService(model_service=mock_model)
+        candidate = _make_candidate(confidence_score=Decimal("0.55"))
+        result = service.process(candidate)
+
+        assert result["audit_raw_prompt"] == "test prompt"
+        assert result["audit_raw_response"] == '{"is_commitment": true}'
+        assert result["audit_tokens_in"] == 100
+        assert result["audit_tokens_out"] == 50
+        assert result["audit_model"] == "gpt-4.1-mini"
+        assert result["audit_duration_ms"] == 200
+        assert result["audit_prompt_version"] == "ongoing-v1"
 
 
 # ---------------------------------------------------------------------------

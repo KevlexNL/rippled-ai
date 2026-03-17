@@ -50,6 +50,7 @@ You must respond with valid JSON only, exactly this structure:
 
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0  # seconds
+_PROMPT_VERSION = "ongoing-v1"
 
 
 @dataclass
@@ -60,6 +61,16 @@ class ModelDetectionResult:
     explanation: str
     suggested_owner: str | None
     suggested_deadline: str | None
+    # Audit metadata
+    raw_prompt: str | None = None
+    raw_response: str | None = None
+    parsed_result: dict | None = None
+    tokens_in: int | None = None
+    tokens_out: int | None = None
+    model: str | None = None
+    duration_ms: int | None = None
+    prompt_version: str | None = None
+    error_detail: str | None = None
 
 
 class ModelDetectionService:
@@ -100,6 +111,9 @@ class ModelDetectionService:
             return None
 
         user_message = self._build_user_message(context_window)
+        full_prompt = f"[system]\n{_SYSTEM_PROMPT}\n\n[user]\n{user_message}"
+
+        call_start = time.monotonic()
 
         for attempt in range(_MAX_RETRIES):
             try:
@@ -113,18 +127,58 @@ class ModelDetectionService:
                     temperature=0.1,
                 )
 
+                duration_ms = int((time.monotonic() - call_start) * 1000)
+
                 # Log token usage
+                tokens_in = None
+                tokens_out = None
                 usage = response.usage
                 if usage:
+                    tokens_in = usage.prompt_tokens
+                    tokens_out = usage.completion_tokens
                     logger.debug(
                         "OpenAI usage — model=%s prompt_tokens=%d completion_tokens=%d candidate=%s",
                         self._model,
-                        usage.prompt_tokens,
-                        usage.completion_tokens,
+                        tokens_in,
+                        tokens_out,
                         getattr(candidate, "id", "?"),
                     )
 
-                return self._parse_response(response)
+                result = self._parse_response(response)
+                if result is None:
+                    raw_content = ""
+                    try:
+                        raw_content = response.choices[0].message.content
+                    except (IndexError, AttributeError):
+                        pass
+                    return ModelDetectionResult(
+                        is_commitment=False,
+                        confidence=0.0,
+                        explanation="",
+                        suggested_owner=None,
+                        suggested_deadline=None,
+                        raw_prompt=full_prompt,
+                        raw_response=raw_content,
+                        parsed_result=None,
+                        tokens_in=tokens_in,
+                        tokens_out=tokens_out,
+                        model=self._model,
+                        duration_ms=duration_ms,
+                        prompt_version=_PROMPT_VERSION,
+                        error_detail="Failed to parse response",
+                    )
+
+                # Attach audit metadata
+                raw_content = response.choices[0].message.content
+                result.raw_prompt = full_prompt
+                result.raw_response = raw_content
+                result.parsed_result = json.loads(raw_content)
+                result.tokens_in = tokens_in
+                result.tokens_out = tokens_out
+                result.model = self._model
+                result.duration_ms = duration_ms
+                result.prompt_version = _PROMPT_VERSION
+                return result
 
             except RateLimitError as exc:
                 if attempt < _MAX_RETRIES - 1:
@@ -142,6 +196,7 @@ class ModelDetectionService:
                     return None
 
             except Exception as exc:
+                duration_ms = int((time.monotonic() - call_start) * 1000)
                 logger.error(
                     "OpenAI API error for candidate %s: %s",
                     getattr(candidate, "id", "?"), exc,
