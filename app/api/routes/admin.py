@@ -25,6 +25,10 @@ Endpoint overview:
   POST   /admin/seed-reset
   POST   /admin/test/seed-commitment
   DELETE /admin/test/cleanup
+  POST   /admin/eval/run
+  GET    /admin/eval/runs
+  GET    /admin/eval/runs/{run_id}/items
+  POST   /admin/eval/label
 """
 from __future__ import annotations
 
@@ -48,6 +52,9 @@ from app.models.orm import (
     CommitmentCandidate,
     CommitmentEventLink,
     DigestLog,
+    EvalDataset,
+    EvalRun,
+    EvalRunItem,
     Event,
     LifecycleTransition,
     Source,
@@ -1309,4 +1316,156 @@ def _event_to_dict(e: Event) -> dict:
         "attendees": e.attendees,
         "created_at": e.created_at.isoformat(),
         "updated_at": e.updated_at.isoformat(),
+    }
+
+
+# ===========================================================================
+# Eval Harness — WO-RIPPLED-EVAL-HARNESS
+# ===========================================================================
+
+
+class EvalRunRequest(BaseModel):
+    user_id: str
+    prompt_version: str = "seed-v1"
+    model: str = "claude-haiku-4-5"
+    dataset_size: int | None = 50
+
+
+class EvalLabelRequest(BaseModel):
+    source_item_id: str
+    user_id: str
+    expected_has_commitment: bool
+    expected_commitment_count: int | None = None
+    label_notes: str | None = None
+    labeled_by: str | None = None
+
+
+@router.post("/eval/run")
+async def run_eval_endpoint(body: EvalRunRequest):
+    """Kick off an eval run as a Celery task. Returns the task ID immediately."""
+    from app.tasks import run_eval_task  # local import to avoid circular
+
+    task = run_eval_task.delay(
+        user_id=body.user_id,
+        prompt_version=body.prompt_version,
+        model=body.model,
+        dataset_size=body.dataset_size,
+    )
+    return {"task_id": task.id, "status": "queued"}
+
+
+@router.get("/eval/runs")
+async def list_eval_runs(
+    user_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """List all eval runs for a user, newest first."""
+    result = await db.execute(
+        select(EvalRun)
+        .where(EvalRun.user_id == user_id)
+        .order_by(desc(EvalRun.run_at))
+    )
+    runs = result.scalars().all()
+    return [_eval_run_to_dict(r) for r in runs]
+
+
+@router.get("/eval/runs/{run_id}/items")
+async def list_eval_run_items(
+    run_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Return per-item results for a specific eval run."""
+    # Verify run exists
+    run_result = await db.execute(
+        select(EvalRun).where(EvalRun.id == run_id)
+    )
+    run = run_result.scalar_one_or_none()
+    if not run:
+        raise HTTPException(status_code=404, detail="Eval run not found")
+
+    result = await db.execute(
+        select(EvalRunItem)
+        .where(EvalRunItem.eval_run_id == run_id)
+        .order_by(EvalRunItem.created_at)
+    )
+    items = result.scalars().all()
+    return [_eval_run_item_to_dict(i) for i in items]
+
+
+@router.post("/eval/label")
+async def label_eval_item(
+    body: EvalLabelRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Label a source_item in the eval dataset."""
+    # Verify source_item exists and belongs to user
+    si_result = await db.execute(
+        select(SourceItem).where(
+            SourceItem.id == body.source_item_id,
+            SourceItem.user_id == body.user_id,
+        )
+    )
+    si = si_result.scalar_one_or_none()
+    if not si:
+        raise HTTPException(
+            status_code=404,
+            detail="Source item not found or does not belong to this user",
+        )
+
+    entry = EvalDataset(
+        user_id=body.user_id,
+        source_item_id=body.source_item_id,
+        expected_has_commitment=body.expected_has_commitment,
+        expected_commitment_count=body.expected_commitment_count,
+        label_notes=body.label_notes,
+        labeled_by=body.labeled_by,
+    )
+    db.add(entry)
+    await db.flush()
+    return {
+        "id": entry.id,
+        "source_item_id": entry.source_item_id,
+        "expected_has_commitment": entry.expected_has_commitment,
+        "label_notes": entry.label_notes,
+        "labeled_at": entry.labeled_at.isoformat() if entry.labeled_at else None,
+    }
+
+
+def _eval_run_to_dict(r: EvalRun) -> dict:
+    return {
+        "id": r.id,
+        "user_id": r.user_id,
+        "prompt_version": r.prompt_version,
+        "model": r.model,
+        "run_at": r.run_at.isoformat() if r.run_at else None,
+        "items_tested": r.items_tested,
+        "true_positives": r.true_positives,
+        "false_positives": r.false_positives,
+        "true_negatives": r.true_negatives,
+        "false_negatives": r.false_negatives,
+        "precision_score": float(r.precision_score) if r.precision_score is not None else None,
+        "recall_score": float(r.recall_score) if r.recall_score is not None else None,
+        "f1_score": float(r.f1_score) if r.f1_score is not None else None,
+        "total_cost_estimate": float(r.total_cost_estimate) if r.total_cost_estimate is not None else None,
+        "duration_ms": r.duration_ms,
+        "notes": r.notes,
+        "created_at": r.created_at.isoformat() if r.created_at else None,
+    }
+
+
+def _eval_run_item_to_dict(i: EvalRunItem) -> dict:
+    return {
+        "id": i.id,
+        "eval_run_id": i.eval_run_id,
+        "source_item_id": i.source_item_id,
+        "expected_has_commitment": i.expected_has_commitment,
+        "actual_has_commitment": i.actual_has_commitment,
+        "passed": i.passed,
+        "raw_prompt": i.raw_prompt,
+        "raw_response": i.raw_response,
+        "parsed_commitments": i.parsed_commitments,
+        "tokens_in": i.tokens_in,
+        "tokens_out": i.tokens_out,
+        "cost_estimate": float(i.cost_estimate) if i.cost_estimate is not None else None,
+        "created_at": i.created_at.isoformat() if i.created_at else None,
     }

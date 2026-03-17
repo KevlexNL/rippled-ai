@@ -920,3 +920,55 @@ def update_profile_after_dismissal(commitment_id: str) -> dict:
         db.add(profile)
 
     return {"status": "downweighted", "commitment_id": commitment_id}
+
+
+@celery_app.task(
+    bind=True,
+    max_retries=1,
+    default_retry_delay=60,
+    name="app.tasks.run_eval_task",
+)
+def run_eval_task(
+    self,
+    user_id: str,
+    prompt_version: str = "seed-v1",
+    model: str = "claude-haiku-4-5",
+    dataset_size: int | None = 50,
+) -> dict:
+    """Run an eval pass against labeled dataset — WO-RIPPLED-EVAL-HARNESS.
+
+    Calls LLM for each labeled item, computes precision/recall/F1,
+    stores results in eval_runs + eval_run_items tables.
+
+    Args:
+        user_id: UUID of the user whose dataset to test.
+        prompt_version: Prompt template version string.
+        model: Anthropic model ID.
+        dataset_size: Max items to test (None = all).
+
+    Returns:
+        Dict with eval_run_id, scores, and cost.
+    """
+    from app.services.eval.runner import run_eval
+
+    try:
+        with get_sync_session() as db:
+            result = run_eval(user_id, prompt_version, model, dataset_size, db)
+
+        return {
+            "eval_run_id": result.eval_run_id,
+            "items_tested": result.items_tested,
+            "true_positives": result.true_positives,
+            "false_positives": result.false_positives,
+            "true_negatives": result.true_negatives,
+            "false_negatives": result.false_negatives,
+            "precision": str(result.precision),
+            "recall": str(result.recall),
+            "f1": str(result.f1),
+            "total_cost": str(result.total_cost),
+            "duration_ms": result.duration_ms,
+            "errors": result.errors[:10],
+        }
+    except Exception as exc:
+        logger.error("Eval task failed for user %s: %s", user_id, exc)
+        raise self.retry(exc=exc)

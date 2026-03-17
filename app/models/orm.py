@@ -392,6 +392,60 @@ class DigestLog(Base):
     digest_content: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
 
+class EvalDataset(Base):
+    __tablename__ = "eval_datasets"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    source_item_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("source_items.id", ondelete="CASCADE"), nullable=False)
+    expected_has_commitment: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    expected_commitment_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    label_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    labeled_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    labeled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class EvalRun(Base):
+    __tablename__ = "eval_runs"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    prompt_version: Mapped[str] = mapped_column(String(50), nullable=False)
+    model: Mapped[str] = mapped_column(String(100), nullable=False)
+    run_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    items_tested: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
+    true_positives: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
+    false_positives: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
+    true_negatives: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
+    false_negatives: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
+    precision_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 4), nullable=True)
+    recall_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 4), nullable=True)
+    f1_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 4), nullable=True)
+    total_cost_estimate: Mapped[Decimal | None] = mapped_column(Numeric(10, 6), nullable=True)
+    duration_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class EvalRunItem(Base):
+    __tablename__ = "eval_run_items"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    eval_run_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("eval_runs.id", ondelete="CASCADE"), nullable=False, index=True)
+    source_item_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("source_items.id", ondelete="CASCADE"), nullable=False)
+    expected_has_commitment: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    actual_has_commitment: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    passed: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    raw_prompt: Mapped[str | None] = mapped_column(Text, nullable=True)
+    raw_response: Mapped[str | None] = mapped_column(Text, nullable=True)
+    parsed_commitments: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    tokens_in: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tokens_out: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cost_estimate: Mapped[Decimal | None] = mapped_column(Numeric(10, 6), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
 class DetectionAudit(Base):
     __tablename__ = "detection_audit"
 
