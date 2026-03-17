@@ -298,5 +298,7 @@ async def surface_internal(
         .limit(20)
     )
     rows = list(result.scalars())
-    event_map = await _fetch_event_map([r.id for r in rows], db)
+    ids = [r.id for r in rows]
+    event_map = await _fetch_event_map(ids, db)
+    source_map = await _fetch_origin_source_map(ids, db)
     return [_build_commitment_read(row, event_map, source_map) for row in rows]

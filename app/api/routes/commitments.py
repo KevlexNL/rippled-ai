@@ -14,6 +14,7 @@ from app.models.schemas import (
     CommitmentCreate,
     CommitmentRead,
     CommitmentSignalCreate,
+    CommitmentSignalEnrichedRead,
     CommitmentSignalRead,
     CommitmentUpdate,
     LinkedEventRead,
@@ -283,23 +284,30 @@ async def delete_commitment(
 # Signals
 # ---------------------------------------------------------------------------
 
-@router.get("/{commitment_id}/signals", response_model=list[CommitmentSignalRead])
+@router.get("/{commitment_id}/signals", response_model=list[CommitmentSignalEnrichedRead])
 async def list_signals(
     commitment_id: str,
     limit: int = Query(5, ge=1, le=200),
     offset: int = Query(0, ge=0),
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
-) -> list[CommitmentSignalRead]:
+) -> list[CommitmentSignalEnrichedRead]:
     await _get_commitment_or_404(commitment_id, user_id, db)
     result = await db.execute(
-        select(CommitmentSignal)
+        select(CommitmentSignal, SourceItem)
+        .join(SourceItem, SourceItem.id == CommitmentSignal.source_item_id)
         .where(CommitmentSignal.commitment_id == commitment_id, CommitmentSignal.user_id == user_id)
         .order_by(CommitmentSignal.created_at.desc())
         .limit(limit)
         .offset(offset)
     )
-    return [_signal_to_schema(row) for row in result.scalars()]
+    out: list[CommitmentSignalEnrichedRead] = []
+    for signal, source_item in result:
+        enriched = CommitmentSignalEnrichedRead.model_validate(signal)
+        enriched.source = source_item.source_type
+        enriched.text = source_item.content
+        out.append(enriched)
+    return out
 
 
 @router.post("/{commitment_id}/signals", response_model=CommitmentSignalRead, status_code=201)

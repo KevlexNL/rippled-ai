@@ -18,6 +18,7 @@ router = APIRouter(prefix="/stats", tags=["stats"])
 
 class StatsRead(BaseModel):
     meetings_analyzed: int
+    meetings_logged: int  # alias for frontend compatibility
     messages_processed: int
     emails_captured: int
     commitments_detected: int
@@ -65,8 +66,10 @@ async def get_stats(
     )
     people_count = people_result.scalar() or 0
 
+    meetings_count = items_row.meetings or 0
     return StatsRead(
-        meetings_analyzed=items_row.meetings or 0,
+        meetings_analyzed=meetings_count,
+        meetings_logged=meetings_count,
         messages_processed=items_row.slack or 0,
         emails_captured=items_row.email or 0,
         commitments_detected=commitments_count,

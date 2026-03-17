@@ -290,6 +290,12 @@ class CommitmentSignalRead(_Base):
     created_at: datetime
 
 
+class CommitmentSignalEnrichedRead(CommitmentSignalRead):
+    """Signal with source_type and content text from the linked SourceItem."""
+    source: str | None = None  # source_type from SourceItem (email|slack|meeting)
+    text: str | None = None  # content snippet from SourceItem
+
+
 class CommitmentSignalCreate(_Base):
     commitment_id: str
     source_item_id: str
