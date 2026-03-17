@@ -707,7 +707,7 @@ async def trigger_detection(user_id: str | None = None):
 
     try:
         def _run():
-            from sqlalchemy import select, and_, exists
+            from sqlalchemy import select, and_
             from app.models.orm import CommitmentCandidate
 
             has_candidate = (

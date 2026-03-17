@@ -165,7 +165,7 @@ def run_detection_sweep(limit: int = 100) -> dict:
     Returns:
         Dict with 'processed' and 'candidates_created' counts.
     """
-    from sqlalchemy import select, and_, exists
+    from sqlalchemy import select, and_
     from app.models.orm import SourceItem, CommitmentCandidate
 
     logger.info("Pipeline: detection sweep starting")
