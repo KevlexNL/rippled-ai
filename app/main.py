@@ -59,7 +59,7 @@ app.include_router(clarifications_routes.router, prefix=settings.api_prefix, tag
 app.include_router(stats_routes.router, prefix=settings.api_prefix, tags=["stats"])
 
 # Serve main frontend SPA (includes /admin via React Router)
-_PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "..", "api", "public")
+_PUBLIC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "api", "public"))
 
 if os.path.isdir(_PUBLIC_DIR):
     app.mount("/assets", StaticFiles(directory=os.path.join(_PUBLIC_DIR, "assets")), name="assets")
