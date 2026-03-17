@@ -83,8 +83,9 @@ class TestExtractCommitments:
         assert result[0]["trigger_phrase"] == "I will send the report"
         assert result[0]["who_committed"] == "Alice"
 
-    def test_skips_short_content(self):
-        """Items with <10 chars of content should return empty list."""
+    def test_skips_short_content_returns_none(self):
+        """Items with <10 chars of content should return None (not []),
+        signalling no LLM call was made so seed_processed_at is NOT set."""
         from app.services.detection.seed_detector import _extract_commitments
 
         mock_client = MagicMock()
@@ -92,7 +93,7 @@ class TestExtractCommitments:
 
         result = _extract_commitments(mock_client, "claude-sonnet-4-6", item)
 
-        assert result == []
+        assert result is None
         mock_client.messages.create.assert_not_called()
 
     def test_handles_malformed_json(self):
@@ -144,6 +145,82 @@ class TestExtractCommitments:
 
         assert result == []
         assert mock_client.messages.create.call_count == 2
+
+
+class TestSeedPassSkipLogic:
+    """Test that run_seed_pass correctly distinguishes skipped vs processed items."""
+
+    def _make_source_item(self, item_id, content):
+        item = MagicMock(spec=SourceItem)
+        item.id = item_id
+        item.content = content
+        item.source_type = "email"
+        item.sender_name = "Alice"
+        item.sender_email = "alice@example.com"
+        item.direction = "inbound"
+        item.occurred_at = None
+        return item
+
+    @patch("app.services.detection.seed_detector.decrypt_value", return_value="sk-ant-test")
+    @patch("app.services.detection.seed_detector.anthropic.Anthropic")
+    def test_short_content_counted_as_skipped_not_processed(self, mock_anthropic_cls, _):
+        """Items with short content should be counted as skipped,
+        NOT as processed, and seed_processed_at should NOT be set."""
+        from app.services.detection.seed_detector import run_seed_pass
+
+        db = MagicMock()
+
+        # user_settings lookup
+        mock_settings = MagicMock()
+        mock_settings.anthropic_api_key_encrypted = "enc"
+        db.execute.return_value.scalar_one_or_none.return_value = mock_settings
+
+        # source items: one short-content item
+        short_item = self._make_source_item("item-short", "hi")
+        mock_scalars = MagicMock()
+        mock_scalars.all.return_value = [short_item]
+        db.execute.return_value.scalars.return_value = mock_scalars
+
+        result = run_seed_pass("user-1", db)
+
+        assert result.items_skipped == 1
+        assert result.items_processed == 0
+        # seed_processed_at should NOT have been set (no UPDATE call for this item)
+        # The mock makes this hard to assert directly, but items_processed==0 confirms it
+
+    @patch("app.services.detection.seed_detector.decrypt_value", return_value="sk-ant-test")
+    @patch("app.services.detection.seed_detector.anthropic.Anthropic")
+    def test_llm_no_commitments_counted_as_processed(self, mock_anthropic_cls, _):
+        """Items where LLM returns no commitments should be counted as
+        processed (not skipped) and seed_processed_at SHOULD be set."""
+        from app.services.detection.seed_detector import run_seed_pass
+
+        db = MagicMock()
+
+        mock_settings = MagicMock()
+        mock_settings.anthropic_api_key_encrypted = "enc"
+        db.execute.return_value.scalar_one_or_none.return_value = mock_settings
+
+        normal_item = self._make_source_item(
+            "item-normal", "Please review the quarterly report and send feedback"
+        )
+        mock_scalars = MagicMock()
+        mock_scalars.all.return_value = [normal_item]
+        db.execute.return_value.scalars.return_value = mock_scalars
+
+        # LLM returns no commitments
+        mock_client = mock_anthropic_cls.return_value
+        mock_content = SimpleNamespace(text=json.dumps({"commitments": []}))
+        mock_client.messages.create.return_value = SimpleNamespace(
+            content=[mock_content],
+            usage=SimpleNamespace(input_tokens=10, output_tokens=5),
+        )
+
+        result = run_seed_pass("user-1", db)
+
+        assert result.items_processed == 1
+        assert result.items_skipped == 0
+        mock_client.messages.create.assert_called_once()
 
 
 class TestRunSeedPassKeyLoading:

@@ -22,6 +22,7 @@ Endpoint overview:
   POST   /admin/pipeline/run-digest-preview
   POST   /admin/pipeline/run-post-event-resolver
   POST   /admin/seed-detection
+  POST   /admin/seed-reset
   POST   /admin/test/seed-commitment
   DELETE /admin/test/cleanup
 """
@@ -986,6 +987,36 @@ async def run_seed_detection(user_id: str):
         "profile": profile,
         "error_details": result.error_details[:10],
     }
+
+
+@router.post("/seed-reset")
+async def reset_seed_processed(user_id: str):
+    """Reset seed_processed_at for all source items belonging to a user.
+
+    This allows re-running the seed pass after a failed attempt that marked
+    items as processed without successful LLM extraction.
+
+    Query params:
+        user_id: UUID of the target user.
+    """
+    from sqlalchemy import update as sql_update
+    from app.models.orm import SourceItem
+
+    def _run():
+        with get_sync_session() as db:
+            result = db.execute(
+                sql_update(SourceItem)
+                .where(
+                    SourceItem.user_id == user_id,
+                    SourceItem.seed_processed_at.isnot(None),
+                )
+                .values(seed_processed_at=None)
+            )
+            db.commit()
+            return result.rowcount
+
+    count = await run_in_threadpool(_run)
+    return {"reset_count": count, "user_id": user_id}
 
 
 # ===========================================================================

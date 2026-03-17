@@ -168,16 +168,24 @@ def run_seed_pass(user_id: str, db: Session) -> SeedPassResult:
             try:
                 commitments_data = _extract_commitments(client, _DEFAULT_MODEL, item)
 
-                if not commitments_data:
+                if commitments_data is None:
+                    # No content / too short — no LLM call was made.
+                    # Do NOT set seed_processed_at so a future re-run
+                    # after content enrichment can pick these up.
                     result.items_skipped += 1
-                    logger.debug("Seed pass: no commitments in item %s", item.id)
-                else:
+                    logger.debug("Seed pass: skipped item %s (no content)", item.id)
+                    continue
+
+                # LLM was called successfully
+                if commitments_data:
                     for c_data in commitments_data:
                         _create_commitment_and_signal(db, user_id, item, c_data)
                         result.commitments_created += 1
                         result.signals_created += 1
+                else:
+                    logger.debug("Seed pass: no commitments in item %s", item.id)
 
-                # Mark as processed (even if no commitments found)
+                # Mark as processed ONLY after successful LLM call
                 db.execute(
                     update(SourceItem)
                     .where(SourceItem.id == item.id)
@@ -209,11 +217,16 @@ def run_seed_pass(user_id: str, db: Session) -> SeedPassResult:
 
 def _extract_commitments(
     client: anthropic.Anthropic, model: str, item: SourceItem
-) -> list[dict]:
-    """Call Anthropic LLM to extract commitments from a source item. Returns list of dicts."""
+) -> list[dict] | None:
+    """Call Anthropic LLM to extract commitments from a source item.
+
+    Returns:
+        list[dict]: Commitments found (may be empty if LLM found none).
+        None: Item was skipped — content too short, no LLM call made.
+    """
     content = item.content or ""
     if len(content.strip()) < 10:
-        return []
+        return None
 
     # Build context message
     parts = [f"Source type: {item.source_type}"]
