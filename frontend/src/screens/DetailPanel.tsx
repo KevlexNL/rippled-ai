@@ -62,6 +62,32 @@ function formatDate(iso: string | null | undefined): string {
 
 // ─── Icons ────────────────────────────────────────────────────────────────
 
+function IconMail() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+  )
+}
+
+function IconHash() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="4" x2="20" y1="9" y2="9" /><line x1="4" x2="20" y1="15" y2="15" />
+      <line x1="10" x2="8" y1="3" y2="21" /><line x1="16" x2="14" y1="3" y2="21" />
+    </svg>
+  )
+}
+
+function IconVideo() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m22 8-6 4 6 4V8z" /><rect x="2" y="6" width="14" height="12" rx="2" />
+    </svg>
+  )
+}
+
 function IconCheck() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -109,24 +135,45 @@ export default function DetailPanel({ commitment, allCommitments = [], onClose, 
 
   async function handleConfirm() {
     if (!commitment) return
-    await patchCommitment(commitment.id, { lifecycle_state: 'delivered' })
+    // Optimistic: update in both caches
+    queryClient.setQueryData<CommitmentRead[]>(['surface', 'main'], (old) =>
+      old?.map(c => c.id === commitment.id ? { ...c, lifecycle_state: 'active' as const } : c)
+    )
+    queryClient.setQueryData<CommitmentRead[]>(['commitments'], (old) =>
+      old?.map(c => c.id === commitment.id ? { ...c, lifecycle_state: 'active' as const } : c)
+    )
+    onClose()
+    onAction?.()
+    await patchCommitment(commitment.id, { lifecycle_state: 'active' })
     queryClient.invalidateQueries({ queryKey: ['surface'] })
     queryClient.invalidateQueries({ queryKey: ['commitments'] })
-    onAction?.()
-    onClose()
   }
 
   async function handleDismiss() {
     if (!commitment) return
+    // Optimistic: remove from surface, update in commitments
+    queryClient.setQueryData<CommitmentRead[]>(['surface', 'main'], (old) =>
+      old?.filter(c => c.id !== commitment.id)
+    )
+    queryClient.setQueryData<CommitmentRead[]>(['commitments'], (old) =>
+      old?.filter(c => c.id !== commitment.id)
+    )
+    onClose()
+    onAction?.()
     await patchCommitment(commitment.id, { lifecycle_state: 'discarded' })
     queryClient.invalidateQueries({ queryKey: ['surface'] })
     queryClient.invalidateQueries({ queryKey: ['commitments'] })
-    onAction?.()
-    onClose()
   }
 
   const badge = commitment ? badgeFromState(commitment) : { label: '', classes: '' }
-  const person = commitment?.resolved_owner || commitment?.suggested_owner || null
+  const person = (() => {
+    if (!commitment) return null
+    const raw = commitment.resolved_owner || commitment.suggested_owner || null
+    if (raw && raw.toLowerCase() === 'recipient') {
+      return commitment.source_sender_name || commitment.counterparty_name || 'You'
+    }
+    return raw
+  })()
 
   // Context: find related commitments sharing the same context_id
   const contextRelated = commitment?.context_id
@@ -160,6 +207,31 @@ export default function DetailPanel({ commitment, allCommitments = [], onClose, 
               <span className="text-[12px] text-[#6b7280]">{confidenceLabel(commitment.confidence_commitment)}</span>
             </div>
           </div>
+
+          {/* Source origin */}
+          {(commitment.source_sender_name || commitment.source_sender_email || commitment.context_type) && (
+            <div className="px-5 py-3 border-b border-[#f0f0ef]">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1.5">Source</div>
+              <div className="flex items-center gap-2 text-[13px] text-[#191919]">
+                <span className="text-[#9ca3af]">
+                  {commitment.context_type === 'email' ? <IconMail /> : commitment.context_type === 'meeting' ? <IconVideo /> : commitment.context_type === 'slack' ? <IconHash /> : <IconMail />}
+                </span>
+                <span>{sourceLabel(commitment.context_type)}</span>
+                {(commitment.source_sender_name || commitment.source_sender_email) && (
+                  <>
+                    <span className="text-[#d1d1cf]">·</span>
+                    <span>{commitment.source_sender_name || commitment.source_sender_email}</span>
+                  </>
+                )}
+                {(commitment.source_occurred_at || commitment.created_at) && (
+                  <>
+                    <span className="text-[#d1d1cf]">·</span>
+                    <span className="text-[#6b7280]">{formatDate(commitment.source_occurred_at || commitment.created_at)}</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Why surfaced */}
           {commitment.surfacing_reason && (

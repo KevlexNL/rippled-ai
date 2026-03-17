@@ -149,7 +149,13 @@ function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDism
   const isDelivered = commitment.lifecycle_state === 'delivered'
   const isDismissed = commitment.lifecycle_state === 'discarded' || commitment.lifecycle_state === 'closed'
   const isClosed = isDelivered || isDismissed
-  const person = commitment.resolved_owner || commitment.suggested_owner || null
+  const person = (() => {
+    const raw = commitment.resolved_owner || commitment.suggested_owner || null
+    if (raw && raw.toLowerCase() === 'recipient') {
+      return commitment.source_sender_name || commitment.counterparty_name || 'You'
+    }
+    return raw
+  })()
 
   return (
     <div
@@ -171,8 +177,14 @@ function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDism
             <div className="flex items-center gap-1.5 text-[11px] text-[#9ca3af] flex-shrink-0">
               <span>{sourceIcon(commitment.context_type)}</span>
               <span>{sourceLabel(commitment.context_type)}</span>
+              {(commitment.source_sender_name || commitment.source_sender_email) && (
+                <>
+                  <span>·</span>
+                  <span>{commitment.source_sender_name || commitment.source_sender_email}</span>
+                </>
+              )}
               <span>·</span>
-              <span>{formatDate(commitment.created_at)}</span>
+              <span>{formatDate(commitment.source_occurred_at || commitment.created_at)}</span>
               {person && (
                 <>
                   <span>·</span>
@@ -303,15 +315,32 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
   const dismissedCount = allCommitments.filter(c => c.lifecycle_state === 'discarded' || c.lifecycle_state === 'closed').length
 
   async function handleConfirm(id: string) {
-    await patchCommitment(id, { lifecycle_state: 'delivered' })
-    queryClient.invalidateQueries({ queryKey: ['commitments'] })
-    queryClient.invalidateQueries({ queryKey: ['surface'] })
+    try {
+      // Optimistic: update lifecycle_state in cache immediately
+      queryClient.setQueryData<CommitmentRead[]>(['commitments'], (old) =>
+        old?.map(c => c.id === id ? { ...c, lifecycle_state: 'active' as const } : c)
+      )
+      await patchCommitment(id, { lifecycle_state: 'active' })
+      queryClient.invalidateQueries({ queryKey: ['commitments'] })
+      queryClient.invalidateQueries({ queryKey: ['surface'] })
+    } catch {
+      queryClient.invalidateQueries({ queryKey: ['commitments'] })
+    }
   }
 
   async function handleDismiss(id: string) {
-    await patchCommitment(id, { lifecycle_state: 'discarded' })
-    queryClient.invalidateQueries({ queryKey: ['commitments'] })
-    queryClient.invalidateQueries({ queryKey: ['surface'] })
+    try {
+      // Optimistic: remove from view immediately
+      queryClient.setQueryData<CommitmentRead[]>(['commitments'], (old) =>
+        old?.filter(c => c.id !== id)
+      )
+      setSelectedId(prev => prev === id ? null : prev)
+      await patchCommitment(id, { lifecycle_state: 'discarded' })
+      queryClient.invalidateQueries({ queryKey: ['commitments'] })
+      queryClient.invalidateQueries({ queryKey: ['surface'] })
+    } catch {
+      queryClient.invalidateQueries({ queryKey: ['commitments'] })
+    }
   }
 
   const groupModes: { id: GroupMode; label: string }[] = [

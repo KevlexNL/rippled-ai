@@ -353,7 +353,7 @@ function BestNextMovesRail({ groups, onOpen }: { groups: BestNextMovesGroup[]; o
                   onClick={() => onOpen(item.id)}
                 >
                   <div className="text-[13px] font-semibold text-[#191919] mb-0.5">{item.title}</div>
-                  <div className="text-[11px] text-[#9ca3af]">{sourceLabel(item.context_type)} · {formatDate(item.created_at)}</div>
+                  <div className="text-[11px] text-[#9ca3af]">{sourceLabel(item.context_type)} · {formatDate(item.source_occurred_at || item.created_at)}</div>
                   {item.surfacing_reason && (
                     <div className="text-[11px] text-[#9ca3af] italic mt-0.5">{item.surfacing_reason}</div>
                   )}
@@ -489,8 +489,12 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
   async function handleConfirm(id: string) {
     try {
       setError(null)
+      setSelectedId(prev => prev === id ? null : prev)
       // Optimistic: remove from surface cache immediately
       queryClient.setQueryData<CommitmentRead[]>(['surface', 'main'], (old) => old?.filter(c => c.id !== id))
+      queryClient.setQueryData(['surface', 'best-next-moves'], (old: { groups: BestNextMovesGroup[] } | undefined) =>
+        old ? { groups: old.groups.map(g => ({ ...g, items: g.items.filter(c => c.id !== id) })).filter(g => g.items.length > 0) } : old
+      )
       await patchCommitment(id, { lifecycle_state: 'active' })
       queryClient.invalidateQueries({ queryKey: ['surface'] })
     } catch {
@@ -502,8 +506,12 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
   async function handleDismiss(id: string) {
     try {
       setError(null)
+      setSelectedId(prev => prev === id ? null : prev)
       // Optimistic: remove from surface cache immediately
       queryClient.setQueryData<CommitmentRead[]>(['surface', 'main'], (old) => old?.filter(c => c.id !== id))
+      queryClient.setQueryData(['surface', 'best-next-moves'], (old: { groups: BestNextMovesGroup[] } | undefined) =>
+        old ? { groups: old.groups.map(g => ({ ...g, items: g.items.filter(c => c.id !== id) })).filter(g => g.items.length > 0) } : old
+      )
       await patchCommitment(id, { lifecycle_state: 'discarded' })
       queryClient.invalidateQueries({ queryKey: ['surface'] })
     } catch {
