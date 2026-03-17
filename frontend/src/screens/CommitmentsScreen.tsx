@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getCommitments, patchCommitment } from '../api/commitments'
+import { getContexts } from '../api/contexts'
+import type { CommitmentContextRead } from '../api/contexts'
 import { getStats } from '../api/stats'
 import type { StatsRead } from '../api/stats'
 import { listSources } from '../api/sources'
@@ -309,6 +311,15 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
     staleTime: 25_000,
   })
 
+  const { data: contexts } = useQuery<CommitmentContextRead[]>({
+    queryKey: ['contexts'],
+    queryFn: getContexts,
+    refetchInterval: 60_000,
+    staleTime: 55_000,
+  })
+
+  const contextMap = new Map((contexts ?? []).map(c => [c.id, c.name]))
+
   const allCommitments = commitments ?? []
   const selectedCommitment = selectedId ? allCommitments.find(c => c.id === selectedId) ?? null : null
 
@@ -460,12 +471,12 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             const summaryParts: string[] = []
             if (openCount > 0) summaryParts.push(`${openCount} open`)
             if (atRiskCount > 0) summaryParts.push(`${atRiskCount} at risk`)
-            const contextLabel = ctxId.slice(0, 8)
+            const contextLabel = contextMap.get(ctxId) ?? ctxId.slice(0, 8)
             return (
               <div key={ctxId}>
                 <div className="mt-8 mb-3 border-b border-[#f0f0ef] pb-2">
                   <div className="text-[16px] font-bold text-[#111827] flex items-center gap-2">
-                    <span>Context {contextLabel}</span>
+                    <span>{contextLabel}</span>
                     <span className="text-[13px] font-medium text-[#9ca3af]">· {filtered.length}</span>
                   </div>
                   {summaryParts.length > 0 && (
