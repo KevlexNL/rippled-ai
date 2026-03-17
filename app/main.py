@@ -58,22 +58,8 @@ app.include_router(user_settings_routes.router, prefix=settings.api_prefix, tags
 app.include_router(clarifications_routes.router, prefix=settings.api_prefix, tags=["clarifications"])
 app.include_router(stats_routes.router, prefix=settings.api_prefix, tags=["stats"])
 
-# Serve user frontend SPA
+# Serve main frontend SPA (includes /admin via React Router)
 _PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "..", "api", "public")
-
-# Serve admin frontend SPA
-# IMPORTANT: admin SPA fallback must precede user SPA catch-all
-_ADMIN_PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "..", "api", "public-admin")
-if os.path.isdir(_ADMIN_PUBLIC_DIR):
-    _admin_assets = os.path.join(_ADMIN_PUBLIC_DIR, "assets")
-    if os.path.isdir(_admin_assets):
-        app.mount("/admin/assets", StaticFiles(directory=_admin_assets), name="admin-assets")
-
-    @app.get("/admin", include_in_schema=False)
-    @app.get("/admin/{full_path:path}", include_in_schema=False)
-    async def admin_spa_fallback(full_path: str = "") -> FileResponse:
-        index = os.path.join(_ADMIN_PUBLIC_DIR, "index.html")
-        return FileResponse(index)
 
 if os.path.isdir(_PUBLIC_DIR):
     app.mount("/assets", StaticFiles(directory=os.path.join(_PUBLIC_DIR, "assets")), name="assets")
