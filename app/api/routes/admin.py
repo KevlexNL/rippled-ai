@@ -29,6 +29,9 @@ Endpoint overview:
   GET    /admin/eval/runs
   GET    /admin/eval/runs/{run_id}/items
   POST   /admin/eval/label
+  POST   /admin/adhoc-signals
+  GET    /admin/adhoc-signals
+  POST   /admin/adhoc-signals/{id}/check-match
 """
 from __future__ import annotations
 
@@ -47,6 +50,7 @@ from app.api.deps.admin_auth import verify_admin_key
 from app.db.deps import get_db
 from app.db.session import get_sync_session
 from app.models.orm import (
+    AdhocSignal,
     CandidateCommitment,
     Commitment,
     CommitmentCandidate,
@@ -1469,3 +1473,94 @@ def _eval_run_item_to_dict(i: EvalRunItem) -> dict:
         "cost_estimate": float(i.cost_estimate) if i.cost_estimate is not None else None,
         "created_at": i.created_at.isoformat() if i.created_at else None,
     }
+
+
+# ===========================================================================
+# Ad-hoc signals (WO-RIPPLED-ADHOC-SIGNAL)
+# ===========================================================================
+
+class AdhocSignalCreate(BaseModel):
+    user_id: str
+    raw_text: str
+    source: str = "telegram"
+
+    @field_validator("raw_text")
+    @classmethod
+    def raw_text_not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("raw_text must not be empty")
+        return v.strip()
+
+
+def _adhoc_signal_to_dict(s: AdhocSignal) -> dict:
+    return {
+        "id": s.id,
+        "user_id": s.user_id,
+        "raw_text": s.raw_text,
+        "source": s.source,
+        "received_at": s.received_at.isoformat() if s.received_at else None,
+        "match_status": s.match_status,
+        "matched_commitment_id": s.matched_commitment_id,
+        "matched_source_item_id": s.matched_source_item_id,
+        "match_checked_at": s.match_checked_at.isoformat() if s.match_checked_at else None,
+        "match_confidence": float(s.match_confidence) if s.match_confidence is not None else None,
+        "was_found": s.was_found,
+        "notes": s.notes,
+        "created_at": s.created_at.isoformat() if s.created_at else None,
+    }
+
+
+@router.post("/adhoc-signals", status_code=201)
+async def create_adhoc_signal(
+    body: AdhocSignalCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Intake endpoint — store a new ad-hoc signal from Telegram (or other source)."""
+    signal = AdhocSignal(
+        user_id=body.user_id,
+        raw_text=body.raw_text,
+        source=body.source,
+    )
+    db.add(signal)
+    await db.flush()
+    return _adhoc_signal_to_dict(signal)
+
+
+@router.get("/adhoc-signals")
+async def list_adhoc_signals(
+    user_id: str,
+    match_status: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """List ad-hoc signals for a user, optionally filtered by match_status."""
+    conditions = [AdhocSignal.user_id == user_id]
+    if match_status:
+        conditions.append(AdhocSignal.match_status == match_status)
+
+    result = await db.execute(
+        select(AdhocSignal)
+        .where(and_(*conditions))
+        .order_by(desc(AdhocSignal.received_at))
+    )
+    return [_adhoc_signal_to_dict(s) for s in result.scalars().all()]
+
+
+@router.post("/adhoc-signals/{signal_id}/check-match")
+async def check_adhoc_signal_match(
+    signal_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Run match check for an ad-hoc signal against recent commitments."""
+    from app.services.adhoc_matcher import check_match
+
+    # Verify signal exists
+    exists_result = await db.execute(
+        select(AdhocSignal).where(AdhocSignal.id == signal_id)
+    )
+    if exists_result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Ad-hoc signal not found")
+
+    result = await check_match(signal_id, db)
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result

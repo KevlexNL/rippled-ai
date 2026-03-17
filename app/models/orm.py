@@ -359,6 +359,8 @@ class UserSettings(Base):
     # LLM API key storage (Fernet-encrypted)
     anthropic_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
     openai_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Admin panel access
+    is_super_admin: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

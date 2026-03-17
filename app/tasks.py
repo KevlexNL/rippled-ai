@@ -99,6 +99,16 @@ celery_app.conf.update(
             "task": "app.tasks.sync_google_calendar",
             "schedule": crontab(minute="*/15"),
         },
+        # Ad-hoc signal match check every 30 minutes
+        "adhoc-signal-match-check": {
+            "task": "app.tasks.run_adhoc_signal_match_check",
+            "schedule": crontab(minute="*/30"),
+        },
+        # LLM judge — weekly Monday 8am UTC
+        "llm-judge-weekly": {
+            "task": "app.tasks.run_llm_judge",
+            "schedule": crontab(hour=8, minute=0, day_of_week=1),
+        },
         # Phase C3 — Pre-event nudge every hour on the hour
         "pre-event-nudge": {
             "task": "app.tasks.run_pre_event_nudge",
@@ -972,3 +982,77 @@ def run_eval_task(
     except Exception as exc:
         logger.error("Eval task failed for user %s: %s", user_id, exc)
         raise self.retry(exc=exc)
+
+
+@celery_app.task(name="app.tasks.run_adhoc_signal_match_check")
+def run_adhoc_signal_match_check() -> dict:
+    """Check pending adhoc signals older than 4 hours for matches.
+
+    Runs every 30 minutes via Celery Beat. Queries adhoc_signals with
+    match_status=pending and received_at > 4h ago, runs match logic for each.
+
+    Returns:
+        Dict with 'checked' count and results.
+    """
+    from datetime import datetime, timezone, timedelta
+    from sqlalchemy import select, and_
+    from app.models.orm import AdhocSignal
+    from app.services.adhoc_matcher import check_match_sync
+
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=4)
+
+    checked = 0
+    results = []
+
+    with get_sync_session() as db:
+        pending = db.execute(
+            select(AdhocSignal).where(
+                and_(
+                    AdhocSignal.match_status == "pending",
+                    AdhocSignal.received_at < cutoff,
+                )
+            )
+        ).scalars().all()
+
+        for signal in pending:
+            try:
+                result = check_match_sync(signal.id, db)
+                results.append(result)
+                checked += 1
+                logger.info(
+                    "Adhoc signal match check: signal %s — %s",
+                    signal.id, result.get("match_status"),
+                )
+            except Exception:
+                logger.exception(
+                    "Adhoc signal match check FAILED for signal %s", signal.id,
+                )
+
+    logger.info("Adhoc signal match check: %d signal(s) checked", checked)
+    return {"checked": checked, "pending_found": len(pending)}
+
+
+@celery_app.task(name="app.tasks.run_llm_judge")
+def run_llm_judge_task() -> dict:
+    """Weekly LLM judge sweep — Sonnet reviews Haiku's detection output.
+
+    Runs every Monday at 8am UTC via Celery Beat.
+    Pulls last 7 days of detection_audit, evaluates each with Sonnet,
+    stores results in llm_judge_runs, creates prompt improvement WO
+    if quality thresholds are breached.
+
+    Returns:
+        Dict with run summary.
+    """
+    from app.services.llm_judge import run_llm_judge
+
+    logger.info("LLM judge: weekly sweep starting")
+    try:
+        with get_sync_session() as db:
+            result = run_llm_judge(db)
+        logger.info("LLM judge: sweep complete — %s", result.get("status"))
+        return result
+    except Exception:
+        logger.exception("LLM judge: weekly sweep FAILED")
+        return {"status": "failed"}

@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     # Redis / Celery
     redis_url: str = "redis://localhost:6379/0"
 
+    # Anthropic (LLM judge, eval harness)
+    anthropic_api_key: str = ""
+
     # OpenAI (model detection pipeline)
     openai_api_key: str = ""
     openai_model: str = "gpt-4.1-mini"

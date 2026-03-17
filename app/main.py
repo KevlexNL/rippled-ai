@@ -10,6 +10,7 @@ from app.api.routes import sources, source_items, commitments, surface, candidat
 from app.api.routes import contexts as contexts_routes
 from app.api.routes import events as events_routes, integrations as integrations_routes
 from app.api.routes import admin as admin_routes
+from app.api.routes import admin_review as admin_review_routes
 from app.api.routes import user_settings as user_settings_routes
 from app.api.routes import clarifications as clarifications_routes
 from app.api.routes import stats as stats_routes
@@ -52,6 +53,7 @@ app.include_router(digest_routes.router, prefix=settings.api_prefix, tags=["dige
 app.include_router(events_routes.router, prefix=settings.api_prefix, tags=["events"])
 app.include_router(integrations_routes.router, prefix=settings.api_prefix, tags=["integrations"])
 app.include_router(admin_routes.router, prefix=settings.api_prefix, tags=["admin"])
+app.include_router(admin_review_routes.router, prefix=settings.api_prefix, tags=["admin-review"])
 app.include_router(user_settings_routes.router, prefix=settings.api_prefix, tags=["user-settings"])
 app.include_router(clarifications_routes.router, prefix=settings.api_prefix, tags=["clarifications"])
 app.include_router(stats_routes.router, prefix=settings.api_prefix, tags=["stats"])
