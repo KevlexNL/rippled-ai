@@ -120,3 +120,13 @@
 3. Seed-reset must be called before re-running since all 178 items now have `seed_processed_at` set.
 
 **Rationale:** This is a common LLM integration issue. Even with "Respond with valid JSON only" in the prompt, LLMs frequently wrap output in code fences. The fix is defensive parsing, not prompt engineering.
+
+### D-SEED-DEBUG-02: Relax detection prompt — "Infer more than you assert"
+**Question:** Is the seed pass prompt too conservative, potentially missing legitimate commitments?
+
+**Decision:** Yes. Relaxed the prompt in three ways:
+1. Added "Tentative" language category: "I'll try to", "Let me check", "I'll get back to you"
+2. Added "Soft promises" category: "I'll see what I can do", "Let me look into it"
+3. Added explicit instruction: "Cast a WIDE net" and "When in doubt, INCLUDE it with lower confidence (0.4-0.6)"
+
+**Rationale:** Per product-truth.md: "Infer more than you assert." Better to surface a probable commitment and let the user dismiss it than to miss it entirely. The original prompt excluded tentative language which is common in real email.

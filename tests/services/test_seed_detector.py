@@ -170,8 +170,8 @@ class TestExtractCommitments:
         assert len(result.commitments) == 1
         assert result.commitments[0]["trigger_phrase"] == "I'll check"
 
-    def test_debug_logging_on_extraction(self):
-        """Seed detector should log the raw LLM response for debugging."""
+    def test_info_logging_on_extraction(self):
+        """Seed detector should log the raw LLM response at INFO level for production visibility."""
         from app.services.detection.seed_detector import _extract_commitments
 
         mock_client = MagicMock()
@@ -186,10 +186,46 @@ class TestExtractCommitments:
         with patch("app.services.detection.seed_detector.logger") as mock_logger:
             _extract_commitments(mock_client, "claude-sonnet-4-6", item)
 
-            # Should log the raw LLM response at debug level
-            debug_messages = [str(call) for call in mock_logger.debug.call_args_list]
-            raw_response_logged = any("raw LLM response" in msg or "raw response" in msg for msg in debug_messages)
-            assert raw_response_logged, f"Expected debug log with raw LLM response. Got: {debug_messages}"
+            # Should log the raw LLM response at INFO level
+            info_messages = [str(call) for call in mock_logger.info.call_args_list]
+            raw_response_logged = any("raw LLM response" in msg for msg in info_messages)
+            assert raw_response_logged, f"Expected info log with raw LLM response. Got: {info_messages}"
+
+    def test_handles_uppercase_json_code_fence(self):
+        """Handle ```JSON blocks (uppercase language tag)."""
+        from app.services.detection.seed_detector import _extract_commitments
+
+        mock_client = MagicMock()
+        commitment_data = {"commitments": [{"trigger_phrase": "I'll try to get it done", "who_committed": "Alice", "directed_at": "Bob", "urgency": "medium", "commitment_type": "deliver", "title": "Try to deliver", "is_external": False, "confidence": 0.5}]}
+        wrapped_text = f"```JSON\n{json.dumps(commitment_data)}\n```"
+        mock_content_block = SimpleNamespace(text=wrapped_text)
+        mock_response = SimpleNamespace(
+            content=[mock_content_block],
+            usage=SimpleNamespace(input_tokens=10, output_tokens=20),
+        )
+        mock_client.messages.create.return_value = mock_response
+
+        item = self._make_source_item()
+        result = _extract_commitments(mock_client, "claude-sonnet-4-6", item)
+
+        assert len(result.commitments) == 1
+        assert result.commitments[0]["trigger_phrase"] == "I'll try to get it done"
+
+    def test_prompt_includes_tentative_language(self):
+        """System prompt should include tentative language as commitment indicators."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+
+        assert "Tentative" in _SYSTEM_PROMPT
+        assert "I'll try" in _SYSTEM_PROMPT
+        assert "Let me check" in _SYSTEM_PROMPT
+        assert "I'll get back to you" in _SYSTEM_PROMPT
+
+    def test_prompt_encourages_broad_detection(self):
+        """System prompt should encourage broad detection per product principle."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+
+        assert "WIDE net" in _SYSTEM_PROMPT
+        assert "When in doubt" in _SYSTEM_PROMPT
 
     def test_retries_on_rate_limit(self):
         """Should retry with backoff on Anthropic RateLimitError."""

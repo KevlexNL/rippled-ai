@@ -44,19 +44,26 @@ _SYSTEM_PROMPT = """You are a commitment extraction engine for a workplace intel
 Analyze the following email and extract ALL commitments, follow-ups, or obligations.
 
 A commitment is a statement where someone obligates themselves or others to a specific
-future action, deliverable, or outcome. This includes:
+future action, deliverable, or outcome. Cast a WIDE net — it is better to surface a
+probable commitment and let the user dismiss it than to miss it entirely.
+
+This includes:
 - Explicit: "I will", "I'll", "We will", "I promise", "I commit to"
 - Implicit: "Consider it done", "Leave it with me", "I'll look into that"
+- Tentative: "I'll try to", "Let me check", "I'll get back to you", "I should be able to"
 - Follow-ups: "Let me circle back", "I'll send this over", "Will follow up"
-- Delegations: "Can you handle...", "Please take care of..."
+- Delegations: "Can you handle...", "Please take care of...", "Could you look into..."
 - Scheduled actions: "Let's meet Tuesday", "I'll call you tomorrow"
+- Soft promises: "I'll see what I can do", "Let me look into it", "I'll ping them"
 
 NOT a commitment:
-- Casual acknowledgments: "OK", "Sounds good", "Got it"
-- Questions or hypotheticals: "Should we...?", "What if we..."
+- Casual acknowledgments with NO implied action: "OK", "Sounds good", "Got it"
+- Pure questions with no self-assignment: "Should we...?", "What if we..."
 - Past-tense descriptions: "I already did X", "We completed Y"
 - Filler phrases: "By the way", "Just checking in"
 - Informational statements with no action implication
+
+When in doubt, INCLUDE it as a commitment with lower confidence (0.4-0.6).
 
 For each commitment found, extract:
 - trigger_phrase: the exact words that signal the commitment
@@ -86,7 +93,7 @@ Respond with valid JSON only:
 If no commitments are found, return: {"commitments": []}"""
 
 # Regex to strip markdown code fences (```json ... ``` or ``` ... ```)
-_CODE_FENCE_RE = re.compile(r"```(?:json)?\s*\n?(.*?)\n?\s*```", re.DOTALL)
+_CODE_FENCE_RE = re.compile(r"```(?:json)?\s*\n?(.*?)\n?\s*```", re.DOTALL | re.IGNORECASE)
 
 
 def _strip_markdown_json(raw: str) -> str:
@@ -317,16 +324,16 @@ def _extract_commitments(
                 )
 
             raw = response.content[0].text
-            logger.debug(
-                "Seed pass raw LLM response for item %s: %s",
+            logger.info(
+                "Seed pass raw LLM response for item %s (first 500 chars): %s",
                 item.id,
                 raw[:500],
             )
             cleaned = _strip_markdown_json(raw)
             data = json.loads(cleaned)
             commitments = data.get("commitments", [])
-            logger.debug(
-                "Seed pass parsed %d commitments from item %s",
+            logger.info(
+                "Seed pass parsed %d commitment(s) from item %s",
                 len(commitments),
                 item.id,
             )
@@ -357,7 +364,11 @@ def _extract_commitments(
 
         except (json.JSONDecodeError, KeyError, IndexError) as exc:
             duration_ms = int((time.monotonic() - call_start) * 1000)
-            logger.warning("Seed pass: malformed LLM response for item %s: %s", item.id, exc)
+            raw_snippet = (raw[:200] if "raw" in dir() else "N/A")
+            logger.warning(
+                "Seed pass: malformed LLM response for item %s: %s — raw snippet: %s",
+                item.id, exc, raw_snippet,
+            )
             return _LLMResult(
                 commitments=[],
                 raw_prompt=full_prompt,
