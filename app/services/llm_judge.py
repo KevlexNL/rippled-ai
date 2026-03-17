@@ -17,7 +17,7 @@ from sqlalchemy import select, and_
 from sqlalchemy.orm import Session
 
 from app.connectors.shared.credentials_utils import decrypt_value
-from app.models.orm import DetectionAudit, LlmJudgeRun, UserSettings
+from app.models.orm import DetectionAudit, LlmJudgeRun, SignalFeedback, UserSettings
 
 logger = logging.getLogger(__name__)
 
@@ -145,6 +145,22 @@ def run_llm_judge(db: Session) -> dict:
             total_false_positives += len(parsed.get("false_positives", []))
             total_false_negatives += len(parsed.get("missed", []))
             total_quality += parsed.get("quality_rating", 3)
+
+            # Write per-item SignalFeedback row
+            missed_text = json.dumps(parsed.get("missed", [])) if parsed.get("missed") else None
+            fp_text = json.dumps(parsed.get("false_positives", [])) if parsed.get("false_positives") else None
+            feedback = SignalFeedback(
+                user_id=TARGET_USER_ID,
+                detection_audit_id=audit.id,
+                source_item_id=audit.source_item_id,
+                reviewer_user_id=TARGET_USER_ID,
+                extraction_correct=not parsed.get("missed") and not parsed.get("false_positives"),
+                rating=parsed.get("quality_rating"),
+                missed_commitments=missed_text,
+                false_positives=fp_text,
+                notes=parsed.get("prompt_suggestion") or None,
+            )
+            db.add(feedback)
 
         except Exception as exc:
             logger.warning("LLM judge: failed for audit %s — %s", audit.id, exc)
