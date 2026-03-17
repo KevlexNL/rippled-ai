@@ -216,3 +216,23 @@ When evaluating candidate work, ask:
 - is this unlikely to require strategic reversal later?
 
 If the answer is mostly no, the work is probably not a priority.
+
+---
+
+## 15. Third-Party Extraction as Calibration Signal
+
+When a user connects a meeting transcription tool (Read.ai, Otter.ai, Fireflies, Zoom AI), that tool's extracted action items and summaries represent a second-opinion model output — not ground truth.
+
+**How to use them:**
+- Store as `reference_labels` alongside the raw transcript in source_items
+- Run Rippled's own detection independently on the same content
+- Compare outputs to identify gaps: what Rippled missed vs. what the tool missed
+- Use divergence analysis to improve detection prompts, not to copy the tool's output
+
+**Why this matters:**
+- Third-party tools are trained on meeting data at scale — high signal quality baseline
+- Comparison is free and automatic — no manual labeling needed for meetings
+- Rippled should capture more than meeting tools (implicit commitments, email/Slack cross-references) — divergence where Rippled catches more is a feature, not noise
+- Over time the gap should narrow from Rippled's side — fewer misses, more implicit catches
+
+This principle applies to any integration where the source tool has its own extraction layer.
