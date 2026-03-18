@@ -256,3 +256,30 @@ This principle applies to any integration where the source tool has its own extr
 **Contrast that sharpened this:** Minnie (Kevin's partner) comes from a corporate environment where comprehensive task tracking and RACI-style accountability are standard. Her instinct was "shouldn't the system do everything?" — which is the right question for her world. Kevin's instinct — "we live between the systems, not on top of them" — is the right answer for the Rippled audience.
 
 **One-sentence ICP:** *People who make a lot of commitments but don't have the systems or discipline to track them — and don't want another system to manage.*
+
+---
+
+## Commitment Lifecycle States (added 2026-03-18)
+
+The current binary (active / dismissed) is insufficient. The full intended lifecycle:
+
+| State | Meaning | Triggered by |
+|-------|---------|-------------|
+| `detected` | Extracted, not yet reviewed | System |
+| `active` | Surfaced, needs attention | System (surfacing logic) |
+| `confirmed` | User verified as real | User |
+| `dormant` | Not relevant now, but hold onto it | User (replaces "dismiss") |
+| `completed` | Done | User |
+| `dismissed` | Explicitly irrelevant, can be forgotten | User (deliberate, rare) |
+
+**Key distinction — dormant vs dismissed:**
+- **Dormant** = "I don't care about this *right now* but it may matter later." System retains it, can resurface when conditions change (time passes, related commitment completes, user revisits).
+- **Dismissed** = "This is wrong, irrelevant, or noise." System deprioritizes it for training purposes but retains for eval.
+
+**Resurface triggers for dormant commitments:**
+- Time-based: resurface after X weeks if not resolved
+- Event-based: resurface when a linked/related commitment is completed ("you said you'd do X after Y — Y is done")
+- Manual: user can review dormant list at any time
+
+**Why this matters:**
+Current "dismiss" permanently hides things that may be genuinely important but just not urgent. Small business owners need to be able to say "not now" without saying "never." The system should hold the memory so they don't have to.
