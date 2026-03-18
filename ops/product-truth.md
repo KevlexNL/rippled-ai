@@ -236,3 +236,23 @@ When a user connects a meeting transcription tool (Read.ai, Otter.ai, Fireflies,
 - Over time the gap should narrow from Rippled's side — fewer misses, more implicit catches
 
 This principle applies to any integration where the source tool has its own extraction layer.
+
+---
+
+## Audience Clarity (added 2026-03-18)
+
+**Target user:** Small business owner, 2-10 person teams, hustle mentality.
+
+**Key trait:** Works from working memory, not task systems. Gets things done but doesn't have the overhead — budget, staff, or time — to track everything with diligence. Forgetting things is not a failure of character, it's a natural consequence of doing the work of 100 people with 10.
+
+**Not the target user:** Corporate knowledge workers in structured environments where loop-closing is a trained, supported behavior backed by systems, processes and accountable teams.
+
+**Why this matters for product decisions:**
+- Don't build another system to manage. Build a safety net that lives between existing systems.
+- Don't require the user to log things. Observe and remind.
+- Don't surface everything. Surface what's slipping.
+- The dashboard is a review surface, not the daily interface. Slack and email are where this lives.
+
+**Contrast that sharpened this:** Minnie (Kevin's partner) comes from a corporate environment where comprehensive task tracking and RACI-style accountability are standard. Her instinct was "shouldn't the system do everything?" — which is the right question for her world. Kevin's instinct — "we live between the systems, not on top of them" — is the right answer for the Rippled audience.
+
+**One-sentence ICP:** *People who make a lot of commitments but don't have the systems or discipline to track them — and don't want another system to manage.*
