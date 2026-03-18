@@ -265,11 +265,12 @@ function StatusBadge({ label, classes }: { label: string; classes: string }) {
   )
 }
 
-function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss }: {
+function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss, isFirst }: {
   commitment: CommitmentRead
   onOpen: (id: string) => void
   onConfirm: (id: string) => void
   onDismiss: (id: string) => void
+  isFirst?: boolean
 }) {
   const badge = badgeFromState(commitment)
   const person = resolveOwner(commitment)
@@ -305,7 +306,7 @@ function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss }: {
           {commitment.description && (
             <div className="text-[12px] text-[#6b7280] leading-relaxed mb-1">{commitment.description}</div>
           )}
-          <div className="flex items-center gap-2 pt-1 border-t border-[#f0f0ef]">
+          <div className="flex items-center gap-2 pt-1 border-t border-[#f0f0ef]" {...(isFirst ? { 'data-onboard': 'action-buttons' } : {})}>
             <button
               className="flex items-center gap-1.5 bg-[#191919] text-white text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#333] transition-colors"
               onClick={(e) => { e.stopPropagation(); onConfirm(commitment.id) }}
@@ -537,9 +538,9 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
         <div className="flex items-center gap-1 mx-3 md:mx-auto">
           {tabs.map((t) =>
             activeTab === t.id ? (
-              <button key={t.id} onClick={() => onTabChange(t.id)} className="bg-[#191919] text-white rounded-full px-3 md:px-4 py-1 text-[13px] font-medium">{t.label}</button>
+              <button key={t.id} onClick={() => onTabChange(t.id)} data-onboard={t.id === 'active' ? 'active-tab' : 'commitments-tab'} className="bg-[#191919] text-white rounded-full px-3 md:px-4 py-1 text-[13px] font-medium">{t.label}</button>
             ) : (
-              <button key={t.id} onClick={() => onTabChange(t.id)} className="text-[#6b7280] hover:text-[#191919] px-3 md:px-4 py-1 text-[13px] transition-colors">{t.label}</button>
+              <button key={t.id} onClick={() => onTabChange(t.id)} data-onboard={t.id === 'active' ? 'active-tab' : 'commitments-tab'} className="text-[#6b7280] hover:text-[#191919] px-3 md:px-4 py-1 text-[13px] transition-colors">{t.label}</button>
             )
           )}
         </div>
@@ -556,7 +557,7 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
               <div className="hidden md:block w-px h-4 bg-[#e8e8e6]" />
             </>
           )}
-          <button onClick={() => setShowSettings(true)} className="text-[#9ca3af] hover:text-[#191919] transition-colors">
+          <button onClick={() => setShowSettings(true)} data-onboard="settings-button" className="text-[#9ca3af] hover:text-[#191919] transition-colors">
             <IconGear />
           </button>
         </div>
@@ -602,9 +603,9 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
             <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-2">
               <div>
                 <h2 className="text-[15px] font-semibold text-[#191919] mb-1">Surfaced for review</h2>
-                <div className="flex flex-col gap-2">
-                  {surfaced.map((c) => (
-                    <CommitmentCard key={c.id} commitment={c} onOpen={setSelectedId} onConfirm={handleConfirm} onDismiss={handleDismiss} />
+                <div className="flex flex-col gap-2" data-onboard="detail-panel-area">
+                  {surfaced.map((c, i) => (
+                    <CommitmentCard key={c.id} commitment={c} onOpen={setSelectedId} onConfirm={handleConfirm} onDismiss={handleDismiss} isFirst={i === 0} />
                   ))}
                 </div>
               </div>

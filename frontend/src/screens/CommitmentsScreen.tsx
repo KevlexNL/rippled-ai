@@ -529,9 +529,9 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
         <div className="flex items-center gap-1 mx-3 md:mx-auto">
           {tabs.map((t) =>
             activeTab === t.id ? (
-              <button key={t.id} onClick={() => onTabChange(t.id)} className="bg-[#191919] text-white rounded-full px-3 md:px-4 py-1 text-[13px] font-medium">{t.label}</button>
+              <button key={t.id} onClick={() => onTabChange(t.id)} data-onboard={t.id === 'active' ? 'active-tab' : 'commitments-tab'} className="bg-[#191919] text-white rounded-full px-3 md:px-4 py-1 text-[13px] font-medium">{t.label}</button>
             ) : (
-              <button key={t.id} onClick={() => onTabChange(t.id)} className="text-[#6b7280] hover:text-[#191919] px-3 md:px-4 py-1 text-[13px] transition-colors">{t.label}</button>
+              <button key={t.id} onClick={() => onTabChange(t.id)} data-onboard={t.id === 'active' ? 'active-tab' : 'commitments-tab'} className="text-[#6b7280] hover:text-[#191919] px-3 md:px-4 py-1 text-[13px] transition-colors">{t.label}</button>
             )
           )}
         </div>
@@ -548,7 +548,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
               <div className="hidden md:block w-px h-4 bg-[#e8e8e6]" />
             </>
           )}
-          <button onClick={() => setShowSettings(true)} className="text-[#9ca3af] hover:text-[#191919] transition-colors">
+          <button onClick={() => setShowSettings(true)} data-onboard="settings-button" className="text-[#9ca3af] hover:text-[#191919] transition-colors">
             <IconGear />
           </button>
         </div>

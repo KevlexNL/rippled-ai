@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './lib/auth'
 import ActiveScreen from './screens/ActiveScreen'
 import CommitmentsScreen from './screens/CommitmentsScreen'
+import OnboardingTour from './components/OnboardingTour'
 import Review from './screens/Review'
 import Log from './screens/Log'
 import CommitmentDetail from './screens/CommitmentDetail'
@@ -29,9 +30,19 @@ function AuthenticatedApp() {
   const [activeTab, setActiveTab] = useState<Tab>('active')
 
   if (activeTab === 'commitments') {
-    return <CommitmentsScreen activeTab={activeTab} onTabChange={setActiveTab} />
+    return (
+      <>
+        <CommitmentsScreen activeTab={activeTab} onTabChange={setActiveTab} />
+        <OnboardingTour />
+      </>
+    )
   }
-  return <ActiveScreen activeTab={activeTab} onTabChange={setActiveTab} />
+  return (
+    <>
+      <ActiveScreen activeTab={activeTab} onTabChange={setActiveTab} />
+      <OnboardingTour />
+    </>
+  )
 }
 
 export default function App() {
