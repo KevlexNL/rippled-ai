@@ -310,3 +310,62 @@ The current flat list creates cognitive overwhelm — the user sees Matt's commi
 
 **Connection to dormant state:**
 Items the user marks "not now" (dormant) behave like `others` in the list — tracked, hidden, resurfaceable.
+
+---
+
+## Commitment Structure Definition (added 2026-03-18)
+
+### The Core Definition
+
+A commitment is **a promise from one person to another, with an expected delivery.**
+
+**Required elements:**
+- **Owner** — who made the promise (accountable for delivery)
+- **Deliverable** — what was promised
+- **Counterparty** — who is waiting on it / who it was promised to
+
+**Optional but important:**
+- **Deadline** — explicit ("by Friday") or inferred ("this week", "soon")
+- **Context** — the source this came from (email thread, meeting, Slack channel)
+
+### Canonical Extraction Format
+
+Every commitment should be expressible as:
+
+```
+[Owner] promised [Deliverable] to [Counterparty] [by Deadline]
+in the context of [Source]
+and the user's relationship to it is [mine / contributing / watching]
+```
+
+Example (mine):
+> Kevin promised a portal dashboard screenshot to the team by today
+> in the context of email thread: "KRS Portal Update"
+> relationship: mine
+
+Example (watching):
+> Matt promised a Zoom walkthrough to Nadine this week
+> in the context of email thread: "Onboarding Nadine"
+> relationship: watching — Kevin facilitated but is not responsible
+
+### User Relationship Model (replaces RACI)
+
+Three relationship types between the logged-in user and each commitment:
+
+| Role | Meaning | Surfacing default |
+|------|---------|------------------|
+| `mine` | User made the promise / is the accountable owner | Always surfaced in Active + Commitments |
+| `contributing` | Someone else owns it, but user has a specific task within it | Surfaced in Commitments when user's piece is due |
+| `watching` | User is informed or facilitated, not responsible | Hidden by default — tracked silently, accessible via "All commitments" |
+
+### Detection Rules
+
+- `mine` = owner resolves to user, OR user explicitly named as responsible ("Kevin to...")
+- `contributing` = user mentioned alongside others as a participant, not primary owner
+- `watching` = commitment between two other parties; user is cc'd, facilitated, or just present
+
+### Why This Matters
+
+Without a clear relationship model, the user sees Matt's commitments to his org alongside their own deliverables. The cognitive load doesn't decrease — it increases. The relationship field is what makes filtering meaningful.
+
+This structure must be enforced at extraction time. A commitment record that cannot answer "who promised what to whom" should not be surfaced — it should be flagged as incomplete and held for triage.
