@@ -23,9 +23,11 @@ from app.models.schemas import (
 router = APIRouter(prefix="/commitments", tags=["commitments"])
 
 VALID_TRANSITIONS: dict[str, list[str]] = {
-    "proposed": ["active", "needs_clarification", "discarded"],
-    "active": ["needs_clarification", "delivered", "closed", "discarded"],
-    "needs_clarification": ["active", "discarded"],
+    "proposed": ["active", "confirmed", "dormant", "needs_clarification", "discarded"],
+    "active": ["confirmed", "dormant", "needs_clarification", "delivered", "closed", "discarded"],
+    "confirmed": ["dormant", "delivered", "closed", "discarded"],
+    "dormant": ["active", "confirmed", "discarded"],
+    "needs_clarification": ["active", "confirmed", "dormant", "discarded"],
     "delivered": ["closed", "discarded"],
     "closed": ["discarded"],
     "discarded": [],

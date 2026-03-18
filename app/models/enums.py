@@ -13,6 +13,8 @@ class LifecycleState(str, enum.Enum):
     proposed = "proposed"
     needs_clarification = "needs_clarification"
     active = "active"
+    confirmed = "confirmed"
+    dormant = "dormant"
     delivered = "delivered"
     closed = "closed"
     discarded = "discarded"

@@ -21,6 +21,8 @@ type Tab = 'active' | 'commitments'
 function badgeFromState(c: CommitmentRead): { label: string; classes: string; status: string } {
   const state = c.lifecycle_state
   if (state === 'delivered') return { label: 'Delivered', classes: 'bg-[#f0fdf4] text-[#15803d]', status: 'delivered' }
+  if (state === 'confirmed') return { label: 'Confirmed', classes: 'bg-[#f0fdf4] text-[#15803d]', status: 'confirmed' }
+  if (state === 'dormant') return { label: 'Not Now', classes: 'bg-[#f9fafb] text-[#9ca3af] border border-[#e8e8e6]', status: 'dormant' }
   if (state === 'discarded' || state === 'closed') return { label: 'Dismissed', classes: 'bg-[#f9fafb] text-[#6b7280] border border-[#e8e8e6]', status: 'dismissed' }
   const conf = c.confidence_commitment ? parseFloat(c.confidence_commitment) : 0
   if (conf >= 0.85) return { label: 'At risk', classes: 'bg-[#fee2e2] text-[#991b1b]', status: 'at-risk' }
@@ -35,7 +37,9 @@ function accentColor(status: string): string {
     case 'needs-review': return '#d97706'
     case 'worth-confirming': return '#2563eb'
     case 'delivered': return '#16a34a'
+    case 'confirmed': return '#16a34a'
     case 'dismissed': return '#d1d1cf'
+    case 'dormant': return '#d1d1cf'
     default: return '#e8e8e6'
   }
 }
@@ -140,17 +144,28 @@ function confidenceLabel(score: string | null | undefined): string {
   return 'Some uncertainty'
 }
 
-function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDismiss }: {
+function IconClock() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+    </svg>
+  )
+}
+
+function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDismiss, onNotNow }: {
   commitment: CommitmentRead
   selected: boolean
   onClick: () => void
   onConfirm: (id: string) => void
   onDismiss: (id: string) => void
+  onNotNow: (id: string) => void
 }) {
   const badge = badgeFromState(commitment)
   const isDelivered = commitment.lifecycle_state === 'delivered'
+  const isConfirmed = commitment.lifecycle_state === 'confirmed'
   const isDismissed = commitment.lifecycle_state === 'discarded' || commitment.lifecycle_state === 'closed'
-  const isClosed = isDelivered || isDismissed
+  const isDormant = commitment.lifecycle_state === 'dormant'
+  const isClosed = isDelivered || isDismissed || isDormant
   const person = (() => {
     const raw = commitment.resolved_owner || commitment.suggested_owner || null
     if (raw && raw.toLowerCase() === 'recipient') {
@@ -162,7 +177,7 @@ function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDism
   return (
     <div
       className={`rounded-lg border overflow-hidden transition-colors cursor-pointer ${
-        isDelivered ? 'bg-[#f0fdf4] border-[#bbf0bb]' : isDismissed ? 'bg-[#fafafa] border-[#ececec] opacity-50' : 'bg-white'
+        isDelivered || isConfirmed ? 'bg-[#f0fdf4] border-[#bbf0bb]' : isDismissed || isDormant ? 'bg-[#fafafa] border-[#ececec] opacity-50' : 'bg-white'
       } ${
         selected ? 'border-[#d1d1cf] ring-1 ring-[#d1d1cf]' : 'border-[#e8e8e6] hover:border-[#d1d1cf]'
       }`}
@@ -173,8 +188,15 @@ function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDism
         <div className="flex-1 px-4 py-2.5">
           <div className="flex items-center gap-3 flex-wrap">
             <StatusBadge label={badge.label} classes={badge.classes} />
-            <span className={`text-[13px] font-medium flex-1 min-w-0 ${isDelivered ? 'line-through text-[#9ca3af]' : isDismissed ? 'text-[#9ca3af]' : 'text-[#191919]'}`}>
+            <span className={`text-[13px] font-medium flex-1 min-w-0 ${isDelivered ? 'line-through text-[#9ca3af]' : isDismissed || isDormant ? 'text-[#9ca3af]' : 'text-[#191919]'}`}>
               {commitment.title}
+              {isConfirmed && (
+                <span className="ml-1.5 inline-flex items-center text-[#16a34a]" title="Confirmed">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
+              )}
             </span>
             <div className="flex items-center gap-1.5 text-[11px] text-[#9ca3af] flex-shrink-0">
               <span>{sourceIcon(commitment.context_type)}</span>
@@ -211,6 +233,13 @@ function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDism
                     >
                       <IconCheck />
                       Confirm
+                    </button>
+                    <button
+                      className="flex items-center gap-1.5 bg-[#f0f0ef] text-[#4b5563] text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors"
+                      onClick={(e) => { e.stopPropagation(); onNotNow(commitment.id) }}
+                    >
+                      <IconClock />
+                      Not Now
                     </button>
                     <button
                       className="flex items-center gap-1.5 bg-[#f0f0ef] text-[#191919] text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors"
@@ -286,6 +315,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [groupMode, setGroupMode] = useState<GroupMode>('status')
   const [showDismissed, setShowDismissed] = useState(false)
+  const [showDormant, setShowDormant] = useState(false)
   const [showLog, setShowLog] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const queryClient = useQueryClient()
@@ -324,6 +354,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
   const selectedCommitment = selectedId ? allCommitments.find(c => c.id === selectedId) ?? null : null
 
   const dismissedCount = allCommitments.filter(c => c.lifecycle_state === 'discarded' || c.lifecycle_state === 'closed').length
+  const dormantCount = allCommitments.filter(c => c.lifecycle_state === 'dormant').length
 
   async function handleConfirm(id: string) {
     try {
@@ -354,6 +385,21 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
     }
   }
 
+  async function handleNotNow(id: string) {
+    try {
+      // Optimistic: update lifecycle_state in cache immediately
+      queryClient.setQueryData<CommitmentRead[]>(['commitments'], (old) =>
+        old?.map(c => c.id === id ? { ...c, lifecycle_state: 'dormant' as const } : c)
+      )
+      setSelectedId(prev => prev === id ? null : prev)
+      await patchCommitment(id, { lifecycle_state: 'dormant' })
+      queryClient.invalidateQueries({ queryKey: ['commitments'] })
+      queryClient.invalidateQueries({ queryKey: ['surface'] })
+    } catch {
+      queryClient.invalidateQueries({ queryKey: ['commitments'] })
+    }
+  }
+
   const groupModes: { id: GroupMode; label: string }[] = [
     { id: 'status', label: 'Status' },
     { id: 'client', label: 'Client' },
@@ -363,26 +409,33 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
 
   // ─── Grouping logic ──────────────────────────────────────────────────
 
-  function filterDismissed(items: CommitmentRead[]): CommitmentRead[] {
-    if (showDismissed) return items
-    return items.filter(c => c.lifecycle_state !== 'discarded' && c.lifecycle_state !== 'closed')
+  function filterHidden(items: CommitmentRead[]): CommitmentRead[] {
+    return items.filter(c => {
+      const isDismissed = c.lifecycle_state === 'discarded' || c.lifecycle_state === 'closed'
+      const isDormant = c.lifecycle_state === 'dormant'
+      if (isDismissed && !showDismissed) return false
+      if (isDormant && !showDormant) return false
+      return true
+    })
   }
 
   function renderGrouped() {
     if (groupMode === 'status') {
-      const statusOrder: { label: string; filter: (c: CommitmentRead) => boolean }[] = [
+      const statusOrder: { label: string; filter: (c: CommitmentRead) => boolean; hidden?: () => boolean }[] = [
         { label: 'Needs review', filter: c => { const b = badgeFromState(c); return b.label === 'Needs review' } },
         { label: 'Worth confirming', filter: c => { const b = badgeFromState(c); return b.label === 'Worth confirming' } },
         { label: 'At risk', filter: c => { const b = badgeFromState(c); return b.label === 'At risk' } },
+        { label: 'Confirmed', filter: c => c.lifecycle_state === 'confirmed' },
         { label: 'Delivered', filter: c => c.lifecycle_state === 'delivered' },
-        { label: 'Dismissed', filter: c => c.lifecycle_state === 'discarded' || c.lifecycle_state === 'closed' },
+        { label: 'Not Now', filter: c => c.lifecycle_state === 'dormant', hidden: () => !showDormant },
+        { label: 'Dismissed', filter: c => c.lifecycle_state === 'discarded' || c.lifecycle_state === 'closed', hidden: () => !showDismissed },
       ]
       return (
         <>
-          {statusOrder.map(({ label, filter }) => {
+          {statusOrder.map(({ label, filter, hidden }) => {
             const items = allCommitments.filter(filter)
             if (items.length === 0) return null
-            if (label === 'Dismissed' && !showDismissed) return null
+            if (hidden?.()) return null
             return (
               <div key={label}>
                 <div className="text-[16px] font-bold text-[#111827] mt-8 mb-3 flex items-center gap-2 border-b border-[#f0f0ef] pb-2">
@@ -391,7 +444,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                 </div>
                 <div className="flex flex-col gap-2">
                   {items.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} />
                   ))}
                 </div>
               </div>
@@ -409,7 +462,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
         groups[key].push(c)
       }
       return Object.entries(groups).map(([client, items]) => {
-        const filtered = filterDismissed(items)
+        const filtered = filterHidden(items)
         if (filtered.length === 0) return null
         return (
           <div key={client}>
@@ -419,7 +472,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             </div>
             <div className="flex flex-col gap-2">
               {filtered.map(c => (
-                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
+                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} />
               ))}
             </div>
           </div>
@@ -431,7 +484,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
       const sourceTypes = ['email', 'slack', 'meeting'] as const
       const labels: Record<string, string> = { email: 'Email', slack: 'Slack', meeting: 'Meetings' }
       return sourceTypes.map(st => {
-        const items = filterDismissed(allCommitments.filter(c => c.context_type === st))
+        const items = filterHidden(allCommitments.filter(c => c.context_type === st))
         if (items.length === 0) return null
         return (
           <div key={st}>
@@ -441,7 +494,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             </div>
             <div className="flex flex-col gap-2">
               {items.map(c => (
-                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
+                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} />
               ))}
             </div>
           </div>
@@ -464,9 +517,9 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
       return (
         <>
           {Object.entries(contextGroups).map(([ctxId, items]) => {
-            const filtered = filterDismissed(items)
+            const filtered = filterHidden(items)
             if (filtered.length === 0) return null
-            const openCount = filtered.filter(c => c.lifecycle_state !== 'delivered' && c.lifecycle_state !== 'discarded' && c.lifecycle_state !== 'closed').length
+            const openCount = filtered.filter(c => c.lifecycle_state !== 'delivered' && c.lifecycle_state !== 'discarded' && c.lifecycle_state !== 'closed' && c.lifecycle_state !== 'dormant').length
             const atRiskCount = filtered.filter(c => badgeFromState(c).status === 'at-risk').length
             const summaryParts: string[] = []
             if (openCount > 0) summaryParts.push(`${openCount} open`)
@@ -485,14 +538,14 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                 </div>
                 <div className="flex flex-col gap-2">
                   {filtered.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} />
                   ))}
                 </div>
               </div>
             )
           })}
           {(() => {
-            const filtered = filterDismissed(noContext)
+            const filtered = filterHidden(noContext)
             if (filtered.length === 0) return null
             return (
               <div>
@@ -502,7 +555,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                 </div>
                 <div className="flex flex-col gap-2">
                   {filtered.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} />
                   ))}
                 </div>
               </div>
@@ -598,14 +651,24 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                   <div className="text-[13px] text-[#9ca3af]">Rippled will surface items as they're detected from your connected sources.</div>
                 </div>
               ) : renderGrouped()}
-              {dismissedCount > 0 && (
-                <span
-                  className="text-[12px] text-[#9ca3af] hover:text-[#6b7280] cursor-pointer mt-4 inline-block hover:underline underline-offset-2"
-                  onClick={() => setShowDismissed(!showDismissed)}
-                >
-                  {showDismissed ? 'Hide dismissed' : `Show dismissed (${dismissedCount})`}
-                </span>
-              )}
+              <div className="flex items-center gap-4 mt-4">
+                {dormantCount > 0 && (
+                  <span
+                    className="text-[12px] text-[#9ca3af] hover:text-[#6b7280] cursor-pointer inline-block hover:underline underline-offset-2"
+                    onClick={() => setShowDormant(!showDormant)}
+                  >
+                    {showDormant ? 'Hide not now' : `Show not now (${dormantCount})`}
+                  </span>
+                )}
+                {dismissedCount > 0 && (
+                  <span
+                    className="text-[12px] text-[#9ca3af] hover:text-[#6b7280] cursor-pointer inline-block hover:underline underline-offset-2"
+                    onClick={() => setShowDismissed(!showDismissed)}
+                  >
+                    {showDismissed ? 'Hide dismissed' : `Show dismissed (${dismissedCount})`}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         )}

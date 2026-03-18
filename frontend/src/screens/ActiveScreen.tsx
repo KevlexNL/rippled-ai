@@ -29,6 +29,8 @@ function confidenceLabel(score: string | null | undefined): string {
 function badgeFromState(c: CommitmentRead): { label: string; classes: string; status: string } {
   const state = c.lifecycle_state
   if (state === 'delivered') return { label: 'Delivered', classes: 'bg-[#f0fdf4] text-[#15803d]', status: 'delivered' }
+  if (state === 'confirmed') return { label: 'Confirmed', classes: 'bg-[#f0fdf4] text-[#15803d]', status: 'confirmed' }
+  if (state === 'dormant') return { label: 'Not Now', classes: 'bg-[#f9fafb] text-[#9ca3af] border border-[#e8e8e6]', status: 'dormant' }
   if (state === 'discarded' || state === 'closed') return { label: 'Dismissed', classes: 'bg-[#f9fafb] text-[#6b7280] border border-[#e8e8e6]', status: 'dismissed' }
   const conf = c.confidence_commitment ? parseFloat(c.confidence_commitment) : 0
   if (conf >= 0.85) return { label: 'At risk', classes: 'bg-[#fee2e2] text-[#991b1b]', status: 'at-risk' }
@@ -44,7 +46,9 @@ function accentClass(status: string): string {
     case 'worth-confirming': return '#2563eb'
     case 'likely-missing': return '#6d28d9'
     case 'delivered': return '#16a34a'
+    case 'confirmed': return '#16a34a'
     case 'dismissed': return '#d1d1cf'
+    case 'dormant': return '#d1d1cf'
     default: return '#e8e8e6'
   }
 }
@@ -195,6 +199,14 @@ function IconXMark() {
   )
 }
 
+function IconClock() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+    </svg>
+  )
+}
+
 function IconArrow() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -265,15 +277,16 @@ function StatusBadge({ label, classes }: { label: string; classes: string }) {
   )
 }
 
-function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss, isFirst }: {
+function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss, onNotNow, isFirst }: {
   commitment: CommitmentRead
   onOpen: (id: string) => void
   onConfirm: (id: string) => void
   onDismiss: (id: string) => void
+  onNotNow: (id: string) => void
   isFirst?: boolean
 }) {
   const badge = badgeFromState(commitment)
-  const person = resolveOwner(commitment)
+  const isConfirmed = commitment.lifecycle_state === 'confirmed'
   const color = accentClass(badge.status)
 
   return (
@@ -302,7 +315,16 @@ function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss, isFirst }: {
               <span>{formatDate(commitment.source_occurred_at || commitment.created_at)}</span>
             </div>
           </div>
-          <div className="font-semibold text-[14px] text-[#191919] mb-0.5">{commitment.title}</div>
+          <div className="font-semibold text-[14px] text-[#191919] mb-0.5">
+            {commitment.title}
+            {isConfirmed && (
+              <span className="ml-1.5 inline-flex items-center text-[#16a34a]" title="Confirmed">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
+            )}
+          </div>
           {commitment.description && (
             <div className="text-[12px] text-[#6b7280] leading-relaxed mb-1">{commitment.description}</div>
           )}
@@ -313,6 +335,13 @@ function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss, isFirst }: {
             >
               <IconCheck />
               Confirm
+            </button>
+            <button
+              className="flex items-center gap-1.5 bg-[#f0f0ef] text-[#4b5563] text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors"
+              onClick={(e) => { e.stopPropagation(); onNotNow(commitment.id) }}
+            >
+              <IconClock />
+              Not Now
             </button>
             <button
               className="flex items-center gap-1.5 bg-[#f0f0ef] text-[#191919] text-[12px] px-3 py-1 rounded-md font-medium hover:bg-[#e8e8e6] transition-colors"
@@ -521,6 +550,23 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
     }
   }
 
+  async function handleNotNow(id: string) {
+    try {
+      setError(null)
+      setSelectedId(prev => prev === id ? null : prev)
+      // Optimistic: remove from surface cache immediately
+      queryClient.setQueryData<CommitmentRead[]>(['surface', 'main'], (old) => old?.filter(c => c.id !== id))
+      queryClient.setQueryData(['surface', 'best-next-moves'], (old: { groups: BestNextMovesGroup[] } | undefined) =>
+        old ? { groups: old.groups.map(g => ({ ...g, items: g.items.filter(c => c.id !== id) })).filter(g => g.items.length > 0) } : old
+      )
+      await patchCommitment(id, { lifecycle_state: 'dormant' })
+      queryClient.invalidateQueries({ queryKey: ['surface'] })
+    } catch {
+      setError('Failed to snooze commitment')
+      queryClient.invalidateQueries({ queryKey: ['surface'] })
+    }
+  }
+
   const tabs: { id: Tab; label: string }[] = [
     { id: 'active', label: 'Active' },
     { id: 'commitments', label: 'Commitments' },
@@ -605,7 +651,7 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
                 <h2 className="text-[15px] font-semibold text-[#191919] mb-1">Surfaced for review</h2>
                 <div className="flex flex-col gap-2" data-onboard="detail-panel-area">
                   {surfaced.map((c, i) => (
-                    <CommitmentCard key={c.id} commitment={c} onOpen={setSelectedId} onConfirm={handleConfirm} onDismiss={handleDismiss} isFirst={i === 0} />
+                    <CommitmentCard key={c.id} commitment={c} onOpen={setSelectedId} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} isFirst={i === 0} />
                   ))}
                 </div>
               </div>

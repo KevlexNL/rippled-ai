@@ -1,6 +1,8 @@
 export type LifecycleState =
   | 'proposed'
   | 'active'
+  | 'confirmed'
+  | 'dormant'
   | 'needs_clarification'
   | 'delivered'
   | 'closed'
