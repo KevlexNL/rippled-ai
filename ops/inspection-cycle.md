@@ -33,6 +33,14 @@ The inspection cycle should gather evidence from:
 
 ## Cycle Steps
 
+### 0. Ground Visual Findings in Code
+Before treating any visual finding as confirmed, verify it against the codebase:
+- Is the UI element wired to a real backend route?
+- Does the route actually execute the expected logic, or is it a stub?
+- Are scheduled tasks (Celery, cron) actually deployed and running?
+- Are environment variables required by the code actually set in production?
+Do not report a UI state as broken or working without confirming the backend reality.
+
 ### 1. Inspect Current Product State
 Review the app for:
 - broken flows

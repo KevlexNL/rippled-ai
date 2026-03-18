@@ -11,6 +11,7 @@ import type { EventRead } from '../api/events'
 import { patchCommitment } from '../api/commitments'
 import { apiGet } from '../lib/apiClient'
 import { useAuth } from '../lib/auth'
+import { filterMineAndTriage } from '../utils/ownershipFilter'
 import type { CommitmentRead } from '../types'
 import DetailPanel from './DetailPanel'
 import LogCommitmentModal from './LogCommitmentModal'
@@ -508,7 +509,10 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
     enabled: googleStatus?.connected === true,
   })
 
-  const surfaced = (mainItems ?? []).slice(0, 3)
+  // Ownership filtering — only show mine + triage on Active tab
+  const userName = user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? null
+  const userEmail = user?.email ?? null
+  const surfaced = filterMineAndTriage((mainItems ?? []), userName, userEmail).slice(0, 3)
   const groups = bestNextMoves?.groups ?? []
   const allCommitments = [...surfaced, ...groups.flatMap(g => g.items)]
 

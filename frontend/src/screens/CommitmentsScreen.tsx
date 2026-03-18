@@ -9,6 +9,7 @@ import type { StatsRead } from '../api/stats'
 import { listSources } from '../api/sources'
 import type { CommitmentRead } from '../types'
 import { useAuth } from '../lib/auth'
+import { filterMineAndTriage, filterOthers } from '../utils/ownershipFilter'
 import DetailPanel from './DetailPanel'
 import LogCommitmentModal from './LogCommitmentModal'
 import SettingsModal from './SettingsModal'
@@ -316,6 +317,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
   const [groupMode, setGroupMode] = useState<GroupMode>('status')
   const [showDismissed, setShowDismissed] = useState(false)
   const [showDormant, setShowDormant] = useState(false)
+  const [showAll, setShowAll] = useState(false)
   const [showLog, setShowLog] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const queryClient = useQueryClient()
@@ -352,6 +354,13 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
 
   const allCommitments = commitments ?? []
   const selectedCommitment = selectedId ? allCommitments.find(c => c.id === selectedId) ?? null : null
+
+  // Ownership filtering
+  const userName = user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? null
+  const userEmail = user?.email ?? null
+  const mineAndTriage = filterMineAndTriage(allCommitments, userName, userEmail)
+  const othersCount = filterOthers(allCommitments, userName, userEmail).length
+  const visibleCommitments = showAll ? allCommitments : mineAndTriage
 
   const dismissedCount = allCommitments.filter(c => c.lifecycle_state === 'discarded' || c.lifecycle_state === 'closed').length
   const dormantCount = allCommitments.filter(c => c.lifecycle_state === 'dormant').length
@@ -433,7 +442,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
       return (
         <>
           {statusOrder.map(({ label, filter, hidden }) => {
-            const items = allCommitments.filter(filter)
+            const items = visibleCommitments.filter(filter)
             if (items.length === 0) return null
             if (hidden?.()) return null
             return (
@@ -456,7 +465,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
 
     if (groupMode === 'client') {
       const groups: Record<string, CommitmentRead[]> = {}
-      for (const c of allCommitments) {
+      for (const c of visibleCommitments) {
         const key = c.counterparty_name || 'Internal'
         if (!groups[key]) groups[key] = []
         groups[key].push(c)
@@ -484,7 +493,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
       const sourceTypes = ['email', 'slack', 'meeting'] as const
       const labels: Record<string, string> = { email: 'Email', slack: 'Slack', meeting: 'Meetings' }
       return sourceTypes.map(st => {
-        const items = filterHidden(allCommitments.filter(c => c.context_type === st))
+        const items = filterHidden(visibleCommitments.filter(c => c.context_type === st))
         if (items.length === 0) return null
         return (
           <div key={st}>
@@ -505,7 +514,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
     if (groupMode === 'context') {
       const contextGroups: Record<string, CommitmentRead[]> = {}
       const noContext: CommitmentRead[] = []
-      for (const c of allCommitments) {
+      for (const c of visibleCommitments) {
         if (c.context_id) {
           const key = c.context_id
           if (!contextGroups[key]) contextGroups[key] = []
@@ -617,8 +626,16 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
         ) : (
           <div className="max-w-[720px] mx-auto">
             <div className="pt-0.5 pb-2 max-w-[480px] mx-auto text-center">
-              <div className="font-semibold text-[22px] text-[#191919]">All commitments</div>
-              <div className="text-[13px] text-[#6b7280] mt-1">A broader view of likely commitments Rippled is tracking across your connected sources.</div>
+              <div className="font-semibold text-[22px] text-[#191919]">{showAll ? 'All commitments' : 'My commitments'}</div>
+              <div className="text-[13px] text-[#6b7280] mt-1">
+                {showAll
+                  ? 'All commitments Rippled is tracking across your connected sources.'
+                  : 'Commitments assigned to you or needing your triage.'}
+              </div>
+              <div className="text-[12px] text-[#9ca3af] mt-1">
+                {visibleCommitments.length} commitment{visibleCommitments.length !== 1 ? 's' : ''}
+                {!showAll && othersCount > 0 && ` · ${othersCount} others tracked`}
+              </div>
             </div>
             <div className="flex items-center mb-5">
               <span className="text-[13px] text-[#4b5563] font-semibold mr-3">Group by:</span>
@@ -639,7 +656,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
               </div>
             </div>
             <div>
-              {allCommitments.length === 0 ? (
+              {visibleCommitments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <div className="text-[#d1d1cf] mb-4">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -652,6 +669,22 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                 </div>
               ) : renderGrouped()}
               <div className="flex items-center gap-4 mt-4">
+                {!showAll && othersCount > 0 && (
+                  <span
+                    className="text-[12px] text-[#6b7280] hover:text-[#191919] cursor-pointer inline-block hover:underline underline-offset-2 font-medium"
+                    onClick={() => setShowAll(true)}
+                  >
+                    View all commitments →
+                  </span>
+                )}
+                {showAll && (
+                  <span
+                    className="text-[12px] text-[#6b7280] hover:text-[#191919] cursor-pointer inline-block hover:underline underline-offset-2 font-medium"
+                    onClick={() => setShowAll(false)}
+                  >
+                    ← Show only mine
+                  </span>
+                )}
                 {dormantCount > 0 && (
                   <span
                     className="text-[12px] text-[#9ca3af] hover:text-[#6b7280] cursor-pointer inline-block hover:underline underline-offset-2"
