@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from './lib/auth'
 import ActiveScreen from './screens/ActiveScreen'
 import CommitmentsScreen from './screens/CommitmentsScreen'
@@ -12,15 +13,49 @@ import SignUpScreen from './screens/SignUpScreen'
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen'
 import ResetPasswordScreen from './screens/ResetPasswordScreen'
 import OnboardingScreen from './screens/OnboardingScreen'
+import OnboardingIdentityScreen from './screens/OnboardingIdentityScreen'
 import AccountSettingsScreen from './screens/settings/AccountSettingsScreen'
 import IntegrationsSettingsScreen from './screens/settings/IntegrationsSettingsScreen'
+import IdentitySettingsScreen from './screens/settings/IdentitySettingsScreen'
 import PrototypeDashboard from './screens/PrototypeDashboard'
 import AdminScreen from './screens/AdminScreen'
+import { getIdentityStatus } from './api/identity'
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
   if (loading) return <div className="flex h-screen items-center justify-center">Loading…</div>
   if (!session) return <Navigate to="/login" replace />
+  return <>{children}</>
+}
+
+/**
+ * Wraps the main dashboard and redirects to /onboarding/identity
+ * if the user has no confirmed identity profiles.
+ */
+function IdentityGuard({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { data: status, isLoading } = useQuery({
+    queryKey: ['identity-status'],
+    queryFn: getIdentityStatus,
+    staleTime: 60_000,
+    retry: 1,
+  })
+
+  useEffect(() => {
+    if (!isLoading && status && !status.has_confirmed_identities) {
+      navigate('/onboarding/identity', { replace: true })
+    }
+  }, [isLoading, status, navigate])
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
   return <>{children}</>
 }
 
@@ -61,10 +96,20 @@ export default function App() {
         }
       />
       <Route
+        path="/onboarding/identity"
+        element={
+          <AuthGuard>
+            <OnboardingIdentityScreen />
+          </AuthGuard>
+        }
+      />
+      <Route
         path="/"
         element={
           <AuthGuard>
-            <AuthenticatedApp />
+            <IdentityGuard>
+              <AuthenticatedApp />
+            </IdentityGuard>
           </AuthGuard>
         }
       />
@@ -112,6 +157,14 @@ export default function App() {
           </AuthGuard>
         }
       />
+      <Route
+        path="/settings/identity"
+        element={
+          <AuthGuard>
+            <IdentitySettingsWrapper />
+          </AuthGuard>
+        }
+      />
       <Route path="/prototype" element={<PrototypeDashboard />} />
       <Route
         path="/admin"
@@ -122,5 +175,25 @@ export default function App() {
         }
       />
     </Routes>
+  )
+}
+
+/** Wrapper to give IdentitySettingsScreen the standard settings page layout. */
+function IdentitySettingsWrapper() {
+  return (
+    <div className="min-h-screen bg-white pb-12">
+      <div className="px-4 pt-8 pb-4">
+        <a href="/" className="text-sm text-gray-500 hover:text-black transition-colors">
+          ← Back
+        </a>
+        <h1 className="text-2xl font-bold text-black mt-3">Identity settings</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Manage the names and emails Rippled uses to match commitments to you.
+        </p>
+      </div>
+      <div className="px-4">
+        <IdentitySettingsScreen />
+      </div>
+    </div>
   )
 }
