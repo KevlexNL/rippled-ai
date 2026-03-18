@@ -61,6 +61,10 @@ _commitment_type_enum = ENUM(
     'coordinate', 'update', 'delegate', 'schedule', 'confirm', 'other',
     name='commitment_type_enum', create_type=False,
 )
+_user_relationship_enum = ENUM(
+    'mine', 'contributing', 'watching',
+    name='user_relationship_enum', create_type=False,
+)
 
 
 def _uuid(**kwargs):
@@ -193,6 +197,10 @@ class Commitment(Base):
     counterparty_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
     counterparty_email: Mapped[str | None] = mapped_column(Text, nullable=True)
     counterparty_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Commitment structure enforcement
+    counterparty_resolved: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    user_relationship: Mapped[str | None] = mapped_column(_user_relationship_enum, nullable=True)
+    structure_complete: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
     post_event_reviewed: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
     # Skip state — item removed from review queue without lifecycle change
     skipped_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

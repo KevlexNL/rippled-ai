@@ -128,6 +128,8 @@ async def surface_main(
             Commitment.surfaced_as == "main",
             Commitment.lifecycle_state.in_(_SURFACED_STATES),
             Commitment.skipped_at.is_(None),
+            Commitment.structure_complete.is_(True),
+            Commitment.user_relationship.in_(("mine",)),
         )
         .order_by(Commitment.priority_score.desc().nullslast(), Commitment.created_at.desc())
         .limit(10)
@@ -152,6 +154,8 @@ async def surface_shortlist(
             Commitment.surfaced_as == "shortlist",
             Commitment.lifecycle_state.in_(_SURFACED_STATES),
             Commitment.skipped_at.is_(None),
+            Commitment.structure_complete.is_(True),
+            Commitment.user_relationship.in_(("mine", "contributing")),
         )
         .order_by(Commitment.priority_score.desc().nullslast(), Commitment.created_at.desc())
         .limit(10)
@@ -204,7 +208,7 @@ async def best_next_moves(
 
     now = datetime.now(timezone.utc)
 
-    # Fetch all surfaced, active commitments for this user
+    # Fetch all surfaced, active commitments for this user (mine + contributing only)
     result = await db.execute(
         select(Commitment)
         .where(
@@ -212,6 +216,8 @@ async def best_next_moves(
             Commitment.lifecycle_state.in_(_SURFACED_STATES),
             Commitment.surfaced_as.isnot(None),
             Commitment.skipped_at.is_(None),
+            Commitment.structure_complete.is_(True),
+            Commitment.user_relationship.in_(("mine", "contributing")),
         )
         .order_by(Commitment.priority_score.desc().nullslast(), Commitment.created_at.desc())
     )

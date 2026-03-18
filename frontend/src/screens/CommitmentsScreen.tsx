@@ -378,6 +378,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
   const userEmail = user?.email ?? null
   const mineAndTriage = filterMineAndTriage(allCommitments, userName, userEmail)
   const othersCount = filterOthers(allCommitments, userName, userEmail).length
+  const watchingCount = filterOthers(allCommitments, userName, userEmail).length
   const visibleCommitments = showAll ? allCommitments : mineAndTriage
 
   const dismissedCount = allCommitments.filter(c => c.lifecycle_state === 'discarded' || c.lifecycle_state === 'closed').length
@@ -667,7 +668,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
               <div className="text-[13px] text-[#6b7280] mt-1">
                 {showAll
                   ? 'All commitments Rippled is tracking across your connected sources.'
-                  : 'Commitments assigned to you or needing your triage.'}
+                  : 'Commitments you own or contribute to.'}
               </div>
               <div className="text-[12px] text-[#9ca3af] mt-1">
                 {visibleCommitments.length} commitment{visibleCommitments.length !== 1 ? 's' : ''}

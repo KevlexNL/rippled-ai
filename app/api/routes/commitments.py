@@ -125,6 +125,7 @@ async def _get_commitment_or_404(commitment_id: str, user_id: str, db: AsyncSess
 async def list_commitments(
     lifecycle_state: str | None = Query(None),
     priority_class: str | None = Query(None),
+    relationship: str | None = Query(None, description="Filter: mine, contributing, watching, or mine+contributing"),
     limit: int = Query(5, ge=1, le=200),
     offset: int = Query(0, ge=0),
     user_id: str = Depends(get_current_user_id),
@@ -135,6 +136,9 @@ async def list_commitments(
         q = q.where(Commitment.lifecycle_state == lifecycle_state)
     if priority_class:
         q = q.where(Commitment.priority_class == priority_class)
+    if relationship:
+        allowed = [r.strip() for r in relationship.split("+")]
+        q = q.where(Commitment.user_relationship.in_(allowed))
     q = q.order_by(Commitment.created_at.desc()).limit(limit).offset(offset)
     result = await db.execute(q)
     rows = list(result.scalars())
@@ -174,6 +178,9 @@ async def create_commitment(
         confidence_actionability=body.confidence_actionability,
         commitment_explanation=body.commitment_explanation,
         counterparty_name=body.counterparty_name,
+        counterparty_resolved=body.counterparty_resolved,
+        user_relationship=body.user_relationship,
+        structure_complete=body.structure_complete,
         observe_until=body.observe_until,
         observation_window_hours=body.observation_window_hours,
         lifecycle_state="proposed",

@@ -1,6 +1,6 @@
 import type { CommitmentRead } from '../types'
 
-export type OwnershipCategory = 'mine' | 'triage' | 'others'
+export type OwnershipCategory = 'mine' | 'contributing' | 'watching' | 'triage'
 
 /**
  * Case-insensitive check: does `haystack` contain any part of the user's
@@ -31,37 +31,53 @@ function ownerMatchesUser(
 }
 
 /**
- * Classify a commitment as mine / triage / others relative to the current user.
+ * Classify a commitment's relationship to the current user.
  *
- * Rules (from WO-RIPPLED-LIST-FILTERING):
- *  - mine:   resolved_owner matches user, OR suggested_owner matches user
- *  - triage: resolved_owner is null/unresolved AND no suggested_owner
- *  - others: resolved_owner resolved to someone else
+ * Uses server-side user_relationship when available (v3 detection).
+ * Falls back to heuristic owner matching for pre-backfill commitments.
  */
 export function classifyOwnership(
   c: CommitmentRead,
   userName: string | null | undefined,
   userEmail: string | null | undefined,
 ): OwnershipCategory {
+  // Prefer server-side classification when available
+  if (c.user_relationship) {
+    return c.user_relationship
+  }
+
+  // Fallback: heuristic owner matching (pre-backfill commitments)
   const resolved = c.resolved_owner?.trim() || null
   const suggested = c.suggested_owner?.trim() || null
 
   // Check resolved_owner first
   if (resolved) {
-    return ownerMatchesUser(resolved, userName, userEmail) ? 'mine' : 'others'
+    return ownerMatchesUser(resolved, userName, userEmail) ? 'mine' : 'watching'
   }
 
   // No resolved_owner — check suggested_owner
   if (suggested) {
-    return ownerMatchesUser(suggested, userName, userEmail) ? 'mine' : 'others'
+    return ownerMatchesUser(suggested, userName, userEmail) ? 'mine' : 'watching'
   }
 
   // No owner at all — triage
   return 'triage'
 }
 
-/** Return commitments that are mine or triage (default view). */
+/** Return commitments that are mine, contributing, or triage (default Commitments tab view). */
 export function filterMineAndTriage(
+  commitments: CommitmentRead[],
+  userName: string | null | undefined,
+  userEmail: string | null | undefined,
+): CommitmentRead[] {
+  return commitments.filter(c => {
+    const cat = classifyOwnership(c, userName, userEmail)
+    return cat === 'mine' || cat === 'contributing' || cat === 'triage'
+  })
+}
+
+/** Return commitments that are mine only (Active tab view). */
+export function filterMine(
   commitments: CommitmentRead[],
   userName: string | null | undefined,
   userEmail: string | null | undefined,
@@ -72,11 +88,11 @@ export function filterMineAndTriage(
   })
 }
 
-/** Return commitments that belong to others. */
+/** Return commitments that belong to others (watching). */
 export function filterOthers(
   commitments: CommitmentRead[],
   userName: string | null | undefined,
   userEmail: string | null | undefined,
 ): CommitmentRead[] {
-  return commitments.filter(c => classifyOwnership(c, userName, userEmail) === 'others')
+  return commitments.filter(c => classifyOwnership(c, userName, userEmail) === 'watching')
 }

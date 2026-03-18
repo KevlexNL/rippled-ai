@@ -23,7 +23,7 @@ from openai import OpenAI, RateLimitError
 
 logger = logging.getLogger(__name__)
 
-_SYSTEM_PROMPT = """You are a commitment classifier for a workplace intelligence system.
+_SYSTEM_PROMPT = """You are a commitment extraction engine for a workplace intelligence system.
 
 A commitment is a statement where someone obligates themselves or others to a specific
 future action, deliverable, or outcome. This includes:
@@ -40,7 +40,28 @@ NOT a commitment:
 - Past-tense descriptions: "I already did X"
 - Filler phrases: "By the way", "Just checking in"
 
-Given a communication fragment and its surrounding context, classify it.
+## Canonical commitment structure
+
+Every commitment must be extracted in this form:
+  [Owner] promised [Deliverable] to [Counterparty] [by Deadline]
+
+You MUST extract all five fields:
+1. owner — who made the promise (name or "unknown")
+2. deliverable — what was promised (concise, action-oriented)
+3. counterparty — who it was promised to (name, role, or "team")
+4. deadline — explicit or inferred deadline (ISO date or text), or null if none
+5. user_relationship — the logged-in user's relationship to this commitment:
+   - "mine": the commitment owner IS the current user (by name, email, or known alias)
+   - "contributing": the current user is mentioned as a participant but not the primary owner
+   - "watching": the commitment is between two other parties; current user is cc'd, facilitated, or just present
+
+## Completeness validation
+
+If owner AND deliverable AND counterparty cannot ALL be populated with reasonable confidence,
+set structure_complete=false. Only set structure_complete=true when all three are present.
+
+Given a communication fragment, its surrounding context, and the current user's identity,
+classify and extract the commitment.
 
 You must respond with valid JSON only, exactly this structure:
 {
@@ -48,12 +69,16 @@ You must respond with valid JSON only, exactly this structure:
   "confidence": <float 0.0 to 1.0>,
   "explanation": "<1-2 sentence explanation>",
   "suggested_owner": "<name of who made the commitment, or null>",
-  "suggested_deadline": "<deadline as text or ISO date, or null>"
+  "suggested_deadline": "<deadline as text or ISO date, or null>",
+  "deliverable": "<what was promised, concise action-oriented phrase, or null>",
+  "counterparty": "<who it was promised to, or null>",
+  "user_relationship": "<mine|contributing|watching>",
+  "structure_complete": <boolean>
 }"""
 
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0  # seconds
-_PROMPT_VERSION = "ongoing-v2"
+_PROMPT_VERSION = "ongoing-v3"
 
 
 @dataclass
@@ -64,6 +89,10 @@ class ModelDetectionResult:
     explanation: str
     suggested_owner: str | None
     suggested_deadline: str | None
+    deliverable: str | None = None
+    counterparty: str | None = None
+    user_relationship: str | None = None
+    structure_complete: bool = False
     # Audit metadata
     raw_prompt: str | None = None
     raw_response: str | None = None
@@ -91,12 +120,14 @@ class ModelDetectionService:
         else:
             self._client = None  # type: ignore[assignment]
 
-    def classify(self, candidate: Any) -> ModelDetectionResult | None:
+    def classify(self, candidate: Any, user_name: str | None = None, user_email: str | None = None) -> ModelDetectionResult | None:
         """Classify a candidate as commitment / not-commitment.
 
         Args:
             candidate: CommitmentCandidate ORM object or compatible namespace.
                        Must have .context_window (dict or None) and .raw_text.
+            user_name: Display name of the logged-in user (for relationship detection).
+            user_email: Email of the logged-in user (for relationship detection).
 
         Returns:
             ModelDetectionResult on success, None on any failure.
@@ -113,7 +144,7 @@ class ModelDetectionService:
             )
             return None
 
-        user_message = self._build_user_message(context_window)
+        user_message = self._build_user_message(context_window, user_name, user_email)
         full_prompt = f"[system]\n{_SYSTEM_PROMPT}\n\n[user]\n{user_message}"
 
         call_start = time.monotonic()
@@ -208,20 +239,31 @@ class ModelDetectionService:
 
         return None  # unreachable, but satisfies type checker
 
-    def _build_user_message(self, context_window: dict) -> str:
+    def _build_user_message(self, context_window: dict, user_name: str | None = None, user_email: str | None = None) -> str:
         trigger = context_window.get("trigger_text", "")
         pre = context_window.get("pre_context", "")
         post = context_window.get("post_context", "")
         source = context_window.get("source_type", "unknown")
 
         parts = []
+        # Inject user identity for relationship detection
+        identity_parts = []
+        if user_name:
+            identity_parts.append(f"name={user_name}")
+        if user_email:
+            identity_parts.append(f"email={user_email}")
+        if identity_parts:
+            parts.append(f"[Current user]: {', '.join(identity_parts)}")
+
+        parts.append(f"Source type: {source}")
+        parts.append("")
         if pre:
             parts.append(f"[Before]: {pre}")
         parts.append(f"[Trigger]: {trigger}")
         if post:
             parts.append(f"[After]: {post}")
 
-        return f"Source type: {source}\n\n" + "\n".join(parts)
+        return "\n".join(parts)
 
     def _parse_response(self, response: Any) -> ModelDetectionResult | None:
         """Parse OpenAI response into ModelDetectionResult. Returns None on parse failure."""
@@ -234,12 +276,20 @@ class ModelDetectionService:
             confidence = float(data["confidence"])
             explanation = data["explanation"]
 
+            # Validate user_relationship value
+            raw_relationship = data.get("user_relationship")
+            user_relationship = raw_relationship if raw_relationship in ("mine", "contributing", "watching") else None
+
             return ModelDetectionResult(
                 is_commitment=bool(is_commitment),
                 confidence=confidence,
                 explanation=str(explanation),
                 suggested_owner=data.get("suggested_owner"),
                 suggested_deadline=data.get("suggested_deadline"),
+                deliverable=data.get("deliverable"),
+                counterparty=data.get("counterparty"),
+                user_relationship=user_relationship,
+                structure_complete=bool(data.get("structure_complete", False)),
             )
         except (KeyError, ValueError, json.JSONDecodeError, IndexError) as exc:
             logger.warning("Failed to parse OpenAI response: %s", exc)

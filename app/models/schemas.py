@@ -15,6 +15,7 @@ from app.models.enums import (
     DeliverableAmbiguityType,
     AmbiguityType,
     SignalRole,
+    UserRelationship,
 )
 
 
@@ -223,6 +224,10 @@ class CommitmentRead(_Base):
     counterparty_type: str | None = None
     counterparty_email: str | None = None
     counterparty_name: str | None = None
+    # Commitment structure enforcement
+    counterparty_resolved: str | None = None
+    user_relationship: UserRelationship | None = None
+    structure_complete: bool = False
     post_event_reviewed: bool | None = False
     # Phase C5 — linked events (injected at query time)
     linked_events: list["LinkedEventRead"] | None = None
@@ -262,6 +267,9 @@ class CommitmentCreate(_Base):
     confidence_actionability: Decimal | None = None
     commitment_explanation: str | None = None
     counterparty_name: str | None = None
+    counterparty_resolved: str | None = None
+    user_relationship: UserRelationship | None = None
+    structure_complete: bool = False
     observe_until: datetime | None = None
     observation_window_hours: Decimal | None = None
 

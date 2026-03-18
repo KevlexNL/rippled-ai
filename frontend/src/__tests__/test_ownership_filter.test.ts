@@ -3,6 +3,7 @@ import type { CommitmentRead } from '../types'
 import {
   classifyOwnership,
   filterMineAndTriage,
+  filterMine,
   filterOthers,
 } from '../utils/ownershipFilter'
 
@@ -55,6 +56,9 @@ function makeCommitment(overrides: Partial<CommitmentRead> = {}): CommitmentRead
     counterparty_type: null,
     counterparty_email: null,
     counterparty_name: null,
+    counterparty_resolved: null,
+    user_relationship: null,
+    structure_complete: false,
     post_event_reviewed: false,
     context_id: null,
     linked_events: null,
@@ -72,7 +76,29 @@ function makeCommitment(overrides: Partial<CommitmentRead> = {}): CommitmentRead
 const userEmail = 'kevin@kevlex.digital'
 const userName = 'Kevin Beeftink'
 
-describe('classifyOwnership', () => {
+describe('classifyOwnership — server-side user_relationship', () => {
+  it('uses server-side user_relationship when present', () => {
+    const c = makeCommitment({ user_relationship: 'mine' })
+    expect(classifyOwnership(c, userName, userEmail)).toBe('mine')
+  })
+
+  it('returns contributing when user_relationship is contributing', () => {
+    const c = makeCommitment({ user_relationship: 'contributing' })
+    expect(classifyOwnership(c, userName, userEmail)).toBe('contributing')
+  })
+
+  it('returns watching when user_relationship is watching', () => {
+    const c = makeCommitment({ user_relationship: 'watching' })
+    expect(classifyOwnership(c, userName, userEmail)).toBe('watching')
+  })
+
+  it('falls back to heuristic when user_relationship is null', () => {
+    const c = makeCommitment({ user_relationship: null, resolved_owner: 'Kevin' })
+    expect(classifyOwnership(c, userName, userEmail)).toBe('mine')
+  })
+})
+
+describe('classifyOwnership — heuristic fallback', () => {
   it('returns "mine" when resolved_owner contains user name (case-insensitive)', () => {
     const c = makeCommitment({ resolved_owner: 'Kevin' })
     expect(classifyOwnership(c, userName, userEmail)).toBe('mine')
@@ -88,22 +114,14 @@ describe('classifyOwnership', () => {
     expect(classifyOwnership(c, userName, userEmail)).toBe('mine')
   })
 
-  it('returns "mine" when resolved_owner is null/vague but user_id matches (same user_id)', () => {
-    // When owner is null, it could be triage or mine based on user_id
-    // Per WO: "owner is null/vague but user_id matches" => mine
-    const c = makeCommitment({ resolved_owner: null, suggested_owner: null, user_id: 'user-1' })
-    // This is the triage case per WO: no resolved_owner AND no suggested_owner
-    expect(classifyOwnership(c, userName, userEmail)).toBe('triage')
-  })
-
   it('returns "triage" when resolved_owner is null and no suggested_owner', () => {
     const c = makeCommitment({ resolved_owner: null, suggested_owner: null })
     expect(classifyOwnership(c, userName, userEmail)).toBe('triage')
   })
 
-  it('returns "others" when resolved_owner is someone else', () => {
+  it('returns "watching" when resolved_owner is someone else', () => {
     const c = makeCommitment({ resolved_owner: 'Alice Johnson' })
-    expect(classifyOwnership(c, userName, userEmail)).toBe('others')
+    expect(classifyOwnership(c, userName, userEmail)).toBe('watching')
   })
 
   it('returns "mine" for partial name match (first name only)', () => {
@@ -111,9 +129,9 @@ describe('classifyOwnership', () => {
     expect(classifyOwnership(c, userName, userEmail)).toBe('mine')
   })
 
-  it('returns "others" when suggested_owner is someone else and resolved_owner is null', () => {
+  it('returns "watching" when suggested_owner is someone else and resolved_owner is null', () => {
     const c = makeCommitment({ resolved_owner: null, suggested_owner: 'Alice' })
-    expect(classifyOwnership(c, userName, userEmail)).toBe('others')
+    expect(classifyOwnership(c, userName, userEmail)).toBe('watching')
   })
 
   it('handles null userName gracefully — falls back to email match', () => {
@@ -123,7 +141,7 @@ describe('classifyOwnership', () => {
 
   it('handles null userName — no match when owner is name only', () => {
     const c = makeCommitment({ resolved_owner: 'Kevin' })
-    expect(classifyOwnership(c, null, userEmail)).toBe('others')
+    expect(classifyOwnership(c, null, userEmail)).toBe('watching')
   })
 
   it('handles null userEmail gracefully', () => {
@@ -133,29 +151,42 @@ describe('classifyOwnership', () => {
 })
 
 describe('filterMineAndTriage', () => {
-  it('returns only mine + triage commitments', () => {
-    const mine = makeCommitment({ id: '1', resolved_owner: 'Kevin' })
-    const triage = makeCommitment({ id: '2', resolved_owner: null, suggested_owner: null })
-    const others = makeCommitment({ id: '3', resolved_owner: 'Alice' })
+  it('returns mine + contributing + triage commitments', () => {
+    const mine = makeCommitment({ id: '1', user_relationship: 'mine' })
+    const contributing = makeCommitment({ id: '2', user_relationship: 'contributing' })
+    const triage = makeCommitment({ id: '3', resolved_owner: null, suggested_owner: null })
+    const watching = makeCommitment({ id: '4', user_relationship: 'watching' })
 
-    const result = filterMineAndTriage([mine, triage, others], userName, userEmail)
-    expect(result.map(c => c.id)).toEqual(['1', '2'])
+    const result = filterMineAndTriage([mine, contributing, triage, watching], userName, userEmail)
+    expect(result.map(c => c.id)).toEqual(['1', '2', '3'])
   })
 
-  it('returns empty array when all belong to others', () => {
-    const c1 = makeCommitment({ id: '1', resolved_owner: 'Alice' })
-    const c2 = makeCommitment({ id: '2', resolved_owner: 'Bob' })
+  it('returns empty array when all are watching', () => {
+    const c1 = makeCommitment({ id: '1', user_relationship: 'watching' })
+    const c2 = makeCommitment({ id: '2', user_relationship: 'watching' })
     expect(filterMineAndTriage([c1, c2], userName, userEmail)).toEqual([])
   })
 })
 
-describe('filterOthers', () => {
-  it('returns only commitments belonging to others', () => {
-    const mine = makeCommitment({ id: '1', resolved_owner: 'Kevin' })
-    const triage = makeCommitment({ id: '2', resolved_owner: null, suggested_owner: null })
-    const others = makeCommitment({ id: '3', resolved_owner: 'Alice' })
+describe('filterMine', () => {
+  it('returns only mine + triage commitments (Active tab)', () => {
+    const mine = makeCommitment({ id: '1', user_relationship: 'mine' })
+    const contributing = makeCommitment({ id: '2', user_relationship: 'contributing' })
+    const triage = makeCommitment({ id: '3', resolved_owner: null, suggested_owner: null })
+    const watching = makeCommitment({ id: '4', user_relationship: 'watching' })
 
-    const result = filterOthers([mine, triage, others], userName, userEmail)
+    const result = filterMine([mine, contributing, triage, watching], userName, userEmail)
+    expect(result.map(c => c.id)).toEqual(['1', '3'])
+  })
+})
+
+describe('filterOthers', () => {
+  it('returns only watching commitments', () => {
+    const mine = makeCommitment({ id: '1', user_relationship: 'mine' })
+    const triage = makeCommitment({ id: '2', resolved_owner: null, suggested_owner: null })
+    const watching = makeCommitment({ id: '3', user_relationship: 'watching' })
+
+    const result = filterOthers([mine, triage, watching], userName, userEmail)
     expect(result.map(c => c.id)).toEqual(['3'])
   })
 })

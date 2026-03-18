@@ -79,6 +79,12 @@ class CommitmentClass(str, enum.Enum):
 # Action: Query `SELECT commitment_type, COUNT(*) FROM commitments WHERE commitment_type = 'other' GROUP BY 1 ORDER BY 2 DESC`
 #         and review what real usage patterns have emerged. Promote frequent patterns to dedicated enum values via migration.
 # Context: See build/phases/01-schema/qa-decisions.md Q4 — 'other' is intentional fallback; this review ensures it doesn't become a permanent catch-all.
+class UserRelationship(str, enum.Enum):
+    mine = "mine"
+    contributing = "contributing"
+    watching = "watching"
+
+
 class CommitmentType(str, enum.Enum):
     send = "send"
     review = "review"

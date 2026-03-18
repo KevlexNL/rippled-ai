@@ -126,7 +126,7 @@ class TestModelDetectionResult:
             tokens_out=50,
             model="gpt-4.1-mini",
             duration_ms=250,
-            prompt_version="ongoing-v2",
+            prompt_version="ongoing-v3",
         )
         assert result.raw_prompt == "test prompt"
         assert result.raw_response == "test response"
@@ -134,7 +134,7 @@ class TestModelDetectionResult:
         assert result.tokens_out == 50
         assert result.model == "gpt-4.1-mini"
         assert result.duration_ms == 250
-        assert result.prompt_version == "ongoing-v2"
+        assert result.prompt_version == "ongoing-v3"
 
 
 # ---------------------------------------------------------------------------
@@ -230,7 +230,7 @@ class TestModelDetectionServiceClassify:
         assert result.model == "gpt-4.1-mini"
         assert result.duration_ms is not None
         assert result.duration_ms >= 0
-        assert result.prompt_version == "ongoing-v2"
+        assert result.prompt_version == "ongoing-v3"
         assert result.parsed_result is not None
 
 
@@ -370,7 +370,7 @@ class TestHybridDetectionServiceZones:
         candidate = _make_candidate(confidence_score=Decimal("0.55"))
         result = service.process(candidate)
         assert result["model_called"] is True
-        mock_model.classify.assert_called_once_with(candidate)
+        mock_model.classify.assert_called_once_with(candidate, user_name=None, user_email=None)
 
     def test_ambiguous_lower_boundary_calls_model(self):
         """confidence exactly 0.35: model IS called."""

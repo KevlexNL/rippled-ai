@@ -15,6 +15,7 @@ from app.models.enums import (
     OwnershipAmbiguityType,
     TimingAmbiguityType,
     DeliverableAmbiguityType,
+    UserRelationship,
 )
 
 lifecycle_state_enum = SAEnum(
@@ -55,6 +56,13 @@ deliverable_ambiguity_enum = SAEnum(
 commitment_type_enum = SAEnum(
     CommitmentType,
     name="commitment_type_enum",
+    create_type=True,
+    values_callable=lambda e: [m.value for m in e],
+)
+
+user_relationship_enum = SAEnum(
+    UserRelationship,
+    name="user_relationship_enum",
     create_type=True,
     values_callable=lambda e: [m.value for m in e],
 )
@@ -107,6 +115,15 @@ class Commitment(Base):
     suggested_owner: Mapped[str | None] = mapped_column(String, nullable=True)
     ownership_ambiguity: Mapped[OwnershipAmbiguityType | None] = mapped_column(
         ownership_ambiguity_enum, nullable=True
+    )
+
+    # Counterparty & relationship
+    counterparty_resolved: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    user_relationship: Mapped[UserRelationship | None] = mapped_column(
+        user_relationship_enum, nullable=True
+    )
+    structure_complete: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
     )
 
     # Timing

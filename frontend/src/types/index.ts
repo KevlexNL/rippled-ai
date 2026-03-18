@@ -65,6 +65,10 @@ export interface CommitmentRead {
   counterparty_type: string | null
   counterparty_email: string | null
   counterparty_name: string | null
+  // Commitment structure enforcement
+  counterparty_resolved: string | null
+  user_relationship: 'mine' | 'contributing' | 'watching' | null
+  structure_complete: boolean
   post_event_reviewed: boolean
   // Context layer
   context_id: string | null

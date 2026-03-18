@@ -76,6 +76,26 @@ def route(commitment, proximity_hours: float | None = None) -> RoutingResult:
     classifier_result = classify(commitment)
     priority = score(classifier_result, commitment, proximity_hours=proximity_hours)
 
+    # --- Step 0: Structure completeness gate ---
+    structure_complete = getattr(commitment, "structure_complete", True)
+    if not structure_complete:
+        return RoutingResult(
+            surface=None,
+            priority_score=priority,
+            classifier=classifier_result,
+            reason="structure incomplete — held for triage",
+        )
+
+    # --- Step 0b: Watching relationship gate ---
+    user_relationship = getattr(commitment, "user_relationship", None)
+    if user_relationship == "watching":
+        return RoutingResult(
+            surface=None,
+            priority_score=priority,
+            classifier=classifier_result,
+            reason="watching relationship — not surfaced by default",
+        )
+
     # --- Step 1: Observation window gate ---
     in_window = is_observable(commitment)
     early_ok = should_surface_early(commitment)

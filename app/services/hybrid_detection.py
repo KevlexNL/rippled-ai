@@ -64,16 +64,19 @@ class HybridDetectionService:
     def __init__(self, model_service: ModelDetectionService | None) -> None:
         self._model = model_service
 
-    def process(self, candidate: Any) -> dict[str, Any]:
+    def process(self, candidate: Any, user_name: str | None = None, user_email: str | None = None) -> dict[str, Any]:
         """Process a candidate through the hybrid pipeline.
 
         Args:
             candidate: CommitmentCandidate ORM object with .confidence_score.
+            user_name: Display name of the logged-in user (for relationship detection).
+            user_email: Email of the logged-in user (for relationship detection).
 
         Returns:
             Dict with keys to update on the candidate DB record:
                 detection_method, model_called, was_discarded, discard_reason,
-                model_confidence, model_classification, model_explanation, model_called_at
+                model_confidence, model_classification, model_explanation, model_called_at,
+                deliverable, counterparty, user_relationship, structure_complete
         """
         result = _empty_result()
 
@@ -98,7 +101,7 @@ class HybridDetectionService:
         # Call model
         result["model_called"] = True
         try:
-            model_result: ModelDetectionResult | None = self._model.classify(candidate)
+            model_result: ModelDetectionResult | None = self._model.classify(candidate, user_name=user_name, user_email=user_email)
         except Exception as exc:
             logger.error(
                 "HybridDetectionService: unexpected error from model for candidate %s: %s",
@@ -127,6 +130,12 @@ class HybridDetectionService:
         result["audit_duration_ms"] = model_result.duration_ms
         result["audit_prompt_version"] = model_result.prompt_version
         result["audit_error_detail"] = model_result.error_detail
+
+        # v3: Pass through commitment structure fields
+        result["deliverable"] = model_result.deliverable
+        result["counterparty"] = model_result.counterparty
+        result["user_relationship"] = model_result.user_relationship
+        result["structure_complete"] = model_result.structure_complete
 
         # Apply decision rules
         if model_result.is_commitment and model_result.confidence > MODEL_PROMOTE_THRESHOLD:
