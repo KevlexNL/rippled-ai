@@ -29,16 +29,21 @@ A commitment is a statement where someone obligates themselves or others to a sp
 future action, deliverable, or outcome. This includes:
 - Explicit: "I will", "I'll", "We will", "I promise", "I commit to"
 - Implicit: "Consider it done", "Leave it with me", "I'll look into that"
-- Follow-ups: "Follow up on [topic]", "Need to follow up", "Will follow up with [person]"
+- Follow-ups: "Follow up on [topic]", "Need to follow up", "Will follow up with [person]", "follow up on budget"
+- Bare follow-ups (ALWAYS a commitment): "need to follow up", "will follow up", "should follow up"
 - Collective: "We need to get this done", "Someone should handle this"
 
-NOT a commitment:
-- Greetings, salutations, and pleasantries: "Hi", "Hello", "Hey", "Good morning", "Dear team", "Hope you're doing well", "Hope this finds you well"
-- Sign-offs and closings: "Best regards", "Thanks", "Cheers", "Talk soon"
+NOT a commitment (NEVER extract these):
+- Greetings and salutations: "Hi", "Hello", "Hey", "Good morning", "Good afternoon", "Dear team"
+- Pleasantries and well-wishes: "Hope you're doing well", "Hope this finds you well", "Hope all is well", "Trust you are well", "Happy Friday"
+- Sign-offs and closings: "Best regards", "Thanks", "Cheers", "Talk soon", "Warm regards", "Kind regards"
+- Social niceties: "Looking forward to connecting", "Thank you for your time"
 - Casual acknowledgments: "OK", "Sounds good", "Got it"
 - Questions or hypotheticals: "Should we...?", "What if we..."
 - Past-tense descriptions: "I already did X"
 - Filler phrases: "By the way", "Just checking in"
+
+IMPORTANT: The word "greeting" itself is NEVER a commitment. Social pleasantries are NOT commitments.
 
 ## Canonical commitment structure
 
@@ -78,7 +83,7 @@ You must respond with valid JSON only, exactly this structure:
 
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0  # seconds
-_PROMPT_VERSION = "ongoing-v3"
+_PROMPT_VERSION = "ongoing-v4"
 
 
 @dataclass

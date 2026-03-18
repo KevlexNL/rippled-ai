@@ -82,6 +82,25 @@ SUPPRESSION_PATTERNS: list[TriggerPattern] = [
         suppression=True,
         base_confidence=0.05,
     ),
+    TriggerPattern(
+        name="pleasantry",
+        pattern=re.compile(
+            r"^\s*(?:"
+            r"hope (?:you(?:'re| are) doing well|this (?:finds|reaches) you well|all is well|you(?:'re| are) (?:well|great|good))"
+            r"|trust you are well"
+            r"|happy (?:monday|tuesday|wednesday|thursday|friday|weekend)"
+            r"|looking forward to (?:connecting|hearing from you|working with you)"
+            r"|thank(?:s| you) for (?:getting back|your (?:time|reply|response|email))"
+            r")[.!,]?\s*$",
+            re.IGNORECASE | re.MULTILINE,
+        ),
+        trigger_class="pleasantry",
+        is_explicit=False,
+        base_priority_hint="low",
+        applies_to=ALL_SOURCES,
+        suppression=True,
+        base_confidence=0.05,
+    ),
 ]
 
 # Email-specific suppression (strip quoted reply chains)

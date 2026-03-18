@@ -186,6 +186,71 @@ class TestGreetingSuppression:
         assert not pattern.pattern.search("I'll say hi to the team")
 
 
+class TestPleasantrySuppression:
+    """Pleasantries like 'Hope you're doing well' are suppressed."""
+
+    def test_hope_doing_well_suppressed(self):
+        pattern = next(p for p in SUPPRESSION_PATTERNS if p.name == "pleasantry")
+        assert pattern.pattern.search("Hope you're doing well")
+        assert pattern.suppression is True
+
+    def test_hope_finds_you_well_suppressed(self):
+        pattern = next(p for p in SUPPRESSION_PATTERNS if p.name == "pleasantry")
+        assert pattern.pattern.search("Hope this finds you well")
+
+    def test_hope_all_is_well_suppressed(self):
+        pattern = next(p for p in SUPPRESSION_PATTERNS if p.name == "pleasantry")
+        assert pattern.pattern.search("Hope all is well")
+
+    def test_trust_you_are_well_suppressed(self):
+        pattern = next(p for p in SUPPRESSION_PATTERNS if p.name == "pleasantry")
+        assert pattern.pattern.search("Trust you are well")
+
+    def test_happy_friday_suppressed(self):
+        pattern = next(p for p in SUPPRESSION_PATTERNS if p.name == "pleasantry")
+        assert pattern.pattern.search("Happy Friday!")
+
+    def test_pleasantry_does_not_match_commitment(self):
+        """Pleasantry pattern should not suppress real commitments."""
+        pattern = next(p for p in SUPPRESSION_PATTERNS if p.name == "pleasantry")
+        assert not pattern.pattern.search("I hope to follow up on the budget")
+
+
+class TestPleasantryIntegration:
+    """Pleasantries are stripped before pattern matching in run_detection."""
+
+    def _make_mock_db(self, item):
+        db = MagicMock()
+        db.get.return_value = item
+        savepoint = MagicMock()
+        savepoint.__enter__ = MagicMock(return_value=savepoint)
+        savepoint.__exit__ = MagicMock(return_value=False)
+        db.begin_nested.return_value = savepoint
+        db.flush = MagicMock()
+        return db
+
+    def test_pleasantry_only_email_no_candidates(self):
+        item = _make_item(
+            source_type="email",
+            content_normalized="Hope you're doing well.\nHope this finds you well.\nHappy Friday!",
+        )
+        db = self._make_mock_db(item)
+        candidates = run_detection("item-001", db)
+        assert len(candidates) == 0, "Pleasantries should not produce candidates"
+
+    def test_pleasantry_with_real_commitment_extracts_only_commitment(self):
+        item = _make_item(
+            source_type="email",
+            content_normalized="Hope you're doing well.\nI'll follow up on the budget tomorrow.",
+        )
+        db = self._make_mock_db(item)
+        candidates = run_detection("item-001", db)
+        assert len(candidates) > 0, "Real commitment should still be extracted"
+        # No candidate should be a pleasantry
+        for c in candidates:
+            assert "hope" not in (c.raw_text or "").lower() or "follow up" in (c.raw_text or "").lower()
+
+
 class TestRunDetectionFollowUpAndGreeting:
     """Integration: follow-up detected, greeting suppressed in run_detection."""
 
