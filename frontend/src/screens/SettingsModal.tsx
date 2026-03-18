@@ -5,6 +5,9 @@ import type { UserSettingsRead } from '../api/userSettings'
 import { listSources } from '../api/sources'
 import type { SourceRead } from '../api/sources'
 import { apiGet } from '../lib/apiClient'
+import IdentitySettingsScreen from './settings/IdentitySettingsScreen'
+
+type SettingsTab = 'general' | 'identity'
 
 // ─── Icons ────────────────────────────────────────────────────────────────
 
@@ -80,6 +83,7 @@ function StatusBadge({ connected }: { connected: boolean }) {
 
 export default function SettingsModal() {
   const queryClient = useQueryClient()
+  const [activeTab, setActiveTab] = useState<SettingsTab>('general')
   const [claudeKey, setClaudeKey] = useState('')
   const [openaiKey, setOpenaiKey] = useState('')
   const [claudeSaving, setClaudeSaving] = useState(false)
@@ -132,6 +136,26 @@ export default function SettingsModal() {
 
   return (
     <div className="max-w-[680px] mx-auto py-8 px-4 md:px-8 pb-12">
+      {/* Tabs */}
+      <div className="flex gap-1 mb-8 border-b border-gray-100 -mx-4 md:-mx-8 px-4 md:px-8">
+        {([['general', 'General'], ['identity', 'Identity']] as const).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setActiveTab(key)}
+            className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === key
+                ? 'border-black text-black'
+                : 'border-transparent text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'identity' && <IdentitySettingsScreen />}
+
+      {activeTab === 'general' && <>
       {/* LLM API Token */}
       <div className="mb-10">
         <h2 className="text-base font-semibold text-black">LLM API Token</h2>
@@ -240,6 +264,7 @@ export default function SettingsModal() {
           <GoogleCalendarCard />
         </div>
       </div>
+      </>}
     </div>
   )
 }

@@ -540,6 +540,18 @@ class AdhocSignal(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
+class UserIdentityProfile(Base):
+    __tablename__ = "user_identity_profiles"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    identity_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    identity_value: Mapped[str] = mapped_column(String(255), nullable=False)
+    source: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    confirmed: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
 class LlmJudgeRun(Base):
     """Tier 1 — automated LLM-as-judge self-improvement."""
     __tablename__ = "llm_judge_runs"

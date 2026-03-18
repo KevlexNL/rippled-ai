@@ -30,6 +30,7 @@ from app.models.orm import (
     UserSettings,
 )
 from app.services.detection.audit import estimate_cost, write_audit_entry
+from app.services.identity.owner_resolver import resolve_owner_sync
 
 logger = logging.getLogger(__name__)
 
@@ -437,6 +438,13 @@ def _create_commitment_and_signal(
     )
     db.add(signal)
     db.flush()
+
+    # Resolve owner if suggested_owner was extracted
+    if commitment.suggested_owner:
+        resolved = resolve_owner_sync(commitment.suggested_owner, user_id, db)
+        if resolved:
+            commitment.resolved_owner = resolved
+            db.flush()
 
 
 def build_user_profile(user_id: str, db: Session) -> dict:
