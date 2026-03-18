@@ -283,3 +283,30 @@ The current binary (active / dismissed) is insufficient. The full intended lifec
 
 **Why this matters:**
 Current "dismiss" permanently hides things that may be genuinely important but just not urgent. Small business owners need to be able to say "not now" without saying "never." The system should hold the memory so they don't have to.
+
+---
+
+## Commitment List Filtering (added 2026-03-18)
+
+**Default view (what the user sees):**
+1. **My commitments** — assigned to or owned by the user. Show by default.
+2. **Unowned / unclear owner** — no clear assignee, surfaced for triage. Show by default.
+3. *(collapsed)* **Dismissed** — toggled via "Show dismissed" (already exists)
+4. *(collapsed)* **All commitments** — everything else (other people's commitments, low-relevance items). Hidden behind a link at the bottom: "View all commitments →"
+
+**Why:**
+The current flat list creates cognitive overwhelm — the user sees Matt's commitments to his org, Allie's action items, and their own responsibilities all at the same level. Most of the list isn't actionable for the user right now.
+
+**Filtering logic:**
+- `mine` = `owner == user` OR `assignee == user` OR entity resolved to user
+- `triage` = owner is null/unresolved — user needs to decide if it's theirs
+- `others` = owner resolved to someone else — tracked but hidden by default
+- User can always access `others` via "View all commitments" — nothing is deleted
+
+**UI:**
+- Active tab and full Commitments tab both apply this filter
+- "View all commitments" link sits below the dismissed toggle
+- Count shown: "12 commitments · 34 others tracked"
+
+**Connection to dormant state:**
+Items the user marks "not now" (dormant) behave like `others` in the list — tracked, hidden, resurfaceable.
