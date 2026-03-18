@@ -307,6 +307,7 @@ class SurfacingAudit(Base):
     new_surfaced_as: Mapped[str | None] = mapped_column(String(20), nullable=True)
     priority_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
     reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
 
 
