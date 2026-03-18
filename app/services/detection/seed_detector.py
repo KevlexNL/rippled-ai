@@ -37,7 +37,7 @@ _BATCH_SIZE = 20
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0
 _DEFAULT_MODEL = "claude-sonnet-4-6"
-_PROMPT_VERSION = "seed-v1"
+_PROMPT_VERSION = "seed-v2"
 
 _SYSTEM_PROMPT = """You are a commitment extraction engine for a workplace intelligence system.
 
@@ -57,7 +57,8 @@ This includes:
 - Soft promises: "I'll see what I can do", "Let me look into it", "I'll ping them"
 
 NOT a commitment:
-- Greetings and salutations: "Hi", "Hello", "Hey", "Good morning", "Dear team"
+- Greetings, salutations, and pleasantries: "Hi", "Hello", "Hey", "Good morning", "Dear team", "Hope you're doing well", "Hope this finds you well", "Happy Friday"
+- Sign-offs and closings: "Best regards", "Thanks", "Cheers", "Talk soon", "Warm regards"
 - Casual acknowledgments with NO implied action: "OK", "Sounds good", "Got it"
 - Pure questions with no self-assignment: "Should we...?", "What if we..."
 - Past-tense descriptions: "I already did X", "We completed Y"

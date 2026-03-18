@@ -205,6 +205,15 @@ UNIVERSAL_EXPLICIT_PATTERNS: list[TriggerPattern] = [
         applies_to=ALL_SOURCES,
         base_confidence=0.70,
     ),
+    TriggerPattern(
+        name="follow_up_bare",
+        pattern=_p(r"\bfollow[- ]?up\b.{0,80}"),
+        trigger_class="follow_up_commitment",
+        is_explicit=True,
+        base_priority_hint="medium",
+        applies_to=ALL_SOURCES,
+        base_confidence=0.55,
+    ),
 ]
 
 

@@ -511,7 +511,7 @@ class TestSeedPassAuditWriting:
         assert kw["raw_prompt"] is not None
         assert kw["raw_response"] == response_text
         assert kw["model"] == "claude-sonnet-4-6"
-        assert kw["prompt_version"] == "seed-v1"
+        assert kw["prompt_version"] == "seed-v2"
         assert kw["tokens_in"] == 100
         assert kw["tokens_out"] == 20
 
@@ -691,6 +691,131 @@ class TestRunSeedPassKeyLoading:
 
         mock_decrypt.assert_called_once_with("encrypted-key-value")
         mock_anthropic_cls.assert_called_once_with(api_key="sk-ant-test-key")
+
+
+class TestPromptImprovementWOPromptImprovement:
+    """Tests for WO-RIPPLED-PROMPT-IMPROVEMENT: seed prompt covers
+    follow-up phrases and explicitly excludes greetings."""
+
+    def test_prompt_includes_bare_follow_up_on_topic_example(self):
+        """Prompt must include 'follow up on [topic]' as an explicit example
+        so the LLM doesn't miss phrases like 'follow up on budget'."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+
+        # Must mention follow up on [topic] explicitly
+        assert "follow up on" in _SYSTEM_PROMPT.lower(), (
+            "Seed prompt must explicitly include 'follow up on' as a follow-up example"
+        )
+
+    def test_prompt_includes_need_to_follow_up_example(self):
+        """Prompt must include 'need to follow up' as a commitment example."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+
+        assert "need to follow up" in _SYSTEM_PROMPT.lower(), (
+            "Seed prompt must include 'need to follow up' as a follow-up example"
+        )
+
+    def test_prompt_greeting_exclusion_has_concrete_examples(self):
+        """Prompt must list concrete greeting phrases that are NOT commitments,
+        including multi-word greetings that the LLM was extracting as false positives."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+
+        lower = _SYSTEM_PROMPT.lower()
+        # Must explicitly say "Hope you're doing well" or similar pleasantries are not commitments
+        assert "hope you" in lower or "hope this" in lower, (
+            "Seed prompt must list pleasantry phrases like 'Hope you're well' as NOT commitments"
+        )
+
+    def test_prompt_greeting_exclusion_has_sign_offs(self):
+        """Sign-offs like 'Best regards', 'Thanks' must be excluded."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+
+        lower = _SYSTEM_PROMPT.lower()
+        assert "best regards" in lower or "regards" in lower or "sign-off" in lower, (
+            "Seed prompt must list sign-offs as NOT commitments"
+        )
+
+    def test_prompt_version_updated(self):
+        """Prompt version should be bumped after improvements."""
+        from app.services.detection.seed_detector import _PROMPT_VERSION
+
+        assert _PROMPT_VERSION != "seed-v1", (
+            "Prompt version must be bumped after WO-RIPPLED-PROMPT-IMPROVEMENT changes"
+        )
+
+
+class TestModelDetectionPromptImprovement:
+    """Tests for WO-RIPPLED-PROMPT-IMPROVEMENT: model detection prompt improvements."""
+
+    def test_model_prompt_includes_follow_up_example(self):
+        """Model detection prompt must include follow-up as a commitment type."""
+        from app.services.model_detection import _SYSTEM_PROMPT
+
+        lower = _SYSTEM_PROMPT.lower()
+        assert "follow up" in lower or "follow-up" in lower, (
+            "Model detection prompt must mention follow-up commitments"
+        )
+
+    def test_model_prompt_excludes_pleasantries(self):
+        """Model detection prompt must exclude pleasantries like 'Hope you're well'."""
+        from app.services.model_detection import _SYSTEM_PROMPT
+
+        lower = _SYSTEM_PROMPT.lower()
+        assert "hope you" in lower or "hope this" in lower or "pleasantr" in lower, (
+            "Model detection prompt must list pleasantries as NOT commitments"
+        )
+
+    def test_model_prompt_version_updated(self):
+        """Model detection prompt version should be bumped."""
+        from app.services.model_detection import _PROMPT_VERSION
+
+        assert _PROMPT_VERSION != "ongoing-v1", (
+            "Model detection prompt version must be bumped after improvements"
+        )
+
+
+class TestFollowUpBarePattern:
+    """Tests for new follow_up_bare pattern that catches standalone 'follow up' without preposition."""
+
+    def test_follow_up_bare_pattern_exists(self):
+        """A follow_up_bare pattern must exist for standalone follow-up phrases."""
+        from app.services.detection.patterns import UNIVERSAL_EXPLICIT_PATTERNS
+
+        names = {p.name for p in UNIVERSAL_EXPLICIT_PATTERNS}
+        assert "follow_up_bare" in names, (
+            "Expected 'follow_up_bare' pattern in UNIVERSAL_EXPLICIT_PATTERNS"
+        )
+
+    def test_follow_up_bare_matches_will_follow_up(self):
+        from app.services.detection.patterns import UNIVERSAL_EXPLICIT_PATTERNS
+
+        pattern = next(p for p in UNIVERSAL_EXPLICIT_PATTERNS if p.name == "follow_up_bare")
+        assert pattern.pattern.search("will follow up")
+
+    def test_follow_up_bare_matches_need_to_follow_up(self):
+        from app.services.detection.patterns import UNIVERSAL_EXPLICIT_PATTERNS
+
+        pattern = next(p for p in UNIVERSAL_EXPLICIT_PATTERNS if p.name == "follow_up_bare")
+        assert pattern.pattern.search("I need to follow up")
+
+    def test_follow_up_bare_matches_should_follow_up(self):
+        from app.services.detection.patterns import UNIVERSAL_EXPLICIT_PATTERNS
+
+        pattern = next(p for p in UNIVERSAL_EXPLICIT_PATTERNS if p.name == "follow_up_bare")
+        assert pattern.pattern.search("we should follow up")
+
+    def test_follow_up_bare_matches_follow_up_on_budget(self):
+        """The specific false negative from WO audit aud-42."""
+        from app.services.detection.patterns import UNIVERSAL_EXPLICIT_PATTERNS
+
+        pattern = next(p for p in UNIVERSAL_EXPLICIT_PATTERNS if p.name == "follow_up_bare")
+        assert pattern.pattern.search("follow up on budget")
+
+    def test_follow_up_bare_is_follow_up_class(self):
+        from app.services.detection.patterns import UNIVERSAL_EXPLICIT_PATTERNS
+
+        pattern = next(p for p in UNIVERSAL_EXPLICIT_PATTERNS if p.name == "follow_up_bare")
+        assert pattern.trigger_class == "follow_up_commitment"
 
 
 class TestCostEstimation:

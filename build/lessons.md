@@ -33,6 +33,20 @@ Track patterns from corrections to avoid repeating mistakes.
 
 ---
 
+### 2026-03-18 — LLM prompts need explicit negative examples for common false positives
+**Mistake:** Seed detector prompt listed "Hi", "Hello" etc. as NOT commitments but didn't include pleasantries ("Hope you're doing well") or sign-offs ("Best regards"). The LLM extracted "greeting" as a commitment because the negative examples were too narrow.
+**Pattern:** When an LLM judge flags a false positive category, add the full spectrum of that category to the NOT-commitment list — not just the obvious examples. Greetings include pleasantries and sign-offs, not just salutations.
+**Severity:** Minor
+
+---
+
+### 2026-03-18 — Bare follow-up phrases need their own pattern
+**Mistake:** Pattern layer only matched "follow up on/with/regarding/about" (with preposition). Standalone "follow up" in phrases like "need to follow up" or "will follow up" was only caught by less specific patterns or missed at Tier 2.
+**Pattern:** When adding a pattern for a phrase + preposition combination, also add a lower-confidence bare version that matches the phrase without the preposition. The preposition-specific version gets higher confidence; the bare version acts as a catch-all.
+**Severity:** Minor
+
+---
+
 ### 2026-03-17 — Suppression regex character class matches newlines
 **Mistake:** Greeting suppression pattern used `[^.]` (negated character class), which matches any character except literal period — including newlines. This caused multi-line suppression, wiping out commitment text on subsequent lines.
 **Pattern:** In multiline regex patterns, always use `[^.\n]` instead of `[^.]` when the intent is to match within a single line. Also limit greedy quantifiers with `{0,N}` to prevent suppression patterns from consuming content that contains actual signals.
