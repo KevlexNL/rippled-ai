@@ -7,8 +7,6 @@ Tests verify:
 - Fuzzy match above threshold
 - No match returns False
 """
-import pytest
-
 from app.services.identity.owner_resolver import _is_match
 
 
