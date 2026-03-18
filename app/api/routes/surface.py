@@ -127,6 +127,7 @@ async def surface_main(
             Commitment.user_id == user_id,
             Commitment.surfaced_as == "main",
             Commitment.lifecycle_state.in_(_SURFACED_STATES),
+            Commitment.skipped_at.is_(None),
         )
         .order_by(Commitment.priority_score.desc().nullslast(), Commitment.created_at.desc())
         .limit(10)
@@ -150,6 +151,7 @@ async def surface_shortlist(
             Commitment.user_id == user_id,
             Commitment.surfaced_as == "shortlist",
             Commitment.lifecycle_state.in_(_SURFACED_STATES),
+            Commitment.skipped_at.is_(None),
         )
         .order_by(Commitment.priority_score.desc().nullslast(), Commitment.created_at.desc())
         .limit(10)
@@ -173,6 +175,7 @@ async def surface_clarifications(
             Commitment.user_id == user_id,
             Commitment.surfaced_as == "clarifications",
             Commitment.lifecycle_state.in_(_SURFACED_STATES),
+            Commitment.skipped_at.is_(None),
         )
         .order_by(Commitment.priority_score.desc().nullslast(), Commitment.state_changed_at.asc())
         .limit(10)
@@ -208,6 +211,7 @@ async def best_next_moves(
             Commitment.user_id == user_id,
             Commitment.lifecycle_state.in_(_SURFACED_STATES),
             Commitment.surfaced_as.isnot(None),
+            Commitment.skipped_at.is_(None),
         )
         .order_by(Commitment.priority_score.desc().nullslast(), Commitment.created_at.desc())
     )

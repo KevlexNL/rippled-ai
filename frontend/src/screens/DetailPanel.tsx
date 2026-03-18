@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { CommitmentRead, CommitmentSignalRead } from '../types'
-import { getSignals } from '../api/commitments'
-import { patchCommitment } from '../api/commitments'
+import { getSignals, patchCommitment, skipCommitment } from '../api/commitments'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
@@ -105,6 +104,14 @@ function IconX() {
   )
 }
 
+function IconSkip() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="5 4 15 12 5 20" /><line x1="19" x2="19" y1="5" y2="19" />
+    </svg>
+  )
+}
+
 function IconClose() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -161,6 +168,22 @@ export default function DetailPanel({ commitment, allCommitments = [], onClose, 
     onClose()
     onAction?.()
     await patchCommitment(commitment.id, { lifecycle_state: 'discarded' })
+    queryClient.invalidateQueries({ queryKey: ['surface'] })
+    queryClient.invalidateQueries({ queryKey: ['commitments'] })
+  }
+
+  async function handleSkip() {
+    if (!commitment) return
+    // Optimistic: remove from surface cache
+    queryClient.setQueryData<CommitmentRead[]>(['surface', 'main'], (old) =>
+      old?.filter(c => c.id !== commitment.id)
+    )
+    queryClient.setQueryData<CommitmentRead[]>(['commitments'], (old) =>
+      old?.map(c => c.id === commitment.id ? { ...c, skipped_at: new Date().toISOString() } : c)
+    )
+    onClose()
+    onAction?.()
+    await skipCommitment(commitment.id)
     queryClient.invalidateQueries({ queryKey: ['surface'] })
     queryClient.invalidateQueries({ queryKey: ['commitments'] })
   }
@@ -318,6 +341,14 @@ export default function DetailPanel({ commitment, allCommitments = [], onClose, 
               >
                 <IconX />
                 Dismiss
+              </button>
+              <button
+                onClick={handleSkip}
+                className="flex items-center gap-1.5 text-[#9ca3af] text-[12px] px-2 py-1.5 rounded-md hover:text-[#6b7280] hover:bg-[#f5f5f4] transition-colors"
+                title="Can't assess — skip for now"
+              >
+                <IconSkip />
+                Skip
               </button>
               <span onClick={onClose} className="text-[12px] text-[#9ca3af] hover:text-[#191919] cursor-pointer transition-colors ml-auto">
                 Close panel

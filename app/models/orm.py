@@ -194,6 +194,9 @@ class Commitment(Base):
     counterparty_email: Mapped[str | None] = mapped_column(Text, nullable=True)
     counterparty_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     post_event_reviewed: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    # Skip state — item removed from review queue without lifecycle change
+    skipped_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    skip_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

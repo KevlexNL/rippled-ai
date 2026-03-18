@@ -8,7 +8,7 @@ import type { StatsRead } from '../api/stats'
 import { listSources } from '../api/sources'
 import { getUpcomingEvents } from '../api/events'
 import type { EventRead } from '../api/events'
-import { patchCommitment } from '../api/commitments'
+import { patchCommitment, skipCommitment } from '../api/commitments'
 import { apiGet } from '../lib/apiClient'
 import { useAuth } from '../lib/auth'
 import { filterMineAndTriage } from '../utils/ownershipFilter'
@@ -208,6 +208,14 @@ function IconClock() {
   )
 }
 
+function IconSkip() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="5 4 15 12 5 20" /><line x1="19" x2="19" y1="5" y2="19" />
+    </svg>
+  )
+}
+
 function IconArrow() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -278,12 +286,13 @@ function StatusBadge({ label, classes }: { label: string; classes: string }) {
   )
 }
 
-function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss, onNotNow, isFirst }: {
+function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss, onNotNow, onSkip, isFirst }: {
   commitment: CommitmentRead
   onOpen: (id: string) => void
   onConfirm: (id: string) => void
   onDismiss: (id: string) => void
   onNotNow: (id: string) => void
+  onSkip: (id: string) => void
   isFirst?: boolean
 }) {
   const badge = badgeFromState(commitment)
@@ -350,6 +359,14 @@ function CommitmentCard({ commitment, onOpen, onConfirm, onDismiss, onNotNow, is
             >
               <IconXMark />
               Dismiss
+            </button>
+            <button
+              className="flex items-center gap-1.5 text-[#9ca3af] text-[12px] px-2 py-1 rounded-md hover:text-[#6b7280] hover:bg-[#f5f5f4] transition-colors"
+              onClick={(e) => { e.stopPropagation(); onSkip(commitment.id) }}
+              title="Can't assess — skip for now"
+            >
+              <IconSkip />
+              Skip
             </button>
             <button
               className="flex items-center gap-1.5 border border-[#e8e8e6] text-[#6b7280] hover:text-[#191919] text-[12px] px-3 py-1 rounded-md transition-colors ml-auto"
@@ -571,6 +588,23 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
     }
   }
 
+  async function handleSkip(id: string) {
+    try {
+      setError(null)
+      setSelectedId(prev => prev === id ? null : prev)
+      // Optimistic: remove from surface cache immediately
+      queryClient.setQueryData<CommitmentRead[]>(['surface', 'main'], (old) => old?.filter(c => c.id !== id))
+      queryClient.setQueryData(['surface', 'best-next-moves'], (old: { groups: BestNextMovesGroup[] } | undefined) =>
+        old ? { groups: old.groups.map(g => ({ ...g, items: g.items.filter(c => c.id !== id) })).filter(g => g.items.length > 0) } : old
+      )
+      await skipCommitment(id)
+      queryClient.invalidateQueries({ queryKey: ['surface'] })
+    } catch {
+      setError('Failed to skip commitment')
+      queryClient.invalidateQueries({ queryKey: ['surface'] })
+    }
+  }
+
   const tabs: { id: Tab; label: string }[] = [
     { id: 'active', label: 'Active' },
     { id: 'commitments', label: 'Commitments' },
@@ -655,7 +689,7 @@ export default function ActiveScreen({ activeTab, onTabChange }: ActiveScreenPro
                 <h2 className="text-[15px] font-semibold text-[#191919] mb-1">Surfaced for review</h2>
                 <div className="flex flex-col gap-2" data-onboard="detail-panel-area">
                   {surfaced.map((c, i) => (
-                    <CommitmentCard key={c.id} commitment={c} onOpen={setSelectedId} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} isFirst={i === 0} />
+                    <CommitmentCard key={c.id} commitment={c} onOpen={setSelectedId} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} isFirst={i === 0} />
                   ))}
                 </div>
               </div>

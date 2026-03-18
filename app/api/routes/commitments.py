@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user_id
 from app.db.deps import get_db
-from app.models.orm import Commitment, CommitmentAmbiguity, CommitmentEventLink, CommitmentSignal, Event, LifecycleTransition, SourceItem
+from app.models.orm import Commitment, CommitmentAmbiguity, CommitmentEventLink, CommitmentSignal, Event, LifecycleTransition, SourceItem, SurfacingAudit
 from app.models.schemas import (
     CommitmentAmbiguityCreate,
     CommitmentAmbiguityRead,
@@ -280,6 +280,45 @@ async def delete_commitment(
         trigger_reason="human_delete",
     )
     db.add(transition)
+
+
+# ---------------------------------------------------------------------------
+# Skip
+# ---------------------------------------------------------------------------
+
+
+class SkipBody(BaseModel):
+    reason: str | None = None
+
+
+@router.post("/{commitment_id}/skip", response_model=CommitmentRead)
+async def skip_commitment(
+    commitment_id: str,
+    body: SkipBody,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> CommitmentRead:
+    """Skip a commitment — removes from review queue without changing lifecycle_state."""
+    commitment = await _get_commitment_or_404(commitment_id, user_id, db)
+
+    commitment.skipped_at = datetime.now(timezone.utc)
+    commitment.skip_reason = body.reason
+    commitment.updated_at = datetime.now(timezone.utc)
+
+    # Log to surfacing_audit
+    audit = SurfacingAudit(
+        commitment_id=commitment_id,
+        old_surfaced_as=commitment.surfaced_as,
+        new_surfaced_as=commitment.surfaced_as,  # unchanged
+        priority_score=commitment.priority_score,
+        reason="skipped",
+        user_id=user_id,
+    )
+    db.add(audit)
+
+    await db.flush()
+    await db.refresh(commitment)
+    return _commitment_to_schema(commitment)
 
 
 # ---------------------------------------------------------------------------

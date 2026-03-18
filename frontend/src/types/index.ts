@@ -74,6 +74,9 @@ export interface CommitmentRead {
   source_sender_name: string | null
   source_sender_email: string | null
   source_occurred_at: string | null
+  // Skip state
+  skipped_at: string | null
+  skip_reason: string | null
   created_at: string
   updated_at: string
 }

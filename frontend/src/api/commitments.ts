@@ -36,3 +36,6 @@ export const getAmbiguities = (id: string) =>
 
 export const patchDeliveryState = (id: string, state: string) =>
   apiPatch<CommitmentRead>(`/api/v1/commitments/${id}/delivery-state`, { state })
+
+export const skipCommitment = (id: string, reason?: string) =>
+  apiPost<CommitmentRead>(`/api/v1/commitments/${id}/skip`, { reason: reason ?? null })

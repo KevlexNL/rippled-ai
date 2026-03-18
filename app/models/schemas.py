@@ -230,6 +230,9 @@ class CommitmentRead(_Base):
     source_sender_name: str | None = None
     source_sender_email: str | None = None
     source_occurred_at: datetime | None = None
+    # Skip state
+    skipped_at: datetime | None = None
+    skip_reason: str | None = None
     created_at: datetime
     updated_at: datetime
 

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getCommitments, patchCommitment } from '../api/commitments'
+import { getCommitments, patchCommitment, skipCommitment } from '../api/commitments'
 import { getContexts } from '../api/contexts'
 import type { CommitmentContextRead } from '../api/contexts'
 import { getStats } from '../api/stats'
@@ -145,6 +145,14 @@ function confidenceLabel(score: string | null | undefined): string {
   return 'Some uncertainty'
 }
 
+function IconSkip() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="5 4 15 12 5 20" /><line x1="19" x2="19" y1="5" y2="19" />
+    </svg>
+  )
+}
+
 function IconClock() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -153,13 +161,14 @@ function IconClock() {
   )
 }
 
-function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDismiss, onNotNow }: {
+function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDismiss, onNotNow, onSkip }: {
   commitment: CommitmentRead
   selected: boolean
   onClick: () => void
   onConfirm: (id: string) => void
   onDismiss: (id: string) => void
   onNotNow: (id: string) => void
+  onSkip: (id: string) => void
 }) {
   const badge = badgeFromState(commitment)
   const isDelivered = commitment.lifecycle_state === 'delivered'
@@ -249,6 +258,14 @@ function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDism
                       <IconXMark />
                       Dismiss
                     </button>
+                    <button
+                      className="flex items-center gap-1.5 text-[#9ca3af] text-[12px] px-2 py-1 rounded-md hover:text-[#6b7280] hover:bg-[#f5f5f4] transition-colors"
+                      onClick={(e) => { e.stopPropagation(); onSkip(commitment.id) }}
+                      title="Can't assess — skip for now"
+                    >
+                      <IconSkip />
+                      Skip
+                    </button>
                   </div>
                 )}
               </div>
@@ -317,6 +334,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
   const [groupMode, setGroupMode] = useState<GroupMode>('status')
   const [showDismissed, setShowDismissed] = useState(false)
   const [showDormant, setShowDormant] = useState(false)
+  const [showSkipped, setShowSkipped] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const [showLog, setShowLog] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -364,6 +382,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
 
   const dismissedCount = allCommitments.filter(c => c.lifecycle_state === 'discarded' || c.lifecycle_state === 'closed').length
   const dormantCount = allCommitments.filter(c => c.lifecycle_state === 'dormant').length
+  const skippedCount = allCommitments.filter(c => c.skipped_at !== null && c.skipped_at !== undefined).length
 
   async function handleConfirm(id: string) {
     try {
@@ -409,6 +428,21 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
     }
   }
 
+  async function handleSkip(id: string) {
+    try {
+      // Optimistic: remove from view immediately
+      queryClient.setQueryData<CommitmentRead[]>(['commitments'], (old) =>
+        old?.map(c => c.id === id ? { ...c, skipped_at: new Date().toISOString() } : c)
+      )
+      setSelectedId(prev => prev === id ? null : prev)
+      await skipCommitment(id)
+      queryClient.invalidateQueries({ queryKey: ['commitments'] })
+      queryClient.invalidateQueries({ queryKey: ['surface'] })
+    } catch {
+      queryClient.invalidateQueries({ queryKey: ['commitments'] })
+    }
+  }
+
   const groupModes: { id: GroupMode; label: string }[] = [
     { id: 'status', label: 'Status' },
     { id: 'client', label: 'Client' },
@@ -422,8 +456,10 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
     return items.filter(c => {
       const isDismissed = c.lifecycle_state === 'discarded' || c.lifecycle_state === 'closed'
       const isDormant = c.lifecycle_state === 'dormant'
+      const isSkipped = c.skipped_at !== null && c.skipped_at !== undefined
       if (isDismissed && !showDismissed) return false
       if (isDormant && !showDormant) return false
+      if (isSkipped && !showSkipped) return false
       return true
     })
   }
@@ -437,6 +473,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
         { label: 'Confirmed', filter: c => c.lifecycle_state === 'confirmed' },
         { label: 'Delivered', filter: c => c.lifecycle_state === 'delivered' },
         { label: 'Not Now', filter: c => c.lifecycle_state === 'dormant', hidden: () => !showDormant },
+        { label: 'Skipped', filter: c => c.skipped_at !== null && c.skipped_at !== undefined, hidden: () => !showSkipped },
         { label: 'Dismissed', filter: c => c.lifecycle_state === 'discarded' || c.lifecycle_state === 'closed', hidden: () => !showDismissed },
       ]
       return (
@@ -453,7 +490,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                 </div>
                 <div className="flex flex-col gap-2">
                   {items.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} />
                   ))}
                 </div>
               </div>
@@ -481,7 +518,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             </div>
             <div className="flex flex-col gap-2">
               {filtered.map(c => (
-                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} />
+                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} />
               ))}
             </div>
           </div>
@@ -503,7 +540,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             </div>
             <div className="flex flex-col gap-2">
               {items.map(c => (
-                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} />
+                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} />
               ))}
             </div>
           </div>
@@ -547,7 +584,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                 </div>
                 <div className="flex flex-col gap-2">
                   {filtered.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} />
                   ))}
                 </div>
               </div>
@@ -564,7 +601,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                 </div>
                 <div className="flex flex-col gap-2">
                   {filtered.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} />
                   ))}
                 </div>
               </div>
@@ -691,6 +728,14 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                     onClick={() => setShowDormant(!showDormant)}
                   >
                     {showDormant ? 'Hide not now' : `Show not now (${dormantCount})`}
+                  </span>
+                )}
+                {skippedCount > 0 && (
+                  <span
+                    className="text-[12px] text-[#9ca3af] hover:text-[#6b7280] cursor-pointer inline-block hover:underline underline-offset-2"
+                    onClick={() => setShowSkipped(!showSkipped)}
+                  >
+                    {showSkipped ? 'Hide skipped' : `Show skipped (${skippedCount})`}
                   </span>
                 )}
                 {dismissedCount > 0 && (
