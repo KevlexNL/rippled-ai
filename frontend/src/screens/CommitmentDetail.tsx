@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getCommitment, getSignals, getAmbiguities, patchCommitment } from '../api/commitments'
+import { getContexts } from '../api/contexts'
 import type { CommitmentSignalRead, CommitmentAmbiguityRead } from '../types'
 import StatusDot from '../components/StatusDot'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorBanner from '../components/ErrorBanner'
 import PostEventBanner from '../components/PostEventBanner'
 import DeliveryActions from '../components/DeliveryActions'
+import ContextSelector from '../components/ContextSelector'
 
 const SIGNAL_ROLE_LABELS: Record<string, string> = {
   origin: 'Origin',
@@ -84,6 +86,12 @@ export default function CommitmentDetail() {
 
   const [commitmentResult, signalsResult, ambiguitiesResult] = results
 
+  const { data: contexts } = useQuery({
+    queryKey: ['contexts'],
+    queryFn: getContexts,
+    staleTime: 60_000,
+  })
+
   const isLoading = results.some((r) => r.isLoading)
   const isError = results.some((r) => r.isError)
 
@@ -145,6 +153,23 @@ export default function CommitmentDetail() {
           </p>
         )}
       </div>
+
+      {/* Context selector */}
+      {contexts && (
+        <div className="mx-4 mb-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+            Context
+          </p>
+          <ContextSelector
+            commitment={commitment}
+            contexts={contexts}
+            onUpdate={() => {
+              queryClient.invalidateQueries({ queryKey: ['commitment', id] })
+              queryClient.invalidateQueries({ queryKey: ['contexts'] })
+            }}
+          />
+        </div>
+      )}
 
       {/* Commitment text blockquote */}
       {commitment.commitment_text && (
