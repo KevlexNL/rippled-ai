@@ -95,6 +95,12 @@ export default function OnboardingIdentityScreen() {
           <div className="flex flex-col items-center gap-3 py-8">
             <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin" />
             <p className="text-sm text-gray-500">Scanning your sources...</p>
+            <button
+              onClick={handleSkip}
+              className="mt-4 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Skip for now
+            </button>
           </div>
         )}
 
