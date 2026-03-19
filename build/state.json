@@ -1,6 +1,6 @@
 {
   "current_cycle": "C",
-  "current_phase": "C6-fixes",
+  "current_phase": "context-ux-fix",
   "phase_step": "complete",
   "phase_queue": [],
   "phases_completed": [
@@ -18,12 +18,13 @@
     "C3-events",
     "C4-admin",
     "C5-user-ui",
-    "C6-fixes"
+    "C6-fixes",
+    "context-ux-fix"
   ],
-  "last_action": "Cycle C signaled to Morpheus. All phases complete. Awaiting Kevin's Monday strategic direction.",
-  "last_action_time": "2026-03-16T12:30:16Z",
-  "next_action": "Hold. Monitor pipeline. Await Kevin's Monday direction for Cycle A refresh or Cycle B vision review.",
+  "last_action": "context-ux-fix completed: ContextSelector UI built + integrated. Backend auto-assignment already working. 79 frontend tests + 75 integration tests passing. Committed 60e946f.",
+  "last_action_time": "2026-03-19T17:30:16Z",
+  "next_action": "Hold. Awaiting Kevin's direction on next phase. Auto-assignment will populate contexts on next surfacing sweep.",
   "claude_code_session": null,
   "blockers_for_kevin": [],
-  "notes": "WO-001: Celery worker deployed, pipeline operational. Email polling active (Kevin's source, 0 unseen on first run). Test source (imap.example.com) DNS fail expected. Awaiting next phase direction from Kevin Monday 09:00+. Morpheus signaled. All Cycle C phases built."
+  "notes": "Context UX fix complete. Contexts will be auto-assigned (fuzzy match on counterparty_name, then title keywords) during next surfacing sweep. Frontend UI allows manual override. Ready for manual testing or next phase direction."
 }
