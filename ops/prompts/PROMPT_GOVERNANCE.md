@@ -25,13 +25,14 @@ Kevin can veto any prompt change. Rolled back immediately if vetoed.
 | v1 | ~2026-03-09 | Trinity | Initial extraction prompt |
 | v2 | ~2026-03-13 | Trinity | Added confidence scoring |
 | v3 | ~2026-03-17 | Trinity | Added canonical structure enforcement ([Owner] promised [Deliverable] to [Counterparty]) |
-| v4 (current) | 2026-03-18 | Trinity | Added greeting/pleasantry exclusions, bare follow-up patterns, user_relationship field |
+| v4 | 2026-03-18 | Trinity | Added greeting/pleasantry exclusions, bare follow-up patterns, user_relationship field |
+| v5 (current) | 2026-03-19 | Trinity | Strengthened follow-up topic examples, checking-in-on pattern, classification label exclusions |
 
 ---
 
-## Current Active Prompt: ongoing-v4
+## Current Active Prompt: ongoing-v5
 
-File: `ops/prompts/detection-prompt-v4.md`
+File: `ops/prompts/detection-prompt-v5.md`
 
 ---
 

@@ -233,6 +233,15 @@ UNIVERSAL_EXPLICIT_PATTERNS: list[TriggerPattern] = [
         applies_to=ALL_SOURCES,
         base_confidence=0.55,
     ),
+    TriggerPattern(
+        name="checking_in_on",
+        pattern=_p(r"\bchecking in on\b.{0,80}"),
+        trigger_class="follow_up_commitment",
+        is_explicit=True,
+        base_priority_hint="medium",
+        applies_to=ALL_SOURCES,
+        base_confidence=0.60,
+    ),
 ]
 
 

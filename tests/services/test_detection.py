@@ -159,6 +159,32 @@ class TestFollowUpPattern:
         assert "email" in pattern.applies_to
 
 
+class TestCheckingInOnPattern:
+    """'Checking in on [topic]' is a follow-up commitment (v5)."""
+
+    def test_checking_in_on_pattern_exists(self):
+        names = {p.name for p in UNIVERSAL_EXPLICIT_PATTERNS}
+        assert "checking_in_on" in names, (
+            "Expected 'checking_in_on' pattern in UNIVERSAL_EXPLICIT_PATTERNS"
+        )
+
+    def test_checking_in_on_topic_fires(self):
+        pattern = next(p for p in UNIVERSAL_EXPLICIT_PATTERNS if p.name == "checking_in_on")
+        assert pattern.pattern.search("checking in on the budget")
+        assert pattern.trigger_class == "follow_up_commitment"
+
+    def test_checking_in_on_applies_to_all_sources(self):
+        pattern = next(p for p in UNIVERSAL_EXPLICIT_PATTERNS if p.name == "checking_in_on")
+        assert "meeting" in pattern.applies_to
+        assert "slack" in pattern.applies_to
+        assert "email" in pattern.applies_to
+
+    def test_just_checking_in_not_matched(self):
+        """Bare 'just checking in' (no topic) should NOT match checking_in_on pattern."""
+        pattern = next(p for p in UNIVERSAL_EXPLICIT_PATTERNS if p.name == "checking_in_on")
+        assert not pattern.pattern.search("just checking in")
+
+
 class TestGreetingSuppression:
     """Greetings are suppressed and never extracted as commitments."""
 

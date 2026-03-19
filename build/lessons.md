@@ -47,6 +47,20 @@ Track patterns from corrections to avoid repeating mistakes.
 
 ---
 
+### 2026-03-19 — Sync prompt version labels across all detection entry points
+**Mistake:** Seed detector `_PROMPT_VERSION` was `seed-v3` while the actual prompt content had already been updated to match v4 changes. Audit rows logged with stale version labels, making it impossible to correlate quality issues with prompt versions.
+**Pattern:** When bumping a prompt version, update the `_PROMPT_VERSION` constant in ALL entry points (seed_detector.py, model_detection.py) and the governance registry in the same commit. Search for the old version string across the codebase before committing.
+**Severity:** Minor
+
+---
+
+### 2026-03-19 — LLMs extract their own classification labels as commitments
+**Mistake:** LLM judge flagged "greeting" as a false positive — the LLM extracted the classification label itself as a commitment rather than recognizing it as a meta-reference.
+**Pattern:** When an LLM extracts category labels (e.g., "greeting", "filler", "pleasantry") as commitments, add explicit exclusion of classification labels/meta-references to the NOT-a-commitment section. This is distinct from excluding actual greetings — the LLM needs to understand that category names themselves are not commitments.
+**Severity:** Minor
+
+---
+
 ### 2026-03-17 — Suppression regex character class matches newlines
 **Mistake:** Greeting suppression pattern used `[^.]` (negated character class), which matches any character except literal period — including newlines. This caused multi-line suppression, wiping out commitment text on subsequent lines.
 **Pattern:** In multiline regex patterns, always use `[^.\n]` instead of `[^.]` when the intent is to match within a single line. Also limit greedy quantifiers with `{0,N}` to prevent suppression patterns from consuming content that contains actual signals.

@@ -511,7 +511,7 @@ class TestSeedPassAuditWriting:
         assert kw["raw_prompt"] is not None
         assert kw["raw_response"] == response_text
         assert kw["model"] == "claude-sonnet-4-6"
-        assert kw["prompt_version"] == "seed-v2"
+        assert kw["prompt_version"] == "seed-v5"
         assert kw["tokens_in"] == 100
         assert kw["tokens_out"] == 20
 
@@ -743,6 +743,41 @@ class TestPromptImprovementWOPromptImprovement:
             "Prompt version must be bumped after WO-RIPPLED-PROMPT-IMPROVEMENT changes"
         )
 
+    def test_prompt_version_is_v5(self):
+        """Seed prompt version must be seed-v5 after WO-RIPPLED-PROMPT-IMPROVEMENT v5 changes."""
+        from app.services.detection.seed_detector import _PROMPT_VERSION
+
+        assert _PROMPT_VERSION == "seed-v5", (
+            f"Expected seed-v5 but got {_PROMPT_VERSION}"
+        )
+
+    def test_prompt_includes_business_follow_up_topics(self):
+        """Prompt must include business-topic follow-up examples like budget, headcount."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+
+        lower = _SYSTEM_PROMPT.lower()
+        assert "follow up on budget" in lower or "follow up on the budget" in lower, (
+            "Seed prompt must include 'follow up on budget' as a follow-up example"
+        )
+
+    def test_prompt_excludes_meta_greeting_references(self):
+        """Prompt must explicitly state that meta-references like 'greeting' are not commitments."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+
+        lower = _SYSTEM_PROMPT.lower()
+        assert "classification label" in lower or "meta-reference" in lower or "label" in lower, (
+            "Seed prompt must exclude meta-references/classification labels as commitments"
+        )
+
+    def test_prompt_includes_checking_in_on_as_follow_up(self):
+        """'Checking in on [topic]' should be treated as a follow-up commitment."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+
+        lower = _SYSTEM_PROMPT.lower()
+        assert "checking in on" in lower, (
+            "Seed prompt must include 'checking in on' as a follow-up variant"
+        )
+
 
 class TestModelDetectionPromptImprovement:
     """Tests for WO-RIPPLED-PROMPT-IMPROVEMENT: model detection prompt improvements."""
@@ -771,6 +806,32 @@ class TestModelDetectionPromptImprovement:
 
         assert _PROMPT_VERSION != "ongoing-v1", (
             "Model detection prompt version must be bumped after improvements"
+        )
+
+    def test_model_prompt_version_is_v5(self):
+        """Model detection prompt version must be ongoing-v5."""
+        from app.services.model_detection import _PROMPT_VERSION
+
+        assert _PROMPT_VERSION == "ongoing-v5", (
+            f"Expected ongoing-v5 but got {_PROMPT_VERSION}"
+        )
+
+    def test_model_prompt_excludes_meta_references(self):
+        """Model detection prompt must exclude classification labels as commitments."""
+        from app.services.model_detection import _SYSTEM_PROMPT
+
+        lower = _SYSTEM_PROMPT.lower()
+        assert "classification label" in lower or "meta-reference" in lower or "label" in lower, (
+            "Model detection prompt must exclude meta-references as commitments"
+        )
+
+    def test_model_prompt_includes_checking_in_on(self):
+        """Model detection prompt must include 'checking in on' as a follow-up variant."""
+        from app.services.model_detection import _SYSTEM_PROMPT
+
+        lower = _SYSTEM_PROMPT.lower()
+        assert "checking in on" in lower, (
+            "Model detection prompt must include 'checking in on' as a follow-up variant"
         )
 
 

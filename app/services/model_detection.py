@@ -29,8 +29,9 @@ A commitment is a statement where someone obligates themselves or others to a sp
 future action, deliverable, or outcome. This includes:
 - Explicit: "I will", "I'll", "We will", "I promise", "I commit to"
 - Implicit: "Consider it done", "Leave it with me", "I'll look into that"
-- Follow-ups: "Follow up on [topic]", "Need to follow up", "Will follow up with [person]", "follow up on budget"
+- Follow-ups: "Follow up on [topic]", "Need to follow up", "Will follow up with [person]", "follow up on budget", "follow up on headcount"
 - Bare follow-ups (ALWAYS a commitment): "need to follow up", "will follow up", "should follow up"
+- Check-ins on a topic: "Checking in on the budget", "checking in on the project" — these imply a follow-up obligation
 - Collective: "We need to get this done", "Someone should handle this"
 
 NOT a commitment (NEVER extract these):
@@ -41,9 +42,10 @@ NOT a commitment (NEVER extract these):
 - Casual acknowledgments: "OK", "Sounds good", "Got it"
 - Questions or hypotheticals: "Should we...?", "What if we..."
 - Past-tense descriptions: "I already did X"
-- Filler phrases: "By the way", "Just checking in"
+- Filler phrases: "By the way", "Just checking in" (but NOT "checking in on [topic]" — that IS a follow-up)
+- Classification labels or meta-references: "greeting", "pleasantry", "filler" — these are labels, not commitments
 
-IMPORTANT: The word "greeting" itself is NEVER a commitment. Social pleasantries are NOT commitments.
+IMPORTANT: The word "greeting" itself is NEVER a commitment. Social pleasantries are NOT commitments. Do NOT extract classification labels (e.g. "greeting", "acknowledgment") as commitments.
 
 ## Canonical commitment structure
 
@@ -83,7 +85,7 @@ You must respond with valid JSON only, exactly this structure:
 
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0  # seconds
-_PROMPT_VERSION = "ongoing-v4"
+_PROMPT_VERSION = "ongoing-v5"
 
 
 @dataclass

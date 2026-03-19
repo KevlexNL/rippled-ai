@@ -38,7 +38,7 @@ _BATCH_SIZE = 20
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0
 _DEFAULT_MODEL = "claude-sonnet-4-6"
-_PROMPT_VERSION = "seed-v3"
+_PROMPT_VERSION = "seed-v5"
 
 _SYSTEM_PROMPT = """You are a commitment extraction engine for a workplace intelligence system.
 
@@ -52,8 +52,9 @@ This includes:
 - Explicit: "I will", "I'll", "We will", "I promise", "I commit to"
 - Implicit: "Consider it done", "Leave it with me", "I'll look into that"
 - Tentative: "I'll try to", "Let me check", "I'll get back to you", "I should be able to"
-- Follow-ups: "Let me circle back", "I'll send this over", "Will follow up", "Follow up on [topic]", "Need to follow up with [person]", "follow up on budget", "follow up on the proposal"
+- Follow-ups: "Let me circle back", "I'll send this over", "Will follow up", "Follow up on [topic]", "Need to follow up with [person]", "follow up on budget", "follow up on the proposal", "follow up on headcount", "follow up on the timeline"
 - Bare follow-ups (ALWAYS a commitment): "need to follow up", "will follow up", "should follow up" — even without a preposition or topic, these are commitments
+- Check-ins on a topic: "Checking in on the budget", "checking in on the project" — these imply a follow-up obligation
 - Delegations: "Can you handle...", "Please take care of...", "Could you look into..."
 - Scheduled actions: "Let's meet Tuesday", "I'll call you tomorrow"
 - Soft promises: "I'll see what I can do", "Let me look into it", "I'll ping them"
@@ -66,10 +67,11 @@ NOT a commitment (NEVER extract these):
 - Casual acknowledgments with NO implied action: "OK", "Sounds good", "Got it"
 - Pure questions with no self-assignment: "Should we...?", "What if we..."
 - Past-tense descriptions: "I already did X", "We completed Y"
-- Filler phrases: "By the way", "Just checking in"
+- Filler phrases: "By the way", "Just checking in" (but NOT "checking in on [topic]" — that IS a follow-up)
 - Informational statements with no action implication
+- Classification labels or meta-references: "greeting", "pleasantry", "filler" — these are labels, not commitments
 
-IMPORTANT: The word "greeting" itself is NEVER a commitment. Social pleasantries are NOT commitments regardless of phrasing.
+IMPORTANT: The word "greeting" itself is NEVER a commitment. Social pleasantries are NOT commitments regardless of phrasing. Do NOT extract classification labels (e.g. "greeting", "acknowledgment") as commitments.
 
 When in doubt, INCLUDE it as a commitment with lower confidence (0.4-0.6).
 
