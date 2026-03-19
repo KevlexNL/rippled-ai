@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   seedIdentities,
   confirmIdentities,
@@ -19,6 +19,7 @@ function typeBadge(type: string) {
 
 export default function OnboardingIdentityScreen() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [profiles, setProfiles] = useState<IdentityProfileRead[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [step, setStep] = useState<'detecting' | 'review' | 'confirming' | 'done'>('detecting')
@@ -75,6 +76,8 @@ export default function OnboardingIdentityScreen() {
 
   function handleSkip() {
     sessionStorage.setItem('identity_onboarding_skipped', '1')
+    // Invalidate the stale identity-status query so IdentityGuard doesn't redirect us back
+    queryClient.invalidateQueries({ queryKey: ['identity-status'] })
     navigate('/', { replace: true })
   }
 
