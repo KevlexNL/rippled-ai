@@ -1,11 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import {
   seedIdentities,
   confirmIdentities,
   type IdentityProfileRead,
 } from '../api/identity'
+
+const SNOOZE_KEY = 'identity_onboarding_snoozed_until'
+const SNOOZE_DAYS = 3
+
+export function snoozeIdentityOnboarding() {
+  const until = new Date()
+  until.setDate(until.getDate() + SNOOZE_DAYS)
+  localStorage.setItem(SNOOZE_KEY, until.toISOString())
+  // Clean up legacy sessionStorage key from previous fix attempts
+  sessionStorage.removeItem('identity_onboarding_skipped')
+}
 
 function typeBadge(type: string) {
   const labels: Record<string, string> = {
@@ -19,7 +30,6 @@ function typeBadge(type: string) {
 
 export default function OnboardingIdentityScreen() {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const [profiles, setProfiles] = useState<IdentityProfileRead[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [step, setStep] = useState<'detecting' | 'review' | 'confirming' | 'done'>('detecting')
@@ -28,8 +38,13 @@ export default function OnboardingIdentityScreen() {
   const seedMutation = useMutation({
     mutationFn: seedIdentities,
     onSuccess: (data) => {
+      if (data.length === 0) {
+        // Nothing to reconcile — auto-skip silently
+        snoozeIdentityOnboarding()
+        navigate('/', { replace: true })
+        return
+      }
       setProfiles(data)
-      // Pre-select all detected identities
       setSelectedIds(new Set(data.map(p => p.id)))
       setStep('review')
     },
@@ -44,7 +59,6 @@ export default function OnboardingIdentityScreen() {
       confirmIdentities(confirmIds, rejectIds),
     onSuccess: () => {
       setStep('done')
-      // Brief pause then redirect to dashboard
       setTimeout(() => navigate('/', { replace: true }), 1500)
     },
     onError: () => {
@@ -75,9 +89,7 @@ export default function OnboardingIdentityScreen() {
   }
 
   function handleSkip() {
-    sessionStorage.setItem('identity_onboarding_skipped', '1')
-    // Invalidate the stale identity-status query so IdentityGuard doesn't redirect us back
-    queryClient.invalidateQueries({ queryKey: ['identity-status'] })
+    snoozeIdentityOnboarding()
     navigate('/', { replace: true })
   }
 

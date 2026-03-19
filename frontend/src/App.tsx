@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from './lib/auth'
 import ActiveScreen from './screens/ActiveScreen'
@@ -20,6 +20,15 @@ import IdentitySettingsScreen from './screens/settings/IdentitySettingsScreen'
 import PrototypeDashboard from './screens/PrototypeDashboard'
 import AdminScreen from './screens/AdminScreen'
 import { getIdentityStatus } from './api/identity'
+import { listSources } from './api/sources'
+
+const SNOOZE_KEY = 'identity_onboarding_snoozed_until'
+
+function isIdentitySnoozed(): boolean {
+  const val = localStorage.getItem(SNOOZE_KEY)
+  if (!val) return false
+  return Date.now() < new Date(val).getTime()
+}
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -34,20 +43,30 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
  */
 function IdentityGuard({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate()
-  const location = useLocation()
-  const { data: status, isLoading } = useQuery({
+  const { data: status, isLoading: statusLoading } = useQuery({
     queryKey: ['identity-status'],
     queryFn: getIdentityStatus,
     staleTime: 60_000,
     retry: 1,
   })
+  const { data: sources, isLoading: sourcesLoading } = useQuery({
+    queryKey: ['sources'],
+    queryFn: listSources,
+    staleTime: 60_000,
+    retry: 1,
+  })
+
+  const isLoading = statusLoading || sourcesLoading
 
   useEffect(() => {
-    const skipped = sessionStorage.getItem('identity_onboarding_skipped')
-    if (!isLoading && status && !status.has_confirmed_identities && !skipped) {
+    if (isLoading) return
+    if (isIdentitySnoozed()) return
+    const hasSources = sources && sources.length > 0
+    if (!hasSources) return // No integrations yet — nothing to reconcile
+    if (status && !status.has_confirmed_identities) {
       navigate('/onboarding/identity', { replace: true })
     }
-  }, [isLoading, status, navigate])
+  }, [isLoading, status, sources, navigate])
 
   if (isLoading) {
     return (
