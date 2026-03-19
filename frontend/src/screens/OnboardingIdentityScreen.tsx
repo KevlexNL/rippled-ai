@@ -74,6 +74,7 @@ export default function OnboardingIdentityScreen() {
   }
 
   function handleSkip() {
+    sessionStorage.setItem('identity_onboarding_skipped', '1')
     navigate('/', { replace: true })
   }
 

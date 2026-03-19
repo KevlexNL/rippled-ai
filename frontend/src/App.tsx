@@ -43,7 +43,8 @@ function IdentityGuard({ children }: { children: React.ReactNode }) {
   })
 
   useEffect(() => {
-    if (!isLoading && status && !status.has_confirmed_identities) {
+    const skipped = sessionStorage.getItem('identity_onboarding_skipped')
+    if (!isLoading && status && !status.has_confirmed_identities && !skipped) {
       navigate('/onboarding/identity', { replace: true })
     }
   }, [isLoading, status, navigate])
