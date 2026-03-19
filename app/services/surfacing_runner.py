@@ -96,6 +96,7 @@ def run_surfacing_sweep(db: Session) -> dict:
             - surfaced: commitments now surfaced (surfaced_as IS NOT NULL)
             - held: commitments routed to None
     """
+    from app.services.context_assigner import assign_contexts_for_user
     from app.services.event_linker import DeadlineEventLinker
 
     now = datetime.now(timezone.utc)
@@ -105,6 +106,18 @@ def run_surfacing_sweep(db: Session) -> dict:
             Commitment.lifecycle_state.in_(_ACTIVE_STATES)
         )
     ).scalars().all()
+
+    # Step 0: Auto-assign contexts for commitments without context_id
+    user_ids = {c.user_id for c in commitments if c.user_id}
+    context_assigned_total = 0
+    for uid in user_ids:
+        try:
+            result = assign_contexts_for_user(uid, db)
+            context_assigned_total += result.get("assigned", 0)
+        except Exception:
+            logger.exception("Context assignment failed for user %s", uid)
+    if context_assigned_total:
+        logger.info("run_surfacing_sweep: auto-assigned %d contexts", context_assigned_total)
 
     # [C3] Step 1: Run deadline event linker for all active commitments
     if commitments:

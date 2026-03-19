@@ -22,6 +22,7 @@ export const patchCommitment = (
     lifecycle_state: string
     resolved_owner: string
     resolved_deadline: string
+    context_id: string | null
   }>
 ) => apiPatch<CommitmentRead>(`/api/v1/commitments/${id}`, body)
 

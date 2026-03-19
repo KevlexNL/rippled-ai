@@ -1,6 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { CommitmentRead, CommitmentSignalRead } from '../types'
 import { getSignals, patchCommitment, skipCommitment } from '../api/commitments'
+import { getContexts } from '../api/contexts'
+import type { CommitmentContextRead } from '../api/contexts'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
@@ -138,6 +140,12 @@ export default function DetailPanel({ commitment, allCommitments = [], onClose, 
     queryKey: ['signals', commitment?.id],
     queryFn: () => getSignals(commitment!.id),
     enabled: !!commitment?.id,
+  })
+
+  const { data: contexts } = useQuery<CommitmentContextRead[]>({
+    queryKey: ['contexts'],
+    queryFn: getContexts,
+    staleTime: 60_000,
   })
 
   async function handleConfirm() {
@@ -280,22 +288,46 @@ export default function DetailPanel({ commitment, allCommitments = [], onClose, 
           )}
 
           {/* Context */}
-          {commitment.context_id && contextRelated.length > 0 && (
-            <div className="px-5 py-3 border-b border-[#f0f0ef]">
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1.5">Context</div>
-              <div className="text-[12px] text-[#6b7280] mb-2">
-                {contextRelated.length + 1} related commitment{contextRelated.length + 1 !== 1 ? 's' : ''} in this context
-              </div>
-              <div className="flex flex-col gap-1">
-                {contextRelated.slice(0, 3).map((c) => (
-                  <div key={c.id} className="text-[12px] text-[#6b7280] flex items-center gap-1.5">
-                    <span className="text-[#d1d1cf]">·</span>
-                    <span>{c.title}</span>
-                  </div>
+          <div className="px-5 py-3 border-b border-[#f0f0ef]">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1.5">Context</div>
+            {contexts && contexts.length > 0 ? (
+              <select
+                value={commitment.context_id ?? ''}
+                onChange={async (e) => {
+                  const newContextId = e.target.value || null
+                  queryClient.setQueryData<CommitmentRead[]>(['commitments'], (old) =>
+                    old?.map(c => c.id === commitment.id ? { ...c, context_id: newContextId } : c)
+                  )
+                  await patchCommitment(commitment.id, { context_id: newContextId })
+                  queryClient.invalidateQueries({ queryKey: ['commitments'] })
+                  queryClient.invalidateQueries({ queryKey: ['contexts'] })
+                }}
+                className="w-full text-[13px] text-[#191919] bg-[#f9f9f8] border border-[#e8e8e6] rounded-md px-2.5 py-1.5 focus:outline-none focus:border-[#191919] transition-colors"
+              >
+                <option value="">No context</option>
+                {contexts.map((ctx) => (
+                  <option key={ctx.id} value={ctx.id}>{ctx.name}</option>
                 ))}
+              </select>
+            ) : (
+              <span className="text-[12px] text-[#9ca3af]">No contexts available</span>
+            )}
+            {commitment.context_id && contextRelated.length > 0 && (
+              <div className="mt-2">
+                <div className="text-[12px] text-[#6b7280] mb-1">
+                  {contextRelated.length} related commitment{contextRelated.length !== 1 ? 's' : ''}
+                </div>
+                <div className="flex flex-col gap-1">
+                  {contextRelated.slice(0, 3).map((c) => (
+                    <div key={c.id} className="text-[12px] text-[#6b7280] flex items-center gap-1.5">
+                      <span className="text-[#d1d1cf]">·</span>
+                      <span>{c.title}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Related person */}
           <div className="px-5 py-3 border-b border-[#f0f0ef]">
