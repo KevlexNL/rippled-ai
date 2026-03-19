@@ -306,3 +306,53 @@ class TestRunLlmJudge:
 
         assert result["items_reviewed"] == 0
         mock_create_wo.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# WO deduplication and judge prompt hardening
+# ---------------------------------------------------------------------------
+
+class TestWODeduplication:
+    """WO sample failures should not show the same audit twice."""
+
+    def test_wo_deduplicates_sample_failures(self):
+        """An audit with both missed and false_positive should appear once in WO."""
+        from app.services.llm_judge import _create_prompt_improvement_wo
+
+        _create_prompt_improvement_wo(
+            judge_run_id="run-1",
+            items_reviewed=1,
+            avg_quality=3.0,
+            false_positives=1,
+            false_negatives=1,
+            suggestions=[],
+            judge_outputs=[
+                {
+                    "audit_id": "aud-42",
+                    "missed": ["follow up on budget"],
+                    "false_positives": ["greeting"],
+                    "quality_rating": 3,
+                },
+            ],
+        )
+
+        from pathlib import Path
+        wo_path = Path("/home/kevinbeeftink/.openclaw/workspace/workorders/WO-RIPPLED-PROMPT-IMPROVEMENT_PENDING.md")
+        content = wo_path.read_text()
+
+        # Count occurrences of "### Audit aud-42" — should be exactly 1
+        assert content.count("### Audit aud-42") == 1
+        # But both missed and false_positives should be present
+        assert "follow up on budget" in content
+        assert "greeting" in content
+
+
+class TestJudgePromptClassificationLabels:
+    """Judge prompt should instruct evaluator about classification labels."""
+
+    def test_judge_prompt_mentions_classification_labels(self):
+        """Judge prompt should warn that classification labels are not commitments."""
+        from app.services.llm_judge import JUDGE_PROMPT
+
+        # Judge must be aware that words like "greeting" are labels, not commitments
+        assert "classification label" in JUDGE_PROMPT.lower() or "meta-reference" in JUDGE_PROMPT.lower()

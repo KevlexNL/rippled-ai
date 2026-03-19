@@ -61,6 +61,20 @@ Track patterns from corrections to avoid repeating mistakes.
 
 ---
 
+### 2026-03-19 — WO sample failures list duplicates when audit has both missed and FP
+**Mistake:** `_create_prompt_improvement_wo` iterated `missed_items + fp_items` without deduplication. An audit with both a missed commitment and a false positive appeared twice in the WO's "Sample Failures" section, making it look like two separate issues.
+**Pattern:** When building combined lists from overlapping filters on the same data set, deduplicate by primary key before rendering.
+**Severity:** Minor
+
+---
+
+### 2026-03-19 — Judge prompt needs same anti-patterns as detection prompts
+**Mistake:** The LLM judge prompt had no guidance about classification labels ("greeting", "filler") being artifacts of model labeling, not false positives. The judge flagged "greeting" as a false positive when the model extracted its own classification label — a meta-error the judge should have filtered.
+**Pattern:** When an LLM evaluates another LLM's output, the evaluator prompt must include the same anti-pattern awareness as the producer prompt. Otherwise the evaluator will flag the same edge cases that are already handled.
+**Severity:** Minor
+
+---
+
 ### 2026-03-17 — Suppression regex character class matches newlines
 **Mistake:** Greeting suppression pattern used `[^.]` (negated character class), which matches any character except literal period — including newlines. This caused multi-line suppression, wiping out commitment text on subsequent lines.
 **Pattern:** In multiline regex patterns, always use `[^.\n]` instead of `[^.]` when the intent is to match within a single line. Also limit greedy quantifiers with `{0,N}` to prevent suppression patterns from consuming content that contains actual signals.

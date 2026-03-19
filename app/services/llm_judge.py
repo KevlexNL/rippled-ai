@@ -39,7 +39,10 @@ Model extracted:
 
 Evaluate:
 1. Were all commitments in this email correctly identified? List any that were missed.
+   - "Follow up on [topic]", "need to follow up", "checking in on [topic]" ARE commitments.
 2. Were any extracted items NOT actually commitments? List false positives.
+   - Classification labels or meta-references (e.g. "greeting", "pleasantry", "filler") are NOT commitments, but they are also NOT false positives — they are artifacts of the model's internal labeling. Do not list them as false positives.
+   - Greetings, sign-offs, and pleasantries are NOT commitments.
 3. Rate extraction quality: 1-5
 4. If quality < 4: suggest one specific change to the detection prompt that would improve this case.
 
@@ -270,7 +273,15 @@ def _create_prompt_improvement_wo(
         content += f"{i}. {suggestion}\n"
 
     content += "\n## Sample Failures\n"
-    for j in (missed_items + fp_items)[:5]:
+    # Deduplicate: an audit with both missed and FP should appear once
+    seen_audit_ids: set[str] = set()
+    deduplicated: list[dict] = []
+    for j in missed_items + fp_items:
+        aid = j.get("audit_id", "unknown")
+        if aid not in seen_audit_ids:
+            seen_audit_ids.add(aid)
+            deduplicated.append(j)
+    for j in deduplicated[:5]:
         audit_id = j.get("audit_id", "unknown")
         content += f"\n### Audit {audit_id}\n"
         if j.get("missed"):
