@@ -69,6 +69,35 @@ export function groupByTargetEntity(
 }
 
 /**
+ * Group commitments by context_id. Returns groups keyed by context_id,
+ * ungrouped commitments (no context_id), and a flag indicating whether
+ * any commitments have a context_id.
+ */
+export function groupByContextId(
+  commitments: CommitmentRead[]
+): {
+  groups: Record<string, CommitmentRead[]>
+  ungrouped: CommitmentRead[]
+  hasContexts: boolean
+} {
+  const groups: Record<string, CommitmentRead[]> = {}
+  const ungrouped: CommitmentRead[] = []
+  let hasContexts = false
+
+  for (const c of commitments) {
+    if (c.context_id) {
+      hasContexts = true
+      if (!groups[c.context_id]) groups[c.context_id] = []
+      groups[c.context_id].push(c)
+    } else {
+      ungrouped.push(c)
+    }
+  }
+
+  return { groups, ungrouped, hasContexts }
+}
+
+/**
  * Compute the worst status color for a group of commitments.
  * Re-exports getGroupStatusColor for convenience.
  */

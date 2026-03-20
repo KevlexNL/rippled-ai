@@ -12,6 +12,8 @@ import type { ClarificationRead } from '../api/clarifications'
 import type { StatsRead } from '../api/stats'
 import type { EventRead } from '../api/events'
 import { dedupById, groupByContextType, getGroupStatusColor, getSourceLabel } from '../utils/grouping'
+import { getContexts } from '../api/contexts'
+import type { CommitmentContextRead } from '../api/contexts'
 import SourceGroup from '../components/SourceGroup'
 import BottomBar from '../components/BottomBar'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -83,6 +85,16 @@ export default function Dashboard() {
 
   const isLoading = results.some((r) => r.isLoading)
   const hasError = results.some((r) => r.isError)
+
+  // Contexts query — for showing context names inline
+  const { data: contexts } = useQuery<CommitmentContextRead[]>({
+    queryKey: ['contexts'],
+    queryFn: getContexts,
+    refetchInterval: 60_000,
+    staleTime: 55_000,
+  })
+
+  const contextMap = new Map((contexts ?? []).map(c => [c.id, c.name]))
 
   // Sources query — needed for 3-state empty state
   const { data: sources } = useQuery({
@@ -276,6 +288,7 @@ export default function Dashboard() {
                   color={color}
                   commitments={groupCommitments}
                   onPress={() => navigate(`/source/${st}`)}
+                  contextMap={contextMap}
                 />
               )
             })}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getCommitments, patchCommitment, skipCommitment } from '../api/commitments'
@@ -161,7 +161,7 @@ function IconClock() {
   )
 }
 
-function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDismiss, onNotNow, onSkip }: {
+function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDismiss, onNotNow, onSkip, contextName }: {
   commitment: CommitmentRead
   selected: boolean
   onClick: () => void
@@ -169,6 +169,7 @@ function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDism
   onDismiss: (id: string) => void
   onNotNow: (id: string) => void
   onSkip: (id: string) => void
+  contextName?: string | null
 }) {
   const badge = badgeFromState(commitment)
   const isDelivered = commitment.lifecycle_state === 'delivered'
@@ -223,6 +224,12 @@ function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDism
                 <>
                   <span>·</span>
                   <span>{person}</span>
+                </>
+              )}
+              {contextName && (
+                <>
+                  <span>·</span>
+                  <span className="bg-[#f0f0ef] text-[#4b5563] px-1.5 py-0 rounded text-[10px] font-medium" data-testid="context-badge">{contextName}</span>
                 </>
               )}
             </div>
@@ -370,6 +377,18 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
 
   const contextMap = new Map((contexts ?? []).map(c => [c.id, c.name]))
 
+  // Auto-default to 'context' grouping when user has commitments assigned to contexts
+  const defaultApplied = useRef(false)
+  useEffect(() => {
+    if (defaultApplied.current) return
+    if (!commitments || !contexts) return
+    const hasAssigned = commitments.some(c => c.context_id != null)
+    if (hasAssigned && contexts.length > 0) {
+      setGroupMode('context')
+      defaultApplied.current = true
+    }
+  }, [commitments, contexts])
+
   const allCommitments = commitments ?? []
   const selectedCommitment = selectedId ? allCommitments.find(c => c.id === selectedId) ?? null : null
 
@@ -491,7 +510,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                 </div>
                 <div className="flex flex-col gap-2">
                   {items.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} contextName={c.context_id ? contextMap.get(c.context_id) ?? null : null} />
                   ))}
                 </div>
               </div>
@@ -519,7 +538,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             </div>
             <div className="flex flex-col gap-2">
               {filtered.map(c => (
-                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} />
+                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} contextName={c.context_id ? contextMap.get(c.context_id) ?? null : null} />
               ))}
             </div>
           </div>
@@ -541,7 +560,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             </div>
             <div className="flex flex-col gap-2">
               {items.map(c => (
-                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} />
+                <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} contextName={c.context_id ? contextMap.get(c.context_id) ?? null : null} />
               ))}
             </div>
           </div>
@@ -585,7 +604,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                 </div>
                 <div className="flex flex-col gap-2">
                   {filtered.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} contextName={c.context_id ? contextMap.get(c.context_id) ?? null : null} />
                   ))}
                 </div>
               </div>
@@ -596,13 +615,16 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
             if (filtered.length === 0) return null
             return (
               <div>
-                <div className="text-[16px] font-bold text-[#111827] mt-8 mb-3 flex items-center gap-2 border-b border-[#f0f0ef] pb-2">
-                  <span>No context</span>
-                  <span className="text-[13px] font-medium text-[#9ca3af]">· {filtered.length}</span>
+                <div className="mt-8 mb-3 border-b border-[#f0f0ef] pb-2">
+                  <div className="text-[16px] font-bold text-[#111827] flex items-center gap-2">
+                    <span>No context</span>
+                    <span className="text-[13px] font-medium text-[#9ca3af]">· {filtered.length}</span>
+                  </div>
+                  <div className="text-[11px] text-[#9ca3af] mt-0.5">Select a commitment to assign it to a context</div>
                 </div>
                 <div className="flex flex-col gap-2">
                   {filtered.map(c => (
-                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} />
+                    <CompactCommitmentRow key={c.id} commitment={c} selected={selectedId === c.id} onClick={() => setSelectedId(selectedId === c.id ? null : c.id)} onConfirm={handleConfirm} onDismiss={handleDismiss} onNotNow={handleNotNow} onSkip={handleSkip} contextName={null} />
                   ))}
                 </div>
               </div>

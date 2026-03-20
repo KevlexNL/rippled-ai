@@ -13,9 +13,10 @@ interface Props {
   onClick?: () => void
   showReasoning?: boolean
   openClarification?: ClarificationRead | null
+  contextName?: string | null
 }
 
-export default function CommitmentRow({ commitment, onClick, showReasoning = false, openClarification }: Props) {
+export default function CommitmentRow({ commitment, onClick, showReasoning = false, openClarification, contextName }: Props) {
   const color = getStatusColor(commitment)
   const [answerLoading, setAnswerLoading] = useState(false)
   const queryClient = useQueryClient()
@@ -98,7 +99,7 @@ export default function CommitmentRow({ commitment, onClick, showReasoning = fal
               )}
             </div>
           ) : (
-            <ContextLine commitment={commitment} />
+            <ContextLine commitment={commitment} contextName={contextName} />
           )}
 
           {showReasoning && (

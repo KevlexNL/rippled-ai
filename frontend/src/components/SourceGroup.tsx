@@ -8,9 +8,10 @@ interface Props {
   color: 'red' | 'yellow' | 'green'
   commitments: CommitmentRead[]
   onPress: () => void
+  contextMap?: Map<string, string>
 }
 
-export default function SourceGroup({ label, color, commitments, onPress }: Props) {
+export default function SourceGroup({ label, color, commitments, onPress, contextMap }: Props) {
   const navigate = useNavigate()
 
   return (
@@ -33,6 +34,7 @@ export default function SourceGroup({ label, color, commitments, onPress }: Prop
             key={c.id}
             commitment={c}
             onClick={() => navigate(`/commitment/${c.id}`)}
+            contextName={c.context_id && contextMap ? contextMap.get(c.context_id) ?? null : null}
           />
         ))}
       </div>

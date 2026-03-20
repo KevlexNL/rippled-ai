@@ -3,6 +3,7 @@ import type { CommitmentRead } from '../types'
 interface Props {
   commitment: CommitmentRead
   now?: Date
+  contextName?: string | null
 }
 
 function hoursUntil(dateStr: string, now: Date): number {
@@ -20,7 +21,7 @@ const COUNTERPARTY_LABELS: Record<string, string> = {
   self: '',
 }
 
-export default function ContextLine({ commitment: c, now = new Date() }: Props) {
+export default function ContextLine({ commitment: c, now = new Date(), contextName }: Props) {
   const deliveryEvent = c.linked_events?.find((e) => e.relationship === 'delivery_at') ?? null
 
   // Priority 1: delivery event within 25h
@@ -86,6 +87,11 @@ export default function ContextLine({ commitment: c, now = new Date() }: Props) 
     return <p className="text-xs text-gray-500 mt-0.5">External commitment</p>
   }
 
-  // Priority 8: nothing
+  // Priority 8: context name
+  if (contextName) {
+    return <p className="text-xs text-gray-400 mt-0.5" data-testid="context-line-badge">{contextName}</p>
+  }
+
+  // Priority 9: nothing
   return null
 }
