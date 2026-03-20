@@ -329,3 +329,50 @@ async def review_stats(
         "total_signal_feedback": total_signal_feedback,
         "total_outcome_feedback": total_outcome_feedback,
     }
+
+
+# ---------------------------------------------------------------------------
+# GET /admin/review/audit-sample — last N detection_audit rows for a prompt version
+# ---------------------------------------------------------------------------
+
+@router.get("/audit-sample")
+async def audit_sample(
+    prompt_version: str = Query(..., description="Prompt version to filter by"),
+    limit: int = Query(default=3, le=20),
+    x_user_id: str = Depends(verify_admin_reviewer),
+    db: AsyncSession = Depends(get_db),
+) -> list[dict]:
+    """Return the last N detection_audit rows for a given prompt_version."""
+    stmt = (
+        select(
+            DetectionAudit.id.label("detection_audit_id"),
+            DetectionAudit.source_item_id,
+            DetectionAudit.parsed_result,
+            DetectionAudit.prompt_version,
+            DetectionAudit.model,
+            DetectionAudit.created_at,
+            SourceItem.content,
+            SourceItem.sender_name,
+        )
+        .join(SourceItem, DetectionAudit.source_item_id == SourceItem.id)
+        .where(DetectionAudit.prompt_version == prompt_version)
+        .order_by(DetectionAudit.created_at.desc())
+        .limit(limit)
+    )
+
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    return [
+        {
+            "detection_audit_id": row.detection_audit_id,
+            "source_item_id": row.source_item_id,
+            "content": (row.content or "")[:300],
+            "sender_name": row.sender_name,
+            "parsed_result": row.parsed_result,
+            "prompt_version": row.prompt_version,
+            "model": row.model,
+            "created_at": row.created_at.isoformat() if row.created_at else None,
+        }
+        for row in rows
+    ]

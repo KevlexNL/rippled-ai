@@ -19,6 +19,7 @@ import IntegrationsSettingsScreen from './screens/settings/IntegrationsSettingsS
 import IdentitySettingsScreen from './screens/settings/IdentitySettingsScreen'
 import PrototypeDashboard from './screens/PrototypeDashboard'
 import AdminScreen from './screens/AdminScreen'
+import ArchitectureScreen from './screens/ArchitectureScreen'
 import { getIdentityStatus } from './api/identity'
 import { listSources } from './api/sources'
 
@@ -191,6 +192,14 @@ export default function App() {
         element={
           <AuthGuard>
             <AdminScreen />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/admin/architecture"
+        element={
+          <AuthGuard>
+            <ArchitectureScreen />
           </AuthGuard>
         }
       />

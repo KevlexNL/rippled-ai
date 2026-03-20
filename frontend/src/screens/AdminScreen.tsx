@@ -572,6 +572,7 @@ export default function AdminScreen() {
     { id: 'signals', label: 'Signal Review' },
     { id: 'outcomes', label: 'Outcome Review' },
   ]
+  const archActive = false // architecture tab is a separate route
 
   return (
     <div className="min-h-screen bg-[#f9f9f8]">
@@ -591,6 +592,12 @@ export default function AdminScreen() {
               <button key={t.id} onClick={() => setTab(t.id)} className="text-[#6b7280] hover:text-[#191919] px-3 md:px-4 py-1 text-[13px] transition-colors">{t.label}</button>
             )
           )}
+          <button
+            onClick={() => navigate('/admin/architecture')}
+            className="text-[#6b7280] hover:text-[#191919] px-3 md:px-4 py-1 text-[13px] transition-colors"
+          >
+            Architecture
+          </button>
         </div>
         <div className="ml-auto flex-shrink-0" />
       </div>

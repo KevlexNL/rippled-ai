@@ -62,6 +62,16 @@ app.include_router(stats_routes.router, prefix=settings.api_prefix, tags=["stats
 app.include_router(identity_routes.router, prefix=settings.api_prefix, tags=["identity"])
 app.include_router(report_routes.router, prefix=settings.api_prefix, tags=["report"])
 
+# Serve ops/architecture static files for the architecture diagram
+_OPS_ARCH_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "ops", "architecture"))
+if os.path.isdir(_OPS_ARCH_DIR):
+    app.mount("/ops/architecture", StaticFiles(directory=_OPS_ARCH_DIR), name="ops-architecture")
+
+# Serve ops/prompts static files for prompt viewer
+_OPS_PROMPTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "ops", "prompts"))
+if os.path.isdir(_OPS_PROMPTS_DIR):
+    app.mount("/ops/prompts", StaticFiles(directory=_OPS_PROMPTS_DIR), name="ops-prompts")
+
 # Serve main frontend SPA (includes /admin via React Router)
 _PUBLIC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "api", "public"))
 

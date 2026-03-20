@@ -1,0 +1,362 @@
+{
+  "nodes": [
+    {
+      "id": "web-app",
+      "label": "Rippled Web App",
+      "layer": "user_flow",
+      "status": "stable",
+      "description": "Main SPA — React + Vite frontend served by FastAPI",
+      "code_path": "frontend/src/App.tsx",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "create-user",
+      "label": "Create User",
+      "layer": "user_flow",
+      "status": "stable",
+      "description": "Supabase Auth sign-up flow",
+      "code_path": "frontend/src/screens/SignUpScreen.tsx",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "login",
+      "label": "Login / Forgot Password",
+      "layer": "user_flow",
+      "status": "stable",
+      "description": "Supabase Auth login + password recovery",
+      "code_path": "frontend/src/screens/LoginScreen.tsx",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "user-details",
+      "label": "User Details",
+      "layer": "user_flow",
+      "status": "stable",
+      "description": "Account settings — display name, email preferences",
+      "code_path": "frontend/src/screens/settings/AccountSettingsScreen.tsx",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "integrations",
+      "label": "Integrations",
+      "layer": "user_flow",
+      "status": "stable",
+      "description": "Connect Email, DMs, Calendar, Meetings. Manage LLM token.",
+      "code_path": "frontend/src/screens/settings/IntegrationsSettingsScreen.tsx",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "seed-data-approval",
+      "label": "Seed Data Approval",
+      "layer": "user_flow",
+      "status": "in_progress",
+      "description": "Per-channel approval before initial seed pass processes historical data",
+      "code_path": "app/services/detection/seed_detector.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "guided-onboarding",
+      "label": "Guided Onboarding",
+      "layer": "user_flow",
+      "status": "stable",
+      "description": "Step-by-step wizard for new users — integrations, identity, seed",
+      "code_path": "frontend/src/screens/OnboardingScreen.tsx",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "profile-resolution",
+      "label": "Profile Resolution",
+      "layer": "user_flow",
+      "status": "stable",
+      "description": "Identity profile system — maps emails/names to confirmed user identities",
+      "code_path": "app/services/identity/",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "active-state",
+      "label": "Active State",
+      "layer": "user_flow",
+      "status": "stable",
+      "description": "Main dashboard — Active tab showing highest-priority commitments",
+      "code_path": "frontend/src/screens/ActiveScreen.tsx",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "source-item-ingested",
+      "label": "Source Item Ingested",
+      "layer": "signal_pipeline",
+      "status": "stable",
+      "description": "Raw message/event stored as source_item from any connector",
+      "code_path": "app/api/routes/source_items.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "signal-detection",
+      "label": "Candidate Detection",
+      "layer": "signal_pipeline",
+      "status": "stable",
+      "description": "Determines if a source item contains a commitment-like signal using hybrid detection (rule-based + LLM)",
+      "code_path": "app/services/model_detection.py",
+      "git_sha": "6f694d3",
+      "prompt_version": "ongoing-v4",
+      "prompt_file": "ops/prompts/detection-prompt-v6.md",
+      "wos": ["WO-RIPPLED-COMMITMENT-STRUCTURE-DETECTION"],
+      "open_questions": ["Should delegated asks be first-class before acceptance?"]
+    },
+    {
+      "id": "signal-classification",
+      "label": "Signal Classification",
+      "layer": "signal_pipeline",
+      "status": "planned",
+      "description": "Classify signal_type (self_commitment, delegated_action, follow_up_intent, etc.)",
+      "wos": [],
+      "open_questions": ["Separate classifier or part of detection prompt?"]
+    },
+    {
+      "id": "structured-extraction",
+      "label": "Structured Extraction",
+      "layer": "signal_pipeline",
+      "status": "stable",
+      "description": "Extracts owner, deliverable, deadline, counterparty from detected signals",
+      "code_path": "app/services/model_detection.py",
+      "git_sha": "6f694d3",
+      "prompt_version": "ongoing-v4",
+      "prompt_file": "ops/prompts/detection-prompt-v6.md",
+      "wos": []
+    },
+    {
+      "id": "owner-resolution",
+      "label": "Owner Resolution",
+      "layer": "signal_pipeline",
+      "status": "stable",
+      "description": "Maps extracted owner name/email to confirmed identity profiles",
+      "code_path": "app/services/identity/",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "surfacing-decision",
+      "label": "Surfacing Decision",
+      "layer": "signal_pipeline",
+      "status": "stable",
+      "description": "Decides whether commitment goes to Main, Shortlist, or held for triage based on priority scoring",
+      "code_path": "app/services/surfacing_router.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "commitment-created",
+      "label": "Commitment Created / Held for Triage",
+      "layer": "signal_pipeline",
+      "status": "stable",
+      "description": "Final pipeline output — commitment row created in DB, surfaced or held",
+      "code_path": "app/services/surfacing_runner.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "lifecycle-proposed",
+      "label": "Proposed",
+      "layer": "commitment_lifecycle",
+      "status": "stable",
+      "description": "Initial state — system detected a commitment candidate",
+      "code_path": "app/models/orm.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "lifecycle-surfaced",
+      "label": "Surfaced (Active / Commitments)",
+      "layer": "commitment_lifecycle",
+      "status": "stable",
+      "description": "Commitment visible on Main or Shortlist tabs",
+      "code_path": "app/services/surfacing_runner.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "lifecycle-confirmed",
+      "label": "Confirmed",
+      "layer": "commitment_lifecycle",
+      "status": "stable",
+      "description": "User explicitly confirmed this is a real commitment",
+      "code_path": "app/api/routes/commitments.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "lifecycle-dormant",
+      "label": "Dormant (Not Now)",
+      "layer": "commitment_lifecycle",
+      "status": "stable",
+      "description": "User snoozed — will resurface later",
+      "code_path": "app/api/routes/commitments.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "lifecycle-skipped",
+      "label": "Skipped",
+      "layer": "commitment_lifecycle",
+      "status": "stable",
+      "description": "User chose to skip without dismissing — may revisit",
+      "code_path": "app/api/routes/commitments.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "lifecycle-dismissed",
+      "label": "Dismissed",
+      "layer": "commitment_lifecycle",
+      "status": "stable",
+      "description": "User marked as not-a-commitment — discarded from view",
+      "code_path": "app/api/routes/commitments.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "lifecycle-delivered",
+      "label": "Delivered",
+      "layer": "commitment_lifecycle",
+      "status": "planned",
+      "description": "System detected completion evidence — auto-matched to open commitment",
+      "wos": [],
+      "open_questions": ["Delivery detection matching strategy: thread > semantic > manual"]
+    },
+    {
+      "id": "lifecycle-closed",
+      "label": "Closed",
+      "layer": "commitment_lifecycle",
+      "status": "planned",
+      "description": "User confirmed obligation is fully resolved",
+      "wos": []
+    },
+    {
+      "id": "detection-audit",
+      "label": "Detection Audit",
+      "layer": "evaluation",
+      "status": "stable",
+      "description": "Logs every detection run — source item, parsed result, prompt version, model used",
+      "code_path": "app/models/orm.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "llm-judge",
+      "label": "LLM Judge",
+      "layer": "evaluation",
+      "status": "stable",
+      "description": "Weekly quality review — Anthropic Claude evaluates detection accuracy, triggers prompt improvement WOs",
+      "code_path": "app/services/llm_judge.py",
+      "git_sha": "6f694d3",
+      "prompt_version": "judge-v2",
+      "wos": []
+    },
+    {
+      "id": "eval-harness",
+      "label": "Eval Harness",
+      "layer": "evaluation",
+      "status": "stable",
+      "description": "Regression testing for detection quality — runs against golden set",
+      "code_path": "app/services/eval/",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "prompt-registry",
+      "label": "Prompt Registry",
+      "layer": "evaluation",
+      "status": "stable",
+      "description": "Version-controlled prompt files under ops/prompts/ with governance rules",
+      "code_path": "ops/prompts/",
+      "git_sha": "6f694d3",
+      "prompt_file": "ops/prompts/PROMPT_GOVERNANCE.md",
+      "wos": []
+    },
+    {
+      "id": "integration-email",
+      "label": "Email (IMAP Poller)",
+      "layer": "integrations",
+      "status": "stable",
+      "description": "Polls IMAP inbox for new messages, creates source_items",
+      "code_path": "app/api/routes/webhooks/email.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "integration-slack",
+      "label": "Slack (Connector)",
+      "layer": "integrations",
+      "status": "stable",
+      "description": "Slack webhook + OAuth connector for DM/channel messages",
+      "code_path": "app/api/routes/webhooks/slack.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "integration-readai",
+      "label": "Read.ai (Webhook)",
+      "layer": "integrations",
+      "status": "stable",
+      "description": "Meeting transcript webhook from Read.ai — creates source_items from transcript",
+      "code_path": "app/api/routes/webhooks/meetings.py",
+      "git_sha": "6f694d3",
+      "wos": []
+    },
+    {
+      "id": "integration-calendar",
+      "label": "Calendar",
+      "layer": "integrations",
+      "status": "planned",
+      "description": "Google/Outlook calendar integration for deadline correlation",
+      "wos": []
+    }
+  ],
+  "edges": [
+    { "id": "e-webapp-create", "source": "web-app", "target": "create-user", "label": "sign up" },
+    { "id": "e-webapp-login", "source": "web-app", "target": "login", "label": "authenticate" },
+    { "id": "e-login-details", "source": "login", "target": "user-details", "label": "authenticated" },
+    { "id": "e-details-integrations", "source": "user-details", "target": "integrations", "label": "configure" },
+    { "id": "e-integrations-seed", "source": "integrations", "target": "seed-data-approval", "label": "approve channels" },
+    { "id": "e-create-onboarding", "source": "create-user", "target": "guided-onboarding", "label": "first visit" },
+    { "id": "e-onboarding-profile", "source": "guided-onboarding", "target": "profile-resolution", "label": "confirm identity" },
+    { "id": "e-profile-active", "source": "profile-resolution", "target": "active-state", "label": "ready" },
+    { "id": "e-seed-ingest", "source": "seed-data-approval", "target": "source-item-ingested", "label": "historical items" },
+
+    { "id": "e-email-ingest", "source": "integration-email", "target": "source-item-ingested", "label": "new email" },
+    { "id": "e-slack-ingest", "source": "integration-slack", "target": "source-item-ingested", "label": "new message" },
+    { "id": "e-readai-ingest", "source": "integration-readai", "target": "source-item-ingested", "label": "transcript" },
+    { "id": "e-calendar-ingest", "source": "integration-calendar", "target": "source-item-ingested", "label": "events" },
+
+    { "id": "e-ingest-detect", "source": "source-item-ingested", "target": "signal-detection", "label": "detect" },
+    { "id": "e-detect-classify", "source": "signal-detection", "target": "signal-classification", "label": "candidate signal" },
+    { "id": "e-detect-extract", "source": "signal-detection", "target": "structured-extraction", "label": "extract structure" },
+    { "id": "e-extract-owner", "source": "structured-extraction", "target": "owner-resolution", "label": "resolve owner" },
+    { "id": "e-owner-surface", "source": "owner-resolution", "target": "surfacing-decision", "label": "scored candidate" },
+    { "id": "e-surface-commit", "source": "surfacing-decision", "target": "commitment-created", "label": "create/hold" },
+
+    { "id": "e-commit-proposed", "source": "commitment-created", "target": "lifecycle-proposed", "label": "initial state" },
+    { "id": "e-proposed-surfaced", "source": "lifecycle-proposed", "target": "lifecycle-surfaced", "label": "meets threshold" },
+    { "id": "e-surfaced-confirmed", "source": "lifecycle-surfaced", "target": "lifecycle-confirmed", "label": "user confirms" },
+    { "id": "e-surfaced-dormant", "source": "lifecycle-surfaced", "target": "lifecycle-dormant", "label": "not now" },
+    { "id": "e-surfaced-skipped", "source": "lifecycle-surfaced", "target": "lifecycle-skipped", "label": "skip" },
+    { "id": "e-surfaced-dismissed", "source": "lifecycle-surfaced", "target": "lifecycle-dismissed", "label": "dismiss" },
+    { "id": "e-confirmed-delivered", "source": "lifecycle-confirmed", "target": "lifecycle-delivered", "label": "completion detected" },
+    { "id": "e-delivered-closed", "source": "lifecycle-delivered", "target": "lifecycle-closed", "label": "user confirms done" },
+
+    { "id": "e-detect-audit", "source": "signal-detection", "target": "detection-audit", "label": "log run" },
+    { "id": "e-audit-judge", "source": "detection-audit", "target": "llm-judge", "label": "weekly sample" },
+    { "id": "e-judge-eval", "source": "llm-judge", "target": "eval-harness", "label": "regression check" },
+    { "id": "e-registry-detect", "source": "prompt-registry", "target": "signal-detection", "label": "active prompt" }
+  ]
+}
