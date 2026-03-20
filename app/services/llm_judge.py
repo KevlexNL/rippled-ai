@@ -39,11 +39,17 @@ Model extracted:
 
 Evaluate:
 1. Were all commitments in this email correctly identified? List any that were missed.
-   - "Follow up on [topic]", "need to follow up", "checking in on [topic]" ARE commitments.
+   - "Follow up on [topic]", "need to follow up", "checking in on [topic]" ARE commitments — always.
+   - ANY form of "follow up" is a commitment. Missing one is a significant error.
 2. Were any extracted items NOT actually commitments? List false positives.
    - Classification labels or meta-references (e.g. "greeting", "pleasantry", "filler") are NOT commitments, but they are also NOT false positives — they are artifacts of the model's internal labeling. Do not list them as false positives.
    - Greetings, sign-offs, and pleasantries are NOT commitments.
-3. Rate extraction quality: 1-5
+3. Rate extraction quality using this rubric:
+   - 5: All commitments found, no false positives, correct metadata
+   - 4: All commitments found, minor metadata issues or one borderline false positive
+   - 3: One missed commitment OR one clear false positive
+   - 2: Multiple missed commitments or multiple false positives
+   - 1: Fundamentally broken — most commitments missed or mostly false positives
 4. If quality < 4: suggest one specific change to the detection prompt that would improve this case.
 
 Respond in JSON: {{"missed": [], "false_positives": [], "quality_rating": N, "prompt_suggestion": "..."}}"""

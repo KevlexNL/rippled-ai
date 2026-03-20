@@ -356,3 +356,21 @@ class TestJudgePromptClassificationLabels:
 
         # Judge must be aware that words like "greeting" are labels, not commitments
         assert "classification label" in JUDGE_PROMPT.lower() or "meta-reference" in JUDGE_PROMPT.lower()
+
+    def test_judge_prompt_has_quality_rubric(self):
+        """Judge prompt must have a quality rating rubric for consistent scoring."""
+        from app.services.llm_judge import JUDGE_PROMPT
+
+        lower = JUDGE_PROMPT.lower()
+        # Must define what each rating level means
+        assert "5:" in JUDGE_PROMPT or "5 =" in JUDGE_PROMPT or "5 —" in JUDGE_PROMPT, (
+            "Judge prompt must have a quality rating rubric defining each level"
+        )
+
+    def test_judge_prompt_classifies_follow_ups_as_commitments(self):
+        """Judge prompt must explicitly state follow-ups are commitments."""
+        from app.services.llm_judge import JUDGE_PROMPT
+
+        assert "follow up" in JUDGE_PROMPT.lower(), (
+            "Judge prompt must mention follow-ups as commitments"
+        )

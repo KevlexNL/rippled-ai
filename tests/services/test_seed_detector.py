@@ -511,7 +511,7 @@ class TestSeedPassAuditWriting:
         assert kw["raw_prompt"] is not None
         assert kw["raw_response"] == response_text
         assert kw["model"] == "claude-sonnet-4-6"
-        assert kw["prompt_version"] == "seed-v5"
+        assert kw["prompt_version"] == "seed-v6"
         assert kw["tokens_in"] == 100
         assert kw["tokens_out"] == 20
 
@@ -743,12 +743,12 @@ class TestPromptImprovementWOPromptImprovement:
             "Prompt version must be bumped after WO-RIPPLED-PROMPT-IMPROVEMENT changes"
         )
 
-    def test_prompt_version_is_v5(self):
-        """Seed prompt version must be seed-v5 after WO-RIPPLED-PROMPT-IMPROVEMENT v5 changes."""
+    def test_prompt_version_is_v6(self):
+        """Seed prompt version must be seed-v6 after WO-RIPPLED-PROMPT-IMPROVEMENT v6 changes."""
         from app.services.detection.seed_detector import _PROMPT_VERSION
 
-        assert _PROMPT_VERSION == "seed-v5", (
-            f"Expected seed-v5 but got {_PROMPT_VERSION}"
+        assert _PROMPT_VERSION == "seed-v6", (
+            f"Expected seed-v6 but got {_PROMPT_VERSION}"
         )
 
     def test_prompt_includes_business_follow_up_topics(self):
@@ -776,6 +776,26 @@ class TestPromptImprovementWOPromptImprovement:
         lower = _SYSTEM_PROMPT.lower()
         assert "checking in on" in lower, (
             "Seed prompt must include 'checking in on' as a follow-up variant"
+        )
+
+    def test_prompt_has_self_validation_section(self):
+        """Seed prompt must include a self-validation step at the end to catch
+        false positives before outputting."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+
+        lower = _SYSTEM_PROMPT.lower()
+        assert "before you respond" in lower or "before outputting" in lower or "self-check" in lower, (
+            "Seed prompt must have a self-validation section near the end"
+        )
+
+    def test_prompt_follow_up_rule_is_highlighted(self):
+        """Follow-up rule must be explicitly highlighted as a critical rule,
+        not just a bullet point in a list."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+
+        # Must have a strong emphasis marker near "follow up" — either CRITICAL, RULE, ALWAYS, or IMPORTANT
+        assert 'ANY form of "follow up"' in _SYSTEM_PROMPT or "ALWAYS a commitment" in _SYSTEM_PROMPT, (
+            "Follow-up detection must be prominently highlighted as a critical rule"
         )
 
 
@@ -808,12 +828,12 @@ class TestModelDetectionPromptImprovement:
             "Model detection prompt version must be bumped after improvements"
         )
 
-    def test_model_prompt_version_is_v5(self):
-        """Model detection prompt version must be ongoing-v5."""
+    def test_model_prompt_version_is_v6(self):
+        """Model detection prompt version must be ongoing-v6."""
         from app.services.model_detection import _PROMPT_VERSION
 
-        assert _PROMPT_VERSION == "ongoing-v5", (
-            f"Expected ongoing-v5 but got {_PROMPT_VERSION}"
+        assert _PROMPT_VERSION == "ongoing-v6", (
+            f"Expected ongoing-v6 but got {_PROMPT_VERSION}"
         )
 
     def test_model_prompt_excludes_meta_references(self):
@@ -832,6 +852,15 @@ class TestModelDetectionPromptImprovement:
         lower = _SYSTEM_PROMPT.lower()
         assert "checking in on" in lower, (
             "Model detection prompt must include 'checking in on' as a follow-up variant"
+        )
+
+    def test_model_prompt_has_self_validation_section(self):
+        """Model detection prompt must include a self-validation step."""
+        from app.services.model_detection import _SYSTEM_PROMPT
+
+        lower = _SYSTEM_PROMPT.lower()
+        assert "before you respond" in lower or "before outputting" in lower or "self-check" in lower, (
+            "Model detection prompt must have a self-validation section"
         )
 
 

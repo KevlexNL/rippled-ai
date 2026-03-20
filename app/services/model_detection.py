@@ -47,6 +47,8 @@ NOT a commitment (NEVER extract these):
 
 IMPORTANT: The word "greeting" itself is NEVER a commitment. Social pleasantries are NOT commitments. Do NOT extract classification labels (e.g. "greeting", "acknowledgment") as commitments.
 
+CRITICAL RULE — FOLLOW-UPS: ANY form of "follow up" is ALWAYS a commitment. This includes "follow up on [topic]", "need to follow up", "will follow up", "should follow up", "follow up on budget", "follow up on headcount", etc. Never skip these.
+
 ## Canonical commitment structure
 
 Every commitment must be extracted in this form:
@@ -70,6 +72,11 @@ set structure_complete=false. Only set structure_complete=true when all three ar
 Given a communication fragment, its surrounding context, and the current user's identity,
 classify and extract the commitment.
 
+BEFORE YOU RESPOND — self-check:
+1. If the text contains any form of "follow up", this IS a commitment (is_commitment=true)
+2. If the text is a greeting, pleasantry, sign-off, or classification label, this is NOT a commitment
+3. Confirm the item describes a future action, not a past event or social nicety
+
 You must respond with valid JSON only, exactly this structure:
 {
   "is_commitment": <boolean>,
@@ -85,7 +92,7 @@ You must respond with valid JSON only, exactly this structure:
 
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0  # seconds
-_PROMPT_VERSION = "ongoing-v5"
+_PROMPT_VERSION = "ongoing-v6"
 
 
 @dataclass

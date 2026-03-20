@@ -75,6 +75,13 @@ Track patterns from corrections to avoid repeating mistakes.
 
 ---
 
+### 2026-03-20 — LLM prompt positioning affects rule adherence
+**Mistake:** Follow-up detection rules and greeting exclusions were correctly specified in the prompt but buried in a bullet list mid-prompt. The LLM missed "follow up on budget" and extracted "greeting" as a commitment because the rules lacked prominence and the prompt had no self-validation step.
+**Pattern:** Critical rules must be (a) elevated to their own labeled section (e.g., "CRITICAL RULE"), (b) reinforced at the end of the prompt via a "BEFORE YOU RESPOND" self-check section. LLMs attend more to prompt beginnings and endings (primacy/recency effect). Also add quality rubrics to judge prompts so scoring is consistent.
+**Severity:** Medium
+
+---
+
 ### 2026-03-17 — Suppression regex character class matches newlines
 **Mistake:** Greeting suppression pattern used `[^.]` (negated character class), which matches any character except literal period — including newlines. This caused multi-line suppression, wiping out commitment text on subsequent lines.
 **Pattern:** In multiline regex patterns, always use `[^.\n]` instead of `[^.]` when the intent is to match within a single line. Also limit greedy quantifiers with `{0,N}` to prevent suppression patterns from consuming content that contains actual signals.
