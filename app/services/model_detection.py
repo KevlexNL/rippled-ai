@@ -72,10 +72,23 @@ set structure_complete=false. Only set structure_complete=true when all three ar
 Given a communication fragment, its surrounding context, and the current user's identity,
 classify and extract the commitment.
 
-BEFORE YOU RESPOND — self-check:
-1. If the text contains any form of "follow up", this IS a commitment (is_commitment=true)
-2. If the text is a greeting, pleasantry, sign-off, or classification label, this is NOT a commitment
-3. Confirm the item describes a future action, not a past event or social nicety
+BEFORE YOU RESPOND — mandatory two-pass self-check:
+
+PASS 1 — REJECT check (run first, immediately return false if ANY match):
+- Is the text purely a greeting/salutation word? (e.g. "Hi", "Hello", "Dear team", "Good morning") → is_commitment=false
+- Is the text purely a pleasantry or well-wish? (e.g. "Hope you're doing well", "Happy Friday") → is_commitment=false
+- Is the text purely a sign-off? (e.g. "Best regards", "Cheers", "Talk soon") → is_commitment=false
+- Is the text a classification label or meta-reference? (e.g. "greeting", "pleasantry", "acknowledgment") → is_commitment=false
+- Is the text a casual acknowledgment with no future action? (e.g. "OK", "Sounds good", "Got it") → is_commitment=false
+If PASS 1 matched: set is_commitment=false and skip to output. Do NOT proceed to PASS 2.
+
+PASS 2 — COMMIT check (run only if PASS 1 did NOT match):
+- Does the text contain ANY form of "follow up"? ("follow up on X", "need to follow up", "will follow up", "should follow up", "follow up on budget", "follow up on headcount") → is_commitment=true, HIGH confidence
+- Does the text contain an explicit future obligation? ("I will", "I'll", "We will", "I promise", "Consider it done", "Leave it with me") → is_commitment=true
+- Does the text describe a future action, deliverable, or outcome someone is accountable for? → is_commitment=true
+- Otherwise → is_commitment=false
+
+FINAL sanity check: if your answer is is_commitment=true but the text is just a social phrase with no future action, correct it to false. If your answer is is_commitment=false but the text contains "follow up", correct it to true.
 
 You must respond with valid JSON only, exactly this structure:
 {
@@ -92,7 +105,7 @@ You must respond with valid JSON only, exactly this structure:
 
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0  # seconds
-_PROMPT_VERSION = "ongoing-v6"
+_PROMPT_VERSION = "ongoing-v7"
 
 
 @dataclass

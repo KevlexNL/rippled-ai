@@ -828,12 +828,12 @@ class TestModelDetectionPromptImprovement:
             "Model detection prompt version must be bumped after improvements"
         )
 
-    def test_model_prompt_version_is_v6(self):
-        """Model detection prompt version must be ongoing-v6."""
+    def test_model_prompt_version_is_v7(self):
+        """Model detection prompt version must be ongoing-v7."""
         from app.services.model_detection import _PROMPT_VERSION
 
-        assert _PROMPT_VERSION == "ongoing-v6", (
-            f"Expected ongoing-v6 but got {_PROMPT_VERSION}"
+        assert _PROMPT_VERSION == "ongoing-v7", (
+            f"Expected ongoing-v7 but got {_PROMPT_VERSION}"
         )
 
     def test_model_prompt_excludes_meta_references(self):

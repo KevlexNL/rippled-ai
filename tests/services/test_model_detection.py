@@ -126,7 +126,7 @@ class TestModelDetectionResult:
             tokens_out=50,
             model="gpt-4.1-mini",
             duration_ms=250,
-            prompt_version="ongoing-v6",
+            prompt_version="ongoing-v7",
         )
         assert result.raw_prompt == "test prompt"
         assert result.raw_response == "test response"
@@ -134,7 +134,7 @@ class TestModelDetectionResult:
         assert result.tokens_out == 50
         assert result.model == "gpt-4.1-mini"
         assert result.duration_ms == 250
-        assert result.prompt_version == "ongoing-v6"
+        assert result.prompt_version == "ongoing-v7"
 
 
 # ---------------------------------------------------------------------------
@@ -230,7 +230,7 @@ class TestModelDetectionServiceClassify:
         assert result.model == "gpt-4.1-mini"
         assert result.duration_ms is not None
         assert result.duration_ms >= 0
-        assert result.prompt_version == "ongoing-v6"
+        assert result.prompt_version == "ongoing-v7"
         assert result.parsed_result is not None
 
 
