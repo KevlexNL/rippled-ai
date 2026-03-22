@@ -1,9 +1,10 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import ReactFlow, {
   Node,
   Edge,
+  Connection,
   Background,
   Controls,
   MiniMap,
@@ -85,6 +86,8 @@ const STATUS_BADGE: Record<string, { bg: string; text: string }> = {
   decision_needed: { bg: '#fef3c7', text: '#d97706' },
 }
 
+const LAYOUT_STORAGE_KEY = 'rippled-arch-layout'
+
 // ─── Layout helpers ──────────────────────────────────────────────────────
 
 const LAYER_Y: Record<string, number> = {
@@ -103,8 +106,17 @@ const LAYER_X_OFFSET: Record<string, number> = {
   integrations: 900,
 }
 
-function layoutNodes(archNodes: ArchNode[]): Node[] {
+function getSavedPositions(): Record<string, { x: number; y: number }> {
+  try {
+    const raw = localStorage.getItem(LAYOUT_STORAGE_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch { /* ignore corrupt data */ }
+  return {}
+}
+
+function layoutNodes(archNodes: ArchNode[], applySaved = true): Node[] {
   const layerCounters: Record<string, number> = {}
+  const saved = applySaved ? getSavedPositions() : {}
 
   return archNodes.map((n) => {
     const layerIdx = layerCounters[n.layer] ?? 0
@@ -117,11 +129,12 @@ function layoutNodes(archNodes: ArchNode[]): Node[] {
     const x = (LAYER_X_OFFSET[n.layer] ?? 0) + col * 210
     const y = (LAYER_Y[n.layer] ?? 0) + row * 100
 
+    const position = saved[n.id] ?? { x, y }
     const statusStyle = STATUS_STYLES[n.status] ?? STATUS_STYLES.stable
 
     return {
       id: n.id,
-      position: { x, y },
+      position,
       data: { label: n.label, archNode: n },
       sourcePosition: Position.Bottom,
       targetPosition: Position.Top,
@@ -441,6 +454,37 @@ export default function ArchitectureScreen() {
   const [nodes, setNodes, onNodesChange] = useNodesState(filteredNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(filteredEdges)
 
+  // Debounced save of node positions to localStorage
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const savePositions = useCallback((currentNodes: Node[]) => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = setTimeout(() => {
+      const positions: Record<string, { x: number; y: number }> = {}
+      currentNodes.forEach((n) => {
+        positions[n.id] = { x: n.position.x, y: n.position.y }
+      })
+      localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(positions))
+    }, 500)
+  }, [])
+
+  const handleNodesChange = useCallback(
+    (changes: Parameters<typeof onNodesChange>[0]) => {
+      onNodesChange(changes)
+      // Save when a drag ends (position change with dragging=false)
+      const hasDragEnd = changes.some(
+        (c) => c.type === 'position' && 'dragging' in c && c.dragging === false
+      )
+      if (hasDragEnd) {
+        // We need the updated nodes — use functional update to read latest
+        setNodes((prev) => {
+          savePositions(prev)
+          return prev
+        })
+      }
+    },
+    [onNodesChange, savePositions, setNodes]
+  )
+
   // Sync filtered nodes/edges when they change
   useEffect(() => {
     setNodes(filteredNodes)
@@ -449,6 +493,51 @@ export default function ArchitectureScreen() {
   useEffect(() => {
     setEdges(filteredEdges)
   }, [filteredEdges, setEdges])
+
+  // Edge reconnection — same-node only
+  const onEdgeUpdate = useCallback(
+    (oldEdge: Edge, newConnection: Connection) => {
+      if (
+        newConnection.source === oldEdge.source &&
+        newConnection.target === oldEdge.target
+      ) {
+        setEdges((eds) =>
+          eds.map((e) =>
+            e.id === oldEdge.id
+              ? {
+                  ...e,
+                  sourceHandle: newConnection.sourceHandle ?? e.sourceHandle,
+                  targetHandle: newConnection.targetHandle ?? e.targetHandle,
+                }
+              : e
+          )
+        )
+      }
+      // If source or target changed, reject (do nothing)
+    },
+    [setEdges]
+  )
+
+  // Reset layout to computed defaults
+  const resetLayout = useCallback(() => {
+    if (!archData) return
+    localStorage.removeItem(LAYOUT_STORAGE_KEY)
+    const freshNodes = layoutNodes(archData.nodes, false)
+    // Re-apply layer filter if active
+    if (selectedLayer) {
+      setNodes(
+        freshNodes.map((n) => ({
+          ...n,
+          style: {
+            ...n.style,
+            opacity: (n.data.archNode as ArchNode).layer === selectedLayer ? 1 : 0.15,
+          },
+        }))
+      )
+    } else {
+      setNodes(freshNodes)
+    }
+  }, [archData, selectedLayer, setNodes])
 
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
@@ -523,7 +612,13 @@ export default function ArchitectureScreen() {
             Architecture
           </button>
         </div>
-        <div className="ml-auto flex-shrink-0">
+        <div className="ml-auto flex-shrink-0 flex items-center gap-2">
+          <button
+            onClick={resetLayout}
+            className="text-[13px] text-[#6b7280] hover:text-[#191919] border border-[#e8e8e6] hover:border-[#d1d5db] px-3 py-1 rounded transition-colors"
+          >
+            Reset layout
+          </button>
           <button
             onClick={() => setRefreshKey((k) => k + 1)}
             disabled={!archData && !loadError}
@@ -604,9 +699,14 @@ export default function ArchitectureScreen() {
           <ReactFlow
             nodes={nodes}
             edges={edges}
-            onNodesChange={onNodesChange}
+            onNodesChange={handleNodesChange}
             onEdgesChange={onEdgesChange}
             onNodeClick={onNodeClick}
+            onEdgeUpdate={onEdgeUpdate}
+            edgesUpdatable
+            selectionOnDrag
+            panOnDrag={[1, 2]}
+            multiSelectionKeyCode={['Control', 'Meta']}
             fitView
             fitViewOptions={{ padding: 0.2 }}
             minZoom={0.3}
