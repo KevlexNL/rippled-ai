@@ -104,7 +104,14 @@ def route(commitment, proximity_hours: float | None = None) -> RoutingResult:
         )
 
     # --- Step 0c: Watching relationship gate ---
+    # Override: if the user is the requester (requester_resolved is set),
+    # treat as 'mine' — they asked for something and are waiting on delivery.
     user_relationship = getattr(commitment, "user_relationship", None)
+    requester_resolved = getattr(commitment, "requester_resolved", None)
+    if requester_resolved:
+        # User is the requester — treat as 'mine' regardless of user_relationship
+        user_relationship = "mine"
+
     if user_relationship == "watching":
         return RoutingResult(
             surface=None,

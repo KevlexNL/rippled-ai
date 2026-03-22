@@ -497,6 +497,15 @@ def run_model_detection_pass(self, candidate_id: str) -> dict:
                 candidate.was_discarded = True
                 candidate.discard_reason = result["discard_reason"]
 
+            # Store requester/beneficiary in linked_entities for promotion
+            if result.get("requester") or result.get("beneficiary"):
+                entities = candidate.linked_entities or {}
+                if result.get("requester"):
+                    entities["requester"] = result["requester"]
+                if result.get("beneficiary"):
+                    entities["beneficiary"] = result["beneficiary"]
+                candidate.linked_entities = entities
+
             # Write detection audit row when model was actually called
             if result.get("model_called") and result.get("audit_raw_prompt"):
                 audit_model = result.get("audit_model")

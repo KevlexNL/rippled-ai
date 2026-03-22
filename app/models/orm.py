@@ -195,11 +195,18 @@ class Commitment(Base):
     surfacing_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
     # Phase C3 — delivery state + counterparty tracking
     delivery_state: Mapped[str | None] = mapped_column(String(30), nullable=True)
-    counterparty_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    counterparty_email: Mapped[str | None] = mapped_column(Text, nullable=True)
-    counterparty_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    counterparty_type: Mapped[str | None] = mapped_column(String(20), nullable=True)  # DEPRECATED: use requester/beneficiary
+    counterparty_email: Mapped[str | None] = mapped_column(Text, nullable=True)  # DEPRECATED: use requester/beneficiary
+    counterparty_name: Mapped[str | None] = mapped_column(String(255), nullable=True)  # DEPRECATED: use requester/beneficiary
     # Commitment structure enforcement
-    counterparty_resolved: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    counterparty_resolved: Mapped[str | None] = mapped_column(String(255), nullable=True)  # DEPRECATED: use requester/beneficiary
+    # Requester + beneficiary (replaces counterparty_*)
+    requester_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    requester_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    beneficiary_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    beneficiary_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    requester_resolved: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    beneficiary_resolved: Mapped[str | None] = mapped_column(String(255), nullable=True)
     speech_act: Mapped[str | None] = mapped_column(String(30), nullable=True)
     user_relationship: Mapped[str | None] = mapped_column(_user_relationship_enum, nullable=True)
     structure_complete: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)

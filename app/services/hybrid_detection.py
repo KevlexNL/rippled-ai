@@ -136,6 +136,9 @@ class HybridDetectionService:
         result["counterparty"] = model_result.counterparty
         result["user_relationship"] = model_result.user_relationship
         result["structure_complete"] = model_result.structure_complete
+        # v4: Pass through requester + beneficiary
+        result["requester"] = model_result.requester
+        result["beneficiary"] = model_result.beneficiary
 
         # Apply decision rules
         if model_result.is_commitment and model_result.confidence > MODEL_PROMOTE_THRESHOLD:

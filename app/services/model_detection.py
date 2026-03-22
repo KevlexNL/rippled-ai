@@ -56,7 +56,7 @@ NOT a commitment:
 Every commitment must be extracted in this form:
   [Owner] promised [Deliverable] to [Counterparty] [by Deadline]
 
-You MUST extract all five fields:
+You MUST extract all fields:
 1. owner — who made the promise (name or "unknown")
 2. deliverable — what was promised (concise, action-oriented)
 3. counterparty — who it was promised to (name, role, or "team")
@@ -65,6 +65,13 @@ You MUST extract all five fields:
    - "mine": the commitment owner IS the current user (by name, email, or known alias)
    - "contributing": the current user is mentioned as a participant but not the primary owner
    - "watching": the commitment is between two other parties; current user is cc'd, facilitated, or just present
+6. requester — who originally asked for this commitment:
+   - If speaker is making a request: requester = speaker
+   - If speaker is accepting a request: requester = the person who asked
+   - If speaker is self-committing unprompted: requester = null
+7. beneficiary — who ultimately receives the output:
+   - Often same as requester — set to null in that case
+   - Set when delivery is for a third party ("prepare this for Nadine", "send this to the team")
 
 ## Completeness validation
 
@@ -122,12 +129,14 @@ You must respond with valid JSON only, exactly this structure:
   "deliverable": "<what was promised, concise action-oriented phrase, or null>",
   "counterparty": "<who it was promised to, or null>",
   "user_relationship": "<mine|contributing|watching>",
-  "structure_complete": <boolean>
+  "structure_complete": <boolean>,
+  "requester": "<who originally asked for this, or null if speaker is self-committing>",
+  "beneficiary": "<who ultimately benefits, or null if same as requester>"
 }"""
 
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0  # seconds
-_PROMPT_VERSION = "ongoing-v10"
+_PROMPT_VERSION = "ongoing-v11"
 
 
 @dataclass
@@ -143,6 +152,8 @@ class ModelDetectionResult:
     counterparty: str | None = None
     user_relationship: str | None = None
     structure_complete: bool = False
+    requester: str | None = None
+    beneficiary: str | None = None
     # Audit metadata
     raw_prompt: str | None = None
     raw_response: str | None = None
@@ -387,6 +398,8 @@ class ModelDetectionService:
                 counterparty=data.get("counterparty"),
                 user_relationship=user_relationship,
                 structure_complete=bool(data.get("structure_complete", False)),
+                requester=data.get("requester"),
+                beneficiary=data.get("beneficiary"),
             )
         except (KeyError, ValueError, json.JSONDecodeError, IndexError) as exc:
             logger.warning("Failed to parse OpenAI response: %s", exc)

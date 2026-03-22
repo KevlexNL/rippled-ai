@@ -17,6 +17,7 @@ from app.services.clarification.analyzer import AnalysisResult, analyze_candidat
 from app.services.clarification.promoter import promote_candidate
 from app.services.clarification.suggestions import generate_suggestions
 from app.services.event_linker import CounterpartyExtractor
+from app.services.identity.owner_resolver import resolve_party_sync
 from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -87,13 +88,31 @@ def run_clarification(candidate_id: str, db: Session) -> dict:
     commitment = promote_candidate(candidate, db, analysis)
     logger.info("Candidate %s promoted to commitment %s", candidate_id, commitment.id)
 
-    # Step 5a — flush commitment NOW so FK constraints on Clarification /
+    # Step 5a — apply requester/beneficiary from model detection
+    entities = candidate.linked_entities or {}
+    if entities.get("requester"):
+        commitment.requester_name = entities["requester"]
+        # Resolve requester against identity profiles
+        resolved = resolve_party_sync(entities["requester"], candidate.user_id, db)
+        if resolved:
+            commitment.requester_resolved = resolved
+    if entities.get("beneficiary"):
+        commitment.beneficiary_name = entities["beneficiary"]
+        resolved = resolve_party_sync(entities["beneficiary"], candidate.user_id, db)
+        if resolved:
+            commitment.beneficiary_resolved = resolved
+
+    # If requester resolved to the logged-in user, override relationship to 'mine'
+    if getattr(commitment, "requester_resolved", None) == candidate.user_id:
+        commitment.user_relationship = "mine"
+
+    # Step 5b — flush commitment NOW so FK constraints on Clarification /
     # LifecycleTransition are satisfied when those rows are inserted.
     # Without this flush, SQLAlchemy may emit the child INSERTs before the
     # parent Commitment INSERT, causing IntegrityError → infinite retry loop.
     db.flush()
 
-    # Step 5b — [C3] enrich counterparty before flush
+    # Step 5c — [C3] enrich counterparty before flush
     try:
         settings = get_settings()
         source_item = None

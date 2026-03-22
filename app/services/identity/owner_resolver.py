@@ -104,3 +104,67 @@ def resolve_owner_sync(
             return user_id
 
     return None
+
+
+async def resolve_party(
+    party_name: str | None, user_id: str, db: AsyncSession
+) -> str | None:
+    """Resolve a requester or beneficiary name against identity profiles.
+
+    Same matching logic as resolve_owner — returns user_id if the party name
+    matches a confirmed identity profile for the given user.
+
+    Args:
+        party_name: Name string from LLM extraction (requester or beneficiary).
+        user_id: The user who owns these commitments (scope the lookup).
+        db: Async SQLAlchemy session.
+
+    Returns:
+        The user_id string if matched, None otherwise.
+    """
+    if not party_name or not party_name.strip():
+        return None
+
+    result = await db.execute(
+        select(UserIdentityProfile).where(
+            UserIdentityProfile.user_id == user_id,
+            UserIdentityProfile.confirmed.is_(True),
+        )
+    )
+    profiles = result.scalars().all()
+
+    for profile in profiles:
+        if _is_match(party_name, profile.identity_value):
+            logger.debug(
+                "Party resolved: '%s' matched identity '%s' (type=%s) -> user %s",
+                party_name, profile.identity_value, profile.identity_type, user_id,
+            )
+            return user_id
+
+    return None
+
+
+def resolve_party_sync(
+    party_name: str | None, user_id: str, db: Session
+) -> str | None:
+    """Sync version of resolve_party."""
+    if not party_name or not party_name.strip():
+        return None
+
+    result = db.execute(
+        select(UserIdentityProfile).where(
+            UserIdentityProfile.user_id == user_id,
+            UserIdentityProfile.confirmed.is_(True),
+        )
+    )
+    profiles = result.scalars().all()
+
+    for profile in profiles:
+        if _is_match(party_name, profile.identity_value):
+            logger.debug(
+                "Party resolved (sync): '%s' matched identity '%s' (type=%s) -> user %s",
+                party_name, profile.identity_value, profile.identity_type, user_id,
+            )
+            return user_id
+
+    return None

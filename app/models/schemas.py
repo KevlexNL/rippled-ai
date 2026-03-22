@@ -219,13 +219,20 @@ class CommitmentRead(_Base):
     # JSONB candidate arrays (read-only; included for surfacing/UI context)
     owner_candidates: list[Any] | None
     deadline_candidates: list[Any] | None
-    # Phase C3 fields (were in ORM but missing from schema)
+    # Phase C3 fields (counterparty_* DEPRECATED: use requester/beneficiary)
     delivery_state: str | None = None
-    counterparty_type: str | None = None
-    counterparty_email: str | None = None
-    counterparty_name: str | None = None
+    counterparty_type: str | None = None  # DEPRECATED
+    counterparty_email: str | None = None  # DEPRECATED
+    counterparty_name: str | None = None  # DEPRECATED
     # Commitment structure enforcement
-    counterparty_resolved: str | None = None
+    counterparty_resolved: str | None = None  # DEPRECATED
+    # Requester + beneficiary (replaces counterparty_*)
+    requester_name: str | None = None
+    requester_email: str | None = None
+    beneficiary_name: str | None = None
+    beneficiary_email: str | None = None
+    requester_resolved: str | None = None
+    beneficiary_resolved: str | None = None
     user_relationship: UserRelationship | None = None
     structure_complete: bool = False
     post_event_reviewed: bool | None = False
@@ -266,8 +273,13 @@ class CommitmentCreate(_Base):
     confidence_commitment: Decimal | None = None
     confidence_actionability: Decimal | None = None
     commitment_explanation: str | None = None
-    counterparty_name: str | None = None
-    counterparty_resolved: str | None = None
+    counterparty_name: str | None = None  # DEPRECATED
+    counterparty_resolved: str | None = None  # DEPRECATED
+    # Requester + beneficiary (replaces counterparty_*)
+    requester_name: str | None = None
+    requester_email: str | None = None
+    beneficiary_name: str | None = None
+    beneficiary_email: str | None = None
     user_relationship: UserRelationship | None = None
     structure_complete: bool = False
     observe_until: datetime | None = None

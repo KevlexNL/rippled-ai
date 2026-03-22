@@ -117,8 +117,15 @@ class Commitment(Base):
         ownership_ambiguity_enum, nullable=True
     )
 
-    # Counterparty & relationship
+    # Counterparty & relationship (counterparty_resolved is DEPRECATED: use requester/beneficiary)
     counterparty_resolved: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Requester + beneficiary (replaces counterparty_*)
+    requester_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    requester_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    beneficiary_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    beneficiary_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    requester_resolved: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    beneficiary_resolved: Mapped[str | None] = mapped_column(String(255), nullable=True)
     user_relationship: Mapped[UserRelationship | None] = mapped_column(
         user_relationship_enum, nullable=True
     )
