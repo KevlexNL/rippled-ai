@@ -1,8 +1,16 @@
 # Phase 02 — API Scaffold: Interpretation
 
 **Phase:** 02-api-scaffold
-**Date:** 2026-03-10
-**Status:** Awaiting Kevin approval before implementation
+**Date:** 2026-03-22 (retroactive documentation of as-built state)
+**Status:** Implementation complete — this interpretation documents what was built
+
+---
+
+## Context
+
+This WO was written when the project had Phase 01 (schema) complete and empty route stubs. The project has since progressed through phases 03–05, connectors, frontend, admin, and multiple fix cycles. The API scaffold described here is fully implemented and in production.
+
+This interpretation documents the as-built architecture against the 7 points required by the WO, noting where the implementation evolved beyond the original plan.
 
 ---
 
@@ -10,385 +18,380 @@
 
 All routes are prefixed with `/api/v1` (from `settings.api_prefix`).
 
-### Sources
+### Core Routes (WO Scope)
+
+#### Sources — `app/api/routes/sources.py`
 
 | Method | Path | Request Schema | Response Schema | Purpose |
 |--------|------|---------------|-----------------|---------|
-| POST | `/sources` | `SourceCreate` | `SourceRead` | Register a new source connection (meeting calendar, Slack workspace, email account) |
-| GET | `/sources` | — | `list[SourceRead]` | List all sources for the current user |
-| GET | `/sources/{source_id}` | — | `SourceRead` | Retrieve a single source |
-| PATCH | `/sources/{source_id}` | `SourceUpdate` | `SourceRead` | Update display name, active status, or metadata |
-| DELETE | `/sources/{source_id}` | — | `204 No Content` | Soft-delete (set `is_active = false`) or hard delete; TBD in open questions |
+| POST | `/sources` | `SourceCreate` | `SourceRead` | Register a new source connection |
+| GET | `/sources` | query: `limit`, `offset` | `list[SourceRead]` | List user's sources |
+| GET | `/sources/{source_id}` | — | `SourceRead` | Retrieve single source |
+| PATCH | `/sources/{source_id}` | `SourceUpdate` | `SourceRead` | Update display name, active status, metadata |
+| DELETE | `/sources/{source_id}` | — | `204` | Soft-delete (sets `is_active = false`) |
 
-### Source Items (Ingestion)
-
-| Method | Path | Request Schema | Response Schema | Purpose |
-|--------|------|---------------|-----------------|---------|
-| POST | `/source-items` | `SourceItemCreate` | `SourceItemRead` | Ingest a single meeting/slack/email item; triggers async detection pipeline |
-| POST | `/source-items/batch` | `list[SourceItemCreate]` | `list[SourceItemRead]` | Batch ingest up to N items; same pipeline trigger per item |
-| GET | `/source-items/{item_id}` | — | `SourceItemRead` | Retrieve a single source item (debugging / audit) |
-
-### Commitments
-
-| Method | Path | Request Schema | Response Schema | Purpose |
-|--------|------|---------------|-----------------|---------|
-| GET | `/commitments` | query: `lifecycle_state`, `priority_class` | `list[CommitmentRead]` | List commitments with optional filters |
-| GET | `/commitments/{commitment_id}` | — | `CommitmentRead` | Retrieve a single commitment with full detail |
-| PATCH | `/commitments/{commitment_id}` | `CommitmentUpdate` | `CommitmentRead` | Human confirmation of resolved_owner, resolved_deadline, lifecycle_state; creates lifecycle_transition record |
-| DELETE | `/commitments/{commitment_id}` | — | `204 No Content` | Transition to `discarded` state (not hard delete) |
-
-### Commitment Signals
-
-| Method | Path | Request Schema | Response Schema | Purpose |
-|--------|------|---------------|-----------------|---------|
-| GET | `/commitments/{commitment_id}/signals` | — | `list[CommitmentSignalRead]` | List all signals linked to a commitment (provenance chain) |
-| POST | `/commitments/{commitment_id}/signals` | `CommitmentSignalCreate` | `CommitmentSignalRead` | Manually link a source item as a signal (for testing / admin use) |
-
-### Commitment Ambiguities
-
-| Method | Path | Request Schema | Response Schema | Purpose |
-|--------|------|---------------|-----------------|---------|
-| GET | `/commitments/{commitment_id}/ambiguities` | — | `list[CommitmentAmbiguityRead]` | List ambiguities; used by clarification UI |
-| POST | `/commitments/{commitment_id}/ambiguities` | `CommitmentAmbiguityCreate` | `CommitmentAmbiguityRead` | Create an ambiguity record (detection pipeline use) |
-| PATCH | `/commitments/{commitment_id}/ambiguities/{ambiguity_id}` | `{is_resolved: bool, resolved_by_item_id?: str}` | `CommitmentAmbiguityRead` | Mark an ambiguity as resolved |
-
-### Surfacing
-
-| Method | Path | Request Schema | Response Schema | Purpose |
-|--------|------|---------------|-----------------|---------|
-| GET | `/surface/main` | — | `list[CommitmentRead]` | Big promises ready for the Main view |
-| GET | `/surface/shortlist` | — | `list[CommitmentRead]` | Small commitments ready for the Shortlist |
-| GET | `/surface/clarifications` | — | `list[CommitmentRead]` | Commitments with unresolved ambiguities needing human input |
-
-### Commitment Candidates (internal / debug)
-
-| Method | Path | Request Schema | Response Schema | Purpose |
-|--------|------|---------------|-----------------|---------|
-| GET | `/candidates` | — | `list[CommitmentCandidateRead]` | List detection candidates (debug/audit; not exposed in UI) |
-| GET | `/candidates/{candidate_id}` | — | `CommitmentCandidateRead` | Retrieve single candidate |
-
-### System
+**Added beyond WO scope** (connector onboarding):
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/health` | Already exists; no change |
+| POST | `/sources/setup/email` | Email IMAP setup with connection test |
+| POST | `/sources/setup/slack` | Slack bot token setup with auth.test validation |
+| POST | `/sources/setup/meeting` | Meeting webhook setup with secret generation |
+| POST | `/sources/test/email` | Test IMAP connection without persisting |
+| POST | `/sources/test/slack` | Validate Slack bot token |
+| GET | `/sources/onboarding-status` | Check if user has any active sources |
+| POST | `/sources/{source_id}/regenerate-secret` | Regenerate meeting webhook secret |
+
+#### Source Items (Ingestion) — `app/api/routes/source_items.py`
+
+| Method | Path | Request Schema | Response Schema | Purpose |
+|--------|------|---------------|-----------------|---------|
+| POST | `/source-items` | `SourceItemCreate` | `SourceItemRead` | Ingest single item; triggers async detection |
+| POST | `/source-items/batch` | `list[SourceItemCreate]` (max 100) | `207` with per-item results | Batch ingest with partial success |
+| GET | `/source-items/{item_id}` | — | `SourceItemRead` | Retrieve single item (audit) |
+
+#### Commitments — `app/api/routes/commitments.py`
+
+| Method | Path | Request Schema | Response Schema | Purpose |
+|--------|------|---------------|-----------------|---------|
+| GET | `/commitments` | query: `lifecycle_state`, `priority_class`, `relationship`, `limit`, `offset` | `list[CommitmentRead]` | List with filters |
+| POST | `/commitments` | `CommitmentCreate` | `CommitmentRead` | Create commitment |
+| GET | `/commitments/{id}` | — | `CommitmentRead` | Single commitment with linked events |
+| PATCH | `/commitments/{id}` | `CommitmentUpdate` | `CommitmentRead` | Update fields; enforces lifecycle transitions |
+| DELETE | `/commitments/{id}` | — | `204` | Transition to `discarded` (not hard delete) |
+
+**Added beyond WO scope:**
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST | `/commitments/{id}/skip` | Skip from review queue without lifecycle change |
+| PATCH | `/commitments/{id}/delivery-state` | Update delivery state (Phase C3) |
+| GET | `/commitments/{id}/events` | List linked calendar events |
+| POST | `/commitments/{id}/events` | Link commitment to calendar event |
+
+**Sub-resources (signals + ambiguities):**
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/commitments/{id}/signals` | List enriched signals (with source text) |
+| POST | `/commitments/{id}/signals` | Link source item as signal |
+| GET | `/commitments/{id}/ambiguities` | List ambiguities |
+| POST | `/commitments/{id}/ambiguities` | Create ambiguity record |
+| PATCH | `/commitments/{id}/ambiguities/{aid}` | Resolve ambiguity |
+
+#### Surfacing — `app/api/routes/surface.py`
+
+| Method | Path | Response Schema | Purpose |
+|--------|------|-----------------|---------|
+| GET | `/surface/main` | `list[CommitmentRead]` | Big promises — `surfaced_as = 'main'`, `user_relationship = 'mine'` |
+| GET | `/surface/shortlist` | `list[CommitmentRead]` | Small commitments — `surfaced_as = 'shortlist'`, mine + contributing |
+| GET | `/surface/clarifications` | `list[CommitmentRead]` | Items needing human input |
+| GET | `/surface/best-next-moves` | `BestNextMovesResponse` | Grouped top-5 actions (quick wins, blockers, needs focus) |
+| GET | `/surface/internal` | `list[CommitmentRead]` | Unsurfaced active items (debug/admin) |
+
+#### Candidates — `app/api/routes/candidates.py`
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/candidates` | List detection candidates (debug/audit) |
+| GET | `/candidates/{id}` | Retrieve single candidate |
+
+### Routes Added Beyond WO Scope
+
+The following route modules were added in later phases but are registered in `app/main.py`:
+
+| Module | Prefix | Purpose |
+|--------|--------|---------|
+| `contexts.py` | `/contexts` | Commitment context grouping |
+| `webhooks/email.py` | `/webhooks/email` | Inbound email webhook |
+| `webhooks/slack.py` | `/webhooks/slack` | Slack event webhook |
+| `webhooks/meetings.py` | `/webhooks/meeting` | Meeting transcript webhook |
+| `digest.py` | `/digest` | Daily digest generation/preview |
+| `events.py` | `/events` | Calendar event CRUD |
+| `integrations.py` | `/integrations` | OAuth flows (Slack, Google Calendar) |
+| `admin.py` | `/admin` | Admin API (pipeline re-runs, stats) |
+| `admin_review.py` | `/admin/review` | Admin review queue |
+| `user_settings.py` | `/user-settings` | User preference management |
+| `clarifications.py` | `/clarifications` | Clarification queue endpoints |
+| `stats.py` | `/stats` | Dashboard statistics |
+| `identity.py` | `/identity` | Contact identity resolution |
+| `report.py` | `/report` | Report generation |
 
 ---
 
-## 2. DB Session Layer — Async SQLAlchemy Plan
+## 2. DB Session Layer
 
-### Problem with current `client.py`
-The existing `app/db/client.py` wraps the Supabase Python client (REST API over HTTP). This is fine for simple CRUD but cannot support:
-- Proper transactions across multiple tables
-- Efficient async queries with ORM relationships
-- Alembic-managed migrations (Alembic uses SQLAlchemy, not Supabase client)
+### As-Built Architecture
 
-Phase 02 will add a parallel SQLAlchemy async layer. The Supabase client can remain for any Supabase-specific operations (auth, storage) but all data access in routes uses SQLAlchemy.
+The DB layer is split across three files:
 
-### Engine setup — `app/db/engine.py` (new file)
+**`app/db/engine.py` — Async engine (FastAPI routes)**
+- `create_async_engine` with `postgresql+asyncpg://` driver
+- `pool_size=10`, `max_overflow=20`
+- `statement_cache_size=0` in connect_args for Supabase/PgBouncer compatibility
+- `echo=True` in development
+- Exports `AsyncSessionLocal` (async_sessionmaker)
 
-```python
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from app.core.config import get_settings
+**`app/db/deps.py` — FastAPI dependency**
+- `get_db()` async generator yields `AsyncSession`
+- Auto-commits on success, rolls back on exception
+- Used via `Depends(get_db)` in every route handler
 
-def _make_async_url(url: str) -> str:
-    """Convert postgres:// or postgresql:// to postgresql+asyncpg://"""
-    return url.replace("postgresql://", "postgresql+asyncpg://") \
-              .replace("postgres://", "postgresql+asyncpg://")
+**`app/db/session.py` — Sync engine (Celery workers)**
+- Separate sync engine via `create_engine` with `postgresql://` driver
+- `pool_size=5`, `max_overflow=10`, `pool_pre_ping=True`
+- `get_sync_session()` context manager for Celery tasks
+- Needed because Celery workers run synchronously
 
-settings = get_settings()
-engine = create_async_engine(
-    _make_async_url(settings.database_url),
-    pool_size=10,
-    max_overflow=20,
-    echo=settings.app_env == "development",
-)
-AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
-```
+**`app/db/client.py` — Supabase REST client (legacy)**
+- Still exists for any Supabase-specific operations
+- All data access uses SQLAlchemy; this is effectively retired for CRUD
 
-### `get_db` dependency — `app/db/deps.py` (new file)
-
-```python
-from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.engine import AsyncSessionLocal
-
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-```
-
-### Usage in routes
-
-```python
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.deps import get_db
-
-@router.get("/commitments")
-async def list_commitments(db: AsyncSession = Depends(get_db), ...):
-    ...
-```
-
-### ORM Models
-Phase 02 requires SQLAlchemy ORM model classes (`app/models/orm.py`) that mirror the Alembic-managed tables. These use `DeclarativeBase` + `mapped_column`. They are separate from Pydantic schemas. Pydantic schemas are used only at the API boundary (request/response); ORM models are used for DB queries.
-
-### Required new dependency
-`asyncpg` must be added to `requirements.txt` (or `pyproject.toml`).
+### Key Decision
+The original interpretation proposed async-only. The implementation added a sync session layer when Celery was introduced (detection pipeline runs in background workers). This dual-engine approach is clean: routes use async, workers use sync, both hit the same Postgres.
 
 ---
 
-## 3. App Structure Plan
+## 3. App Structure
+
+### As-Built Layout
 
 ```
 app/
 ├── api/
 │   └── routes/
 │       ├── __init__.py
-│       ├── sources.py          # /sources CRUD
-│       ├── source_items.py     # /source-items ingestion
-│       ├── commitments.py      # /commitments CRUD + signals + ambiguities
-│       ├── surface.py          # /surface/main, /surface/shortlist, /surface/clarifications
-│       └── candidates.py       # /candidates (debug/audit)
+│       ├── sources.py              # Source CRUD + setup/onboarding
+│       ├── source_items.py         # Ingestion endpoint
+│       ├── commitments.py          # Commitment CRUD + signals + ambiguities + delivery
+│       ├── surface.py              # Main / Shortlist / Clarifications / Best-next-moves
+│       ├── candidates.py           # Candidate debug/audit
+│       ├── contexts.py             # Commitment contexts
+│       ├── clarifications.py       # Clarification queue
+│       ├── digest.py               # Daily digest
+│       ├── events.py               # Calendar events
+│       ├── integrations.py         # OAuth flows
+│       ├── admin.py                # Admin operations
+│       ├── admin_review.py         # Admin review queue
+│       ├── user_settings.py        # User preferences
+│       ├── stats.py                # Dashboard stats
+│       ├── identity.py             # Contact identity
+│       ├── report.py               # Reporting
+│       └── webhooks/
+│           ├── email.py            # Inbound email webhook
+│           ├── slack.py            # Slack event webhook
+│           └── meetings.py         # Meeting transcript webhook
+├── connectors/
+│   └── shared/
+│       └── credentials_utils.py    # Encrypt/decrypt source credentials
 ├── core/
-│   ├── config.py               # existing
-│   └── dependencies.py         # get_current_user_id (X-User-ID header)
+│   ├── config.py                   # Pydantic Settings (env vars)
+│   └── dependencies.py             # get_current_user_id, get_user_id_for_redirect
 ├── db/
-│   ├── client.py               # existing Supabase client (keep for now)
-│   ├── engine.py               # NEW: async engine + session factory
-│   └── deps.py                 # NEW: get_db FastAPI dependency
+│   ├── client.py                   # Supabase REST client (legacy)
+│   ├── engine.py                   # Async SQLAlchemy engine
+│   ├── deps.py                     # get_db FastAPI dependency
+│   └── session.py                  # Sync session for Celery
 ├── models/
-│   ├── enums.py                # existing
-│   ├── schemas.py              # existing Pydantic schemas
-│   └── orm.py                  # NEW: SQLAlchemy ORM models
-└── main.py                     # register routers here
+│   ├── base.py                     # DeclarativeBase
+│   ├── enums.py                    # 10+ enum types
+│   ├── schemas.py                  # Pydantic v2 request/response schemas
+│   ├── orm.py                      # SQLAlchemy ORM model registry
+│   ├── commitment.py               # Commitment ORM model
+│   ├── commitment_candidate.py     # CommitmentCandidate ORM model
+│   ├── commitment_signal.py        # CommitmentSignal ORM model
+│   ├── commitment_ambiguity.py     # CommitmentAmbiguity ORM model
+│   ├── source.py                   # Source ORM model
+│   ├── source_item.py              # SourceItem ORM model
+│   ├── user.py                     # User ORM model
+│   ├── lifecycle_transition.py     # LifecycleTransition ORM model
+│   └── ...                         # Additional models (normalized_signal, etc.)
+├── services/                       # Business logic layer (detection, surfacing, etc.)
+└── main.py                         # FastAPI app + router registration + CORS + static serving
 ```
 
-### Router registration in `main.py`
+### Router Registration
 
-```python
-from app.api.routes import sources, source_items, commitments, surface, candidates
+All routers registered in `app/main.py` via `app.include_router()` with `prefix=settings.api_prefix` and appropriate tags. Routes are organized by domain concern, not by HTTP method.
 
-app.include_router(sources.router, prefix=settings.api_prefix, tags=["sources"])
-app.include_router(source_items.router, prefix=settings.api_prefix, tags=["ingestion"])
-app.include_router(commitments.router, prefix=settings.api_prefix, tags=["commitments"])
-app.include_router(surface.router, prefix=settings.api_prefix, tags=["surfacing"])
-app.include_router(candidates.router, prefix=settings.api_prefix, tags=["candidates"])
-```
+### Key Structural Decision
+ORM models are split into individual files per entity (not a single `orm.py`). `app/models/orm.py` serves as a registry that re-exports all models for convenient imports.
 
 ---
 
-## 4. User Isolation — X-User-ID Header (MVP)
+## 4. User Isolation Approach
 
-### Approach
-No auth system in Phase 02. User identity is established via a required `X-User-ID` request header. Every route that accesses user data requires this header.
+### Mechanism: `X-User-ID` Header
 
-### Dependency — `app/core/dependencies.py`
+**`app/core/dependencies.py`** provides two dependencies:
 
-```python
-from fastapi import Header, HTTPException
+1. **`get_current_user_id()`** — Extracts `X-User-ID` header (required). Returns 400 if missing.
+2. **`get_user_id_for_redirect()`** — Accepts either `user_id` query param or `X-User-ID` header. Used for OAuth callback flows where browser navigations can't carry custom headers.
 
-async def get_current_user_id(x_user_id: str = Header(...)) -> str:
-    if not x_user_id:
-        raise HTTPException(status_code=400, detail="X-User-ID header required")
-    return x_user_id
-```
+### Enforcement Pattern
 
-### Usage
+Every route handler that accesses user data:
+1. Declares `user_id: str = Depends(get_current_user_id)`
+2. Adds `WHERE user_id = :user_id` to every query
+3. Validates ownership of related resources (e.g., source_items validates source belongs to user)
 
-```python
-from app.core.dependencies import get_current_user_id
+### Cross-Resource Validation
 
-@router.get("/commitments")
-async def list_commitments(
-    user_id: str = Depends(get_current_user_id),
-    db: AsyncSession = Depends(get_db),
-):
-    # All queries filter: WHERE user_id = user_id
-    ...
-```
+- `POST /source-items` validates `source_id` belongs to user before inserting
+- `POST /commitments/{id}/signals` validates commitment belongs to user
+- `PATCH /commitments/{id}/ambiguities/{aid}` validates both commitment and ambiguity ownership
 
-### Isolation guarantee
-Every DB query includes an explicit `WHERE user_id = :user_id` filter. No query ever returns rows from a different user. This is enforced at the route handler level — not via RLS (row-level security is a later concern).
+### Auto-Provisioning
 
-### Notes
-- `X-User-ID` must match a row in the `users` table or routes return 404 on first lookup
-- Phase 02 does **not** validate that the user exists on every call (too expensive); the commitment/source routes naturally fail with FK violations if the user doesn't exist
-- This is explicitly an MVP shortcut — replace with JWT + Supabase Auth in a future phase
+`sources.py` includes `_ensure_user_exists()` which upserts a user row on first API call using `ON CONFLICT DO NOTHING`. This handles the gap between Supabase auth creating `auth.users` and our app's `users` table needing a corresponding row.
+
+### Limitations (documented, accepted for MVP)
+- No JWT validation — anyone with a valid user UUID can impersonate
+- No rate limiting
+- Replace with Supabase Auth + JWT in a future auth phase
 
 ---
 
-## 5. Ingestion Route Detail — POST /source-items
+## 5. Ingestion Route(s)
 
-### Endpoint
-`POST /api/v1/source-items`
+### POST /source-items — Single Item Ingestion
 
-### Request
-```
-Header: X-User-ID: <user_uuid>
-Body: SourceItemCreate
-```
+**Request:** `SourceItemCreate` with `X-User-ID` header
 
-Key fields in `SourceItemCreate`:
-- `source_id` — must belong to the requesting user (validated)
-- `source_type` — `meeting | slack | email`
-- `external_id` — provider's own ID; used for dedup via unique constraint `uq_source_items_source_external`
-- `occurred_at` — timestamp of the original event (required)
-- `content` — raw text body
-- `thread_id` — groups related items (email thread, Slack thread)
-- `direction` — `inbound | outbound | sent | received | internal` (source-type dependent)
+The `SourceItemCreate` schema handles all three source types through a common structure:
 
-### Handler logic (ordered steps)
+| Field | Meeting | Slack | Email |
+|-------|---------|-------|-------|
+| `source_type` | `"meeting"` | `"slack"` | `"email"` |
+| `external_id` | transcript segment ID | message ts | message-id |
+| `thread_id` | meeting ID | thread ts | email thread-id |
+| `direction` | — | — | `inbound` / `outbound` |
+| `sender_name` | speaker label | Slack display name | From header |
+| `sender_email` | — | — | From email |
+| `is_external_participant` | inferred | — | domain-based |
+| `content` | transcript text | message text | email body |
+| `has_attachment` | — | file metadata | attachment presence |
+| `occurred_at` | segment timestamp | message ts | Date header |
+| `metadata_` | meeting metadata | channel info | headers/recipients |
+| `is_quoted_content` | — | — | `true` for quoted text |
 
-1. **Validate source ownership** — query `SELECT id FROM sources WHERE id = :source_id AND user_id = :user_id`; 404 if not found
-2. **Dedup check** — the DB has a unique constraint on `(source_id, external_id)`; catch `IntegrityError` and return `409 Conflict` with the existing item's ID
-3. **Insert `source_items` row** — set `ingested_at = now()`, `user_id` from header
-4. **Enqueue detection task** — push `detect_commitments(source_item_id)` to Celery/Redis queue (fire-and-forget; the route does not wait for detection)
-5. **Return** `SourceItemRead` with `201 Created`
+**Handler flow:**
+1. Validate source ownership → 404 if source doesn't belong to user
+2. Build `SourceItem` ORM object with `ingested_at = now()`
+3. Flush to DB → catch `IntegrityError` on `(source_id, external_id)` unique constraint → return `409 Conflict` with existing item ID
+4. Fire-and-forget: enqueue `detect_commitments(source_item_id)` Celery task (silently skips if broker unavailable)
+5. Return `SourceItemRead` with `201`
 
-### Batch variant — POST /source-items/batch
-- Accepts `list[SourceItemCreate]` (max 100 items)
-- Runs steps 1–4 for each item in a single transaction
-- On partial failure (e.g., one dedup conflict): **reject the whole batch** and return `207 Multi-Status` with per-item results
-- Open question: whether partial success should be allowed (see §7)
+### POST /source-items/batch — Batch Ingestion
 
-### Silent observation window
-After ingestion, the detection pipeline sets `observe_until = now() + observation_window_hours`. Items are not surfaced until `observe_until` has passed. This is enforced in the surfacing queries (§6), not here.
+- Accepts `list[SourceItemCreate]` (max 100, returns 422 if exceeded)
+- Uses `db.begin_nested()` (savepoints) per item for partial success
+- Returns `207 Multi-Status` with per-item results: `{status: 201|404|409, id?, error?, external_id}`
+- Each successful item triggers detection independently
+
+### Webhook Ingestion (added in later phases)
+
+The WO described source-items as the only ingestion path. In practice, three webhook routes were added:
+
+- `POST /webhooks/email/events` — Receives email payloads, normalizes to SourceItem + triggers detection
+- `POST /webhooks/slack/events` — Receives Slack events (message, thread_reply), validates signature, normalizes + triggers detection
+- `POST /webhooks/meeting/events` — Receives meeting transcripts, validates webhook secret, normalizes + triggers detection
+
+These webhooks perform the same core flow as POST /source-items but include provider-specific validation (HMAC signatures, webhook secrets) and normalization logic.
 
 ---
 
-## 6. Surfacing Routes — Filter Logic
+## 6. Surfacing Routes
 
-All surfacing routes require `X-User-ID` header and return only that user's commitments.
+### Design Evolution
+
+The original interpretation proposed filtering on `priority_class` + `is_surfaced` + `observe_until`. The as-built implementation uses a dedicated `surfaced_as` column set by the Phase 06 surfacing pipeline, plus `priority_score` for ordering.
 
 ### GET /surface/main — Big Promises
 
-Returns commitments that are ready to be surfaced on the Main view.
-
-**Filter logic:**
-```sql
+```
 WHERE user_id = :user_id
-  AND priority_class = 'big_promise'
-  AND lifecycle_state IN ('active', 'needs_clarification')
-  AND is_surfaced = true
-  AND (observe_until IS NULL OR observe_until <= NOW())
+  AND surfaced_as = 'main'
+  AND lifecycle_state IN ('active', 'needs_clarification', 'proposed')
+  AND skipped_at IS NULL
+  AND structure_complete = true
+  AND user_relationship IN ('mine')
+ORDER BY priority_score DESC NULLS LAST, created_at DESC
+LIMIT 10
 ```
 
-**Sort:** `resolved_deadline ASC NULLS LAST, created_at DESC`
-
-**Rationale:**
-- `big_promise` only — Main is for high-stakes items
-- `active` and `needs_clarification` — both are actionable states; `needs_clarification` appears here to prompt resolution, not on a separate screen
-- `is_surfaced = true` — detection pipeline sets this once observation window clears and confidence threshold is met
-- `observe_until` guard — respects the silent observation window; if the window hasn't closed, the item stays off Main even if `is_surfaced = true`
-
----
+**Key filters:**
+- `surfaced_as = 'main'` — set by surfacing pipeline based on scoring
+- `structure_complete = true` — ensures commitment has been through structural classification
+- `user_relationship = 'mine'` — Main only shows commitments owned by user
+- `skipped_at IS NULL` — respects user's skip actions
 
 ### GET /surface/shortlist — Small Commitments
 
-Returns commitments ready for the Shortlist view.
-
-**Filter logic:**
-```sql
-WHERE user_id = :user_id
-  AND priority_class = 'small_commitment'
-  AND lifecycle_state IN ('active', 'needs_clarification')
-  AND is_surfaced = true
-  AND (observe_until IS NULL OR observe_until <= NOW())
-```
-
-**Sort:** `resolved_deadline ASC NULLS LAST, confidence_actionability DESC`
-
-**Rationale:**
-- Same surface-readiness conditions as Main, but for `small_commitment` class
-- `confidence_actionability` sort puts more actionable items first within same deadline group
-
----
+Same pattern but:
+- `surfaced_as = 'shortlist'`
+- `user_relationship IN ('mine', 'contributing')` — includes commitments user contributes to
 
 ### GET /surface/clarifications — Needs Human Input
 
-Returns commitments that have unresolved ambiguities, requiring human clarification before they can be properly surfaced.
+- `surfaced_as = 'clarifications'`
+- No `structure_complete` or `user_relationship` filter — any unclear item surfaces here
+- Ordered by `priority_score DESC, state_changed_at ASC` (oldest ambiguity first)
 
-**Filter logic:**
-```sql
-WHERE user_id = :user_id
-  AND lifecycle_state = 'needs_clarification'
-  AND is_surfaced = true
-  AND EXISTS (
-    SELECT 1 FROM commitment_ambiguities ca
-    WHERE ca.commitment_id = commitments.id
-      AND ca.is_resolved = false
-  )
-```
+### GET /surface/best-next-moves — Grouped Actions
 
-**Sort:** `state_changed_at ASC` (oldest ambiguity first — longest waiting)
+Returns up to 5 items in three groups:
+1. **Quick wins** — low-effort commitment types (confirm, send, update, follow_up) or shortlist items with confidence >= 0.65
+2. **Likely blockers** — overdue items with external counterparty
+3. **Needs focus** — remaining surfaced items by priority
 
-**Rationale:**
-- `needs_clarification` state is the primary signal
-- The `EXISTS` subquery ensures there are actually open ambiguities (defensive — state and ambiguity table should be in sync, but this prevents ghost entries)
-- No `priority_class` filter — both big promises and small commitments can need clarification
-- `observe_until` is NOT applied here — if a commitment needs clarification, it should be shown regardless of observation window
+### GET /surface/internal — Debug View
 
----
+Returns unsurfaced active commitments (`surfaced_as IS NULL`). Admin/debug only.
 
-### Response shape for all surfacing routes
-All three return `list[CommitmentRead]`. The frontend decides how to render Main vs Shortlist differently. No special surfacing-specific schema.
+### Enrichment
+
+All surfacing endpoints batch-fetch and inject:
+- **Linked calendar events** (delivery_at relationships)
+- **Origin source metadata** (sender name, email, occurred_at from the first origin signal)
 
 ---
 
-## 7. Open Questions
+## 7. Questions / Ambiguities
 
-### Q1: Soft delete vs hard delete for sources
-**Issue:** Should `DELETE /sources/{id}` set `is_active = false` (soft) or actually remove the row?
-**Impact:** Hard delete cascades to `source_items`, which cascade to `commitment_signals` (SET NULL), which could orphan commitments. Soft delete avoids data loss but makes "clean up" harder.
-**Leaning:** Soft delete (set `is_active = false`) for MVP. No cascade risk.
+All original open questions from the initial interpretation have been resolved through implementation:
 
-### Q2: Batch ingestion — partial success or all-or-nothing?
-**Issue:** On batch POST, if 1 of 50 items is a duplicate, should we return 409 for all or accept the other 49?
-**Impact:** All-or-nothing is simpler (single transaction, single rollback). Partial success is friendlier for idempotent connectors that re-send seen items.
-**Leaning:** Partial success with `207 Multi-Status` — connector use case is the primary batch caller and idempotency matters.
+| Question | Resolution |
+|----------|-----------|
+| Soft vs hard delete for sources | **Soft delete** — `is_active = false` (implemented) |
+| Batch partial success | **Partial success** — `207 Multi-Status` with per-item results (implemented) |
+| ORM vs raw SQL | **ORM models** — individual files per entity, registry in `orm.py` (implemented) |
+| `is_surfaced` flag ownership | **Replaced** — `surfaced_as` column set by Phase 06 surfacing pipeline; `is_surfaced` retained as secondary flag |
+| Lifecycle transition validation | **Enforced** — `VALID_TRANSITIONS` dict in commitments.py, returns 400 on invalid (implemented) |
+| Pagination | **Implemented** — `limit` (default 5, max 200) + `offset` on all list routes |
+| Async driver | **asyncpg** with `statement_cache_size=0` for Supabase/PgBouncer compat (implemented) |
 
-### Q3: ORM models vs raw SQL for Phase 02
-**Issue:** Writing full SQLAlchemy ORM models (`app/models/orm.py`) is comprehensive but adds substantial boilerplate upfront. Alternative: use `text()` raw SQL queries in handlers for Phase 02 and introduce ORM models in Phase 03.
-**Impact:** Raw SQL is faster to write but loses type safety and makes relationship loading harder.
-**Leaning:** Write ORM models in Phase 02 — the schema is already stable (Phase 01), so the mapping is mechanical. Avoiding ORM now just defers the work and creates inconsistency.
+### Remaining Notes
 
-### Q4: `is_surfaced` flag — who sets it?
-**Issue:** The surfacing queries filter on `is_surfaced = true`, but Phase 02 has no detection pipeline yet (that's Phase 03). Should `is_surfaced` default to `true` for items created via API in Phase 02 (for testability), or always `false` until detection runs?
-**Leaning:** Default `false` in DB schema (already defined that way). In Phase 02 tests, manually PATCH commitments to `is_surfaced = true` to exercise surfacing routes. No special bypass logic needed.
-
-### Q5: Lifecycle state transition validation
-**Issue:** `CommitmentUpdate` allows setting `lifecycle_state` freely. Should the API enforce valid transitions (e.g., `discarded → active` is invalid) or trust the caller?
-**Impact:** Enforcing transitions requires a state machine map in code.
-**Leaning:** Enforce valid transitions in Phase 02. Simple dict lookup: `VALID_TRANSITIONS = {proposed: [active, needs_clarification, discarded], ...}`. Raises `400` on invalid transition.
-
-### Q6: Pagination on list routes
-**Issue:** No pagination defined in schemas. Long-term, `/commitments` and surfacing routes need `limit/offset` or cursor pagination.
-**Leaning:** Add `limit` (default 50, max 200) and `offset` (default 0) query params to all list routes in Phase 02. Simple and sufficient for MVP scale.
-
-### Q7: asyncpg vs psycopg3 for async driver
-**Issue:** `asyncpg` is the standard async PostgreSQL driver for SQLAlchemy. `psycopg3` (psycopg[async]) is newer and supports more features.
-**Leaning:** `asyncpg` — more battle-tested with SQLAlchemy async, better documented.
+1. **No auth middleware** — `X-User-ID` header is the sole identity mechanism. Accepted for MVP; auth phase planned.
+2. **CORS wide open** — `allow_origins=["*"]` in CORS middleware. Acceptable for MVP single-user deployment.
+3. **No Celery in this phase** — WO said "synchronous ingestion only" but detection was implemented as Celery fire-and-forget from day one. The route itself is synchronous (returns immediately after DB insert); detection runs async in a worker.
+4. **Surfacing evolved significantly** — moved from simple `priority_class` + `is_surfaced` filtering to a full scoring pipeline (`surfaced_as`, `priority_score`, `structure_complete`, `user_relationship`). This was the right call — the brief's Main/Shortlist/Clarifications distinction needed richer routing than simple column filters.
 
 ---
 
-## 8. Kevin's Decisions (2026-03-10)
+## Kevin's Original Decisions (2026-03-10, preserved)
 
 | Q | Decision |
 |---|----------|
 | Q1 | Soft delete (`is_active = false`) |
-| Q2 | Partial success allowed — `207 Multi-Status`. **Post-MVP TODO:** build process to pull partial failures and fix automatically |
-| Q3 | Write ORM models in Phase 02 now |
-| Q4 | `is_surfaced` defaults `false`; manually PATCH in tests |
-| Q5 | Enforce valid lifecycle transitions (state machine dict, 400 on invalid) |
-| Q6 | Pagination now. **5 items max** on all user-facing surfaces. Admin/triage layer gets separate deeper pagination later. The rule: be strict on what gets shown and why — don't create another list for users to manage |
-| Q7 | `asyncpg` — lower friction for launch; swap to psycopg3 later if needed |
-| Supabase REST | Retire `client.py` for data access. Keep Supabase as Postgres host. Connect directly via SQLAlchemy + asyncpg. Supabase's security/infra benefits are in the hosting layer — untouched |
+| Q2 | Partial success — `207 Multi-Status` |
+| Q3 | ORM models in Phase 02 |
+| Q4 | `is_surfaced` defaults false; manually PATCH in tests |
+| Q5 | Enforce lifecycle transitions (state machine dict, 400) |
+| Q6 | 5 items max on user-facing surfaces |
+| Q7 | asyncpg — lowest friction |
+| Supabase REST | Retired for data access; keep as Postgres host |
 
-## 9. Standing Rule (set 2026-03-10)
-**Low-friction default:** When a technical choice can be easily replaced later, always choose the option with least friction for the current stage. Optimize for launch speed, not future perfection — unless the choice actively blocks the short-to-mid-term vision.
+## Standing Rule (set 2026-03-10)
+**Low-friction default:** When a technical choice can be easily replaced later, always choose the option with least friction for the current stage.
