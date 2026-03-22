@@ -82,6 +82,13 @@ Track patterns from corrections to avoid repeating mistakes.
 
 ---
 
+### 2026-03-22 — WO creation must check for existing in-flight WOs
+**Mistake:** `_create_prompt_improvement_wo` wrote directly to a fixed path with no existence check. When the judge ran again before the previous WO was completed, it silently overwrote the PENDING file, and after orchestration renamed it to INPROGRESS, a new PENDING could be created for the exact same issue.
+**Pattern:** Before creating a WO file, check if a PENDING or INPROGRESS file already exists for the same WO type. If so, skip creation and log the skip. This prevents duplicate work and avoids overwriting WOs that are already being actioned.
+**Severity:** Minor
+
+---
+
 ### 2026-03-22 — Prompt structural positioning: primacy/recency over mid-prompt rules
 **Mistake:** Critical rules (follow-up detection, greeting exclusion) were listed mid-prompt after the role description and before examples. Despite correct content, LLMs still missed "follow up on budget" and extracted "greeting" as a commitment because the rules lacked positional prominence.
 **Pattern:** Move the two most critical rules to the TOP of the prompt (immediately after role description) using strong labels ("CRITICAL RULE", "ZERO TOLERANCE"). Consolidate greeting/social exclusions into the top-positioned rule rather than duplicating them mid-prompt in a separate NOT-a-commitment list. The "BEFORE YOU RESPOND" self-check at the end provides recency reinforcement. Primacy + recency = strongest LLM attention.

@@ -317,7 +317,15 @@ class TestWODeduplication:
 
     def test_wo_deduplicates_sample_failures(self):
         """An audit with both missed and false_positive should appear once in WO."""
+        from pathlib import Path
         from app.services.llm_judge import _create_prompt_improvement_wo
+
+        # Ensure clean state — no pre-existing WO files
+        wo_dir = Path("/home/kevinbeeftink/.openclaw/workspace/workorders")
+        for p in [wo_dir / "WO-RIPPLED-PROMPT-IMPROVEMENT_PENDING.md",
+                  wo_dir / "WO-RIPPLED-PROMPT-IMPROVEMENT_INPROGRESS.md"]:
+            if p.exists():
+                p.unlink()
 
         _create_prompt_improvement_wo(
             judge_run_id="run-1",
@@ -374,3 +382,75 @@ class TestJudgePromptClassificationLabels:
         assert "follow up" in JUDGE_PROMPT.lower(), (
             "Judge prompt must mention follow-ups as commitments"
         )
+
+    def test_judge_prompt_requires_actionable_suggestion(self):
+        """Judge prompt must instruct the evaluator to provide a specific,
+        actionable suggestion — not leave it empty."""
+        from app.services.llm_judge import JUDGE_PROMPT
+
+        lower = JUDGE_PROMPT.lower()
+        assert "specific" in lower and "change" in lower, (
+            "Judge prompt must require specific, actionable suggestions"
+        )
+        assert "example" in lower or "e.g." in lower or "such as" in lower, (
+            "Judge prompt should include example of what a good suggestion looks like"
+        )
+
+
+class TestWODuplicatePrevention:
+    """WO creation must not overwrite an existing PENDING or INPROGRESS WO."""
+
+    def test_skips_wo_creation_when_pending_exists(self):
+        """If a _PENDING WO already exists, do not overwrite it."""
+        from pathlib import Path
+        from app.services.llm_judge import _create_prompt_improvement_wo
+
+        wo_path = Path("/home/kevinbeeftink/.openclaw/workspace/workorders/WO-RIPPLED-PROMPT-IMPROVEMENT_PENDING.md")
+        wo_path.write_text("# Existing WO\nOriginal content\n")
+
+        _create_prompt_improvement_wo(
+            judge_run_id="run-2",
+            items_reviewed=1,
+            avg_quality=2.0,
+            false_positives=1,
+            false_negatives=1,
+            suggestions=["test suggestion"],
+            judge_outputs=[{"audit_id": "aud-99", "missed": ["X"], "quality_rating": 2}],
+        )
+
+        content = wo_path.read_text()
+        assert "Original content" in content, (
+            "Existing PENDING WO must not be overwritten"
+        )
+
+    def test_skips_wo_creation_when_inprogress_exists(self):
+        """If an _INPROGRESS WO exists, do not create a new PENDING one."""
+        from pathlib import Path
+        from app.services.llm_judge import _create_prompt_improvement_wo
+
+        inprogress_path = Path("/home/kevinbeeftink/.openclaw/workspace/workorders/WO-RIPPLED-PROMPT-IMPROVEMENT_INPROGRESS.md")
+        pending_path = Path("/home/kevinbeeftink/.openclaw/workspace/workorders/WO-RIPPLED-PROMPT-IMPROVEMENT_PENDING.md")
+
+        # Ensure no pending exists, but inprogress does
+        if pending_path.exists():
+            pending_path.unlink()
+        inprogress_path.write_text("# In-progress WO\n")
+
+        try:
+            _create_prompt_improvement_wo(
+                judge_run_id="run-3",
+                items_reviewed=1,
+                avg_quality=2.0,
+                false_positives=0,
+                false_negatives=1,
+                suggestions=[],
+                judge_outputs=[{"audit_id": "aud-100", "missed": ["Y"], "quality_rating": 2}],
+            )
+
+            assert not pending_path.exists(), (
+                "Should not create PENDING WO when INPROGRESS already exists"
+            )
+        finally:
+            # Clean up inprogress file so it doesn't interfere with other tests
+            if inprogress_path.exists():
+                inprogress_path.unlink()

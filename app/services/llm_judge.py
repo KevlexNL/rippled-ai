@@ -51,6 +51,8 @@ Evaluate:
    - 2: Multiple missed commitments or multiple false positives
    - 1: Fundamentally broken — most commitments missed or mostly false positives
 4. If quality < 4: suggest one specific change to the detection prompt that would improve this case.
+   - Your suggestion must be actionable — e.g. "Add 'follow up on [business topic]' as an explicit example in the follow-up section" or "Move the greeting exclusion rule higher in the prompt for better adherence".
+   - Do NOT leave prompt_suggestion empty when quality < 4.
 
 Respond in JSON: {{"missed": [], "false_positives": [], "quality_rating": N, "prompt_suggestion": "..."}}"""
 
@@ -238,8 +240,21 @@ def _create_prompt_improvement_wo(
     suggestions: list[str],
     judge_outputs: list[dict],
 ) -> None:
-    """Write a WO file when quality thresholds are breached."""
-    wo_path = Path("/home/kevinbeeftink/.openclaw/workspace/workorders/WO-RIPPLED-PROMPT-IMPROVEMENT_PENDING.md")
+    """Write a WO file when quality thresholds are breached.
+
+    Skips creation if a PENDING or INPROGRESS WO already exists to avoid
+    overwriting an in-flight work order.
+    """
+    wo_dir = Path("/home/kevinbeeftink/.openclaw/workspace/workorders")
+    wo_path = wo_dir / "WO-RIPPLED-PROMPT-IMPROVEMENT_PENDING.md"
+    inprogress_path = wo_dir / "WO-RIPPLED-PROMPT-IMPROVEMENT_INPROGRESS.md"
+
+    if wo_path.exists():
+        logger.info("LLM judge: skipping WO creation — PENDING WO already exists at %s", wo_path)
+        return
+    if inprogress_path.exists():
+        logger.info("LLM judge: skipping WO creation — INPROGRESS WO already exists at %s", inprogress_path)
+        return
 
     # Find top failure patterns
     missed_items = []

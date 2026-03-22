@@ -1,5 +1,18 @@
 # Build Decisions Log
 
+## WO-RIPPLED-PROMPT-IMPROVEMENT (run-1, duplicate) — Judge Hardening + WO Dedup
+*Date: 2026-03-22 | Owner: Claude (Stage 3)*
+
+**Decision:** Hardened judge prompt with actionable suggestion examples and added duplicate WO prevention.
+
+**Rationale:** A second identical WO was generated for the same aud-42 failure because `_create_prompt_improvement_wo` had no duplicate check — it blindly overwrites any existing PENDING file. Additionally, the judge prompt lacked example suggestion formats, resulting in empty "Top Prompt Improvement Suggestions" sections in WOs.
+
+**Changes:**
+- `llm_judge.py`: Added PENDING/INPROGRESS existence check before WO creation; added actionable suggestion examples to judge prompt
+- `test_llm_judge.py`: 3 new tests (dedup prevention, actionable suggestion format)
+
+---
+
 ## WO-RIPPLED-PROMPT-IMPROVEMENT (run-1) — Prompt Positioning
 *Date: 2026-03-22 | Owner: Claude (Stage 3)*
 
