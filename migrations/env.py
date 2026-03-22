@@ -20,6 +20,9 @@ import app.models.commitment_signal  # noqa: F401
 import app.models.commitment_ambiguity  # noqa: F401
 import app.models.lifecycle_transition  # noqa: F401
 import app.models.clarification  # noqa: F401
+import app.models.raw_signal_ingest  # noqa: F401
+import app.models.normalized_signal  # noqa: F401
+import app.models.normalization_run  # noqa: F401
 
 # Alembic Config object
 config = context.config

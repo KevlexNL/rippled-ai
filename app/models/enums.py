@@ -120,6 +120,34 @@ class SpeechAct(str, enum.Enum):
     informational = "informational"
 
 
+class Direction(str, enum.Enum):
+    inbound = "inbound"
+    outbound = "outbound"
+    unknown = "unknown"
+
+
+class ParticipantRole(str, enum.Enum):
+    sender = "sender"
+    to = "to"
+    cc = "cc"
+    bcc = "bcc"
+    reply_to = "reply_to"
+    unknown = "unknown"
+
+
+class NormalizationFlag(str, enum.Enum):
+    missing_subject = "missing_subject"
+    missing_text_body = "missing_text_body"
+    html_only_body = "html_only_body"
+    quoted_text_detected = "quoted_text_detected"
+    signature_detected = "signature_detected"
+    thread_context_unavailable = "thread_context_unavailable"
+    attachment_present = "attachment_present"
+    malformed_headers = "malformed_headers"
+    sender_unresolved = "sender_unresolved"
+    multiple_possible_authored_blocks = "multiple_possible_authored_blocks"
+
+
 class CommitmentType(str, enum.Enum):
     send = "send"
     review = "review"

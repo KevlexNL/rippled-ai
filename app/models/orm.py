@@ -299,6 +299,93 @@ class CandidateCommitment(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
+# ---------------------------------------------------------------------------
+# Signal Ingestion & Normalization Layer
+# ---------------------------------------------------------------------------
+
+_direction_enum = ENUM('inbound', 'outbound', 'unknown', name='direction', create_type=False)
+_normalization_flag_enum = ENUM(
+    'missing_subject', 'missing_text_body', 'html_only_body', 'quoted_text_detected',
+    'signature_detected', 'thread_context_unavailable', 'attachment_present',
+    'malformed_headers', 'sender_unresolved', 'multiple_possible_authored_blocks',
+    name='normalization_flag', create_type=False,
+)
+
+
+class RawSignalIngest(Base):
+    """Stores the original provider payload and ingest metadata."""
+    __tablename__ = "raw_signal_ingests"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    source_type: Mapped[str] = mapped_column(_source_type, nullable=False)
+    provider: Mapped[str] = mapped_column(String(50), nullable=False)
+    provider_message_id: Mapped[str] = mapped_column(String, nullable=False)
+    provider_thread_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    provider_account_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    payload_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    payload_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    ingested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    parse_status: Mapped[str | None] = mapped_column(String(20), nullable=True)  # pending, success, failed
+    parse_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class NormalizedSignalORM(Base):
+    """Canonical normalized signal derived from RawSignalIngest."""
+    __tablename__ = "normalized_signals"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    raw_signal_ingest_id: Mapped[str] = mapped_column(
+        _uuid(), ForeignKey("raw_signal_ingests.id", ondelete="CASCADE"), nullable=False, index=True,
+    )
+    source_type: Mapped[str] = mapped_column(_source_type, nullable=False)
+    source_subtype: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    provider: Mapped[str] = mapped_column(String(50), nullable=False)
+    provider_message_id: Mapped[str] = mapped_column(String, nullable=False)
+    provider_thread_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    provider_account_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    signal_timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    authored_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    direction: Mapped[str | None] = mapped_column(_direction_enum, nullable=True)
+    is_inbound: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    is_outbound: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    subject: Mapped[str | None] = mapped_column(Text, nullable=True)
+    latest_authored_text: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
+    prior_context_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    full_visible_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    html_present: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    text_present: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
+    sender_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    to_json: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    cc_json: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    bcc_json: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    reply_to_json: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    participants_json: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    attachment_metadata_json: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    thread_position: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    message_index_guess: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    language_code: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    normalization_version: Mapped[str] = mapped_column(String(20), server_default="v1", nullable=False)
+    normalization_flags: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    normalization_warnings: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class NormalizationRun(Base):
+    """Audit record for each normalization pass."""
+    __tablename__ = "normalization_runs"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    normalized_signal_id: Mapped[str] = mapped_column(
+        _uuid(), ForeignKey("normalized_signals.id", ondelete="CASCADE"), nullable=False, index=True,
+    )
+    normalization_version: Mapped[str] = mapped_column(String(20), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)  # success, partial_success, failed
+    warnings_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    timings_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
 class Clarification(Base):
     __tablename__ = "clarifications"
 

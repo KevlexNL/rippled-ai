@@ -435,3 +435,54 @@ class LinkedEventRead(_Base):
     starts_at: datetime
     ends_at: datetime | None = None
     relationship: str
+
+
+# ---------------------------------------------------------------------------
+# RawSignalIngest (Signal Ingestion & Normalization Layer)
+# ---------------------------------------------------------------------------
+
+class RawSignalIngestCreate(_Base):
+    source_type: SourceType
+    provider: str
+    provider_message_id: str
+    provider_thread_id: str | None = None
+    provider_account_id: str | None = None
+    received_at: datetime
+    payload_json: dict
+    payload_hash: str  # SHA256 hash of payload_json
+
+
+class RawSignalIngestRead(_Base):
+    id: str
+    source_type: SourceType
+    provider: str
+    provider_message_id: str
+    provider_thread_id: str | None
+    provider_account_id: str | None
+    received_at: datetime
+    payload_hash: str
+    parse_status: str | None
+    parse_error: str | None
+    ingested_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# NormalizationRun (audit/versioning)
+# ---------------------------------------------------------------------------
+
+class NormalizationRunCreate(_Base):
+    normalized_signal_id: str
+    normalization_version: str
+    status: str  # "success", "partial_success", "failed"
+    warnings_json: dict | None = None
+    timings_json: dict | None = None
+
+
+class NormalizationRunRead(_Base):
+    id: str
+    normalized_signal_id: str
+    normalization_version: str
+    status: str
+    warnings_json: dict | None
+    timings_json: dict | None
+    created_at: datetime
