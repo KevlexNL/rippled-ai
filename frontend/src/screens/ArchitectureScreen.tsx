@@ -12,6 +12,9 @@ import ReactFlow, {
   useEdgesState,
   MarkerType,
   Position,
+  Handle,
+  NodeProps,
+  SelectionMode,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { useAuth } from '../lib/auth'
@@ -21,7 +24,7 @@ const ADMIN_USER_ID = '441f9c1f-9428-477e-a04f-fb8d5e654ec2'
 
 // ─── Types ───────────────────────────────────────────────────────────────
 
-interface ArchNode {
+interface ArchNodeData {
   id: string
   label: string
   layer: string
@@ -45,7 +48,7 @@ interface ArchEdge {
 }
 
 interface ArchData {
-  nodes: ArchNode[]
+  nodes: ArchNodeData[]
   edges: ArchEdge[]
 }
 
@@ -114,7 +117,7 @@ function getSavedPositions(): Record<string, { x: number; y: number }> {
   return {}
 }
 
-function layoutNodes(archNodes: ArchNode[], applySaved = true): Node[] {
+function layoutNodes(archNodes: ArchNodeData[], applySaved = true): Node[] {
   const layerCounters: Record<string, number> = {}
   const saved = applySaved ? getSavedPositions() : {}
 
@@ -130,25 +133,12 @@ function layoutNodes(archNodes: ArchNode[], applySaved = true): Node[] {
     const y = (LAYER_Y[n.layer] ?? 0) + row * 100
 
     const position = saved[n.id] ?? { x, y }
-    const statusStyle = STATUS_STYLES[n.status] ?? STATUS_STYLES.stable
 
     return {
       id: n.id,
+      type: 'archNode',
       position,
       data: { label: n.label, archNode: n },
-      sourcePosition: Position.Bottom,
-      targetPosition: Position.Top,
-      style: {
-        background: statusStyle.bg,
-        border: `2px ${statusStyle.borderStyle ?? 'solid'} ${statusStyle.border}`,
-        borderRadius: '8px',
-        padding: '8px 12px',
-        fontSize: '12px',
-        fontWeight: 600,
-        color: statusStyle.text,
-        minWidth: '160px',
-        textAlign: 'center' as const,
-      },
     }
   })
 }
@@ -167,13 +157,43 @@ function layoutEdges(archEdges: ArchEdge[]): Edge[] {
   }))
 }
 
+// ─── Custom Node ─────────────────────────────────────────────────────────
+
+function ArchFlowNode({ data }: NodeProps) {
+  const archNode = data.archNode as ArchNodeData
+  const statusStyle = STATUS_STYLES[archNode.status] ?? STATUS_STYLES.stable
+  const borderStyle = archNode.status === 'planned' ? 'dashed' : 'solid'
+  return (
+    <div style={{
+      background: statusStyle.bg,
+      border: `2px ${borderStyle} ${statusStyle.border}`,
+      borderRadius: '8px',
+      padding: '8px 12px',
+      fontSize: '12px',
+      fontWeight: 600,
+      color: statusStyle.text,
+      minWidth: '160px',
+      textAlign: 'center' as const,
+      position: 'relative',
+    }}>
+      <Handle type="target" position={Position.Top} id="top" style={{ background: '#9ca3af', width: 8, height: 8 }} />
+      <Handle type="source" position={Position.Bottom} id="bottom" style={{ background: '#9ca3af', width: 8, height: 8 }} />
+      <Handle type="target" position={Position.Left} id="left" style={{ background: '#9ca3af', width: 8, height: 8 }} />
+      <Handle type="source" position={Position.Right} id="right" style={{ background: '#9ca3af', width: 8, height: 8 }} />
+      {archNode.label}
+    </div>
+  )
+}
+
+const nodeTypes = { archNode: ArchFlowNode }
+
 // ─── Detail Panel ────────────────────────────────────────────────────────
 
 function DetailPanel({
   node,
   onClose,
 }: {
-  node: ArchNode
+  node: ArchNodeData
   onClose: () => void
 }) {
   const [promptExpanded, setPromptExpanded] = useState(!!node.prompt_file)
@@ -392,7 +412,7 @@ export default function ArchitectureScreen() {
   const { user, loading } = useAuth()
   const navigate = useNavigate()
   const [selectedLayer, setSelectedLayer] = useState<Layer | null>(null)
-  const [selectedNode, setSelectedNode] = useState<ArchNode | null>(null)
+  const [selectedNode, setSelectedNode] = useState<ArchNodeData | null>(null)
   const [archData, setArchData] = useState<ArchData | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -425,7 +445,7 @@ export default function ArchitectureScreen() {
   const filteredNodes = useMemo(() => {
     if (!selectedLayer) return rfNodes
     return rfNodes.map((n) => {
-      const archNode = n.data.archNode as ArchNode
+      const archNode = n.data.archNode as ArchNodeData
       const isMatch = archNode.layer === selectedLayer
       return {
         ...n,
@@ -530,7 +550,7 @@ export default function ArchitectureScreen() {
           ...n,
           style: {
             ...n.style,
-            opacity: (n.data.archNode as ArchNode).layer === selectedLayer ? 1 : 0.15,
+            opacity: (n.data.archNode as ArchNodeData).layer === selectedLayer ? 1 : 0.15,
           },
         }))
       )
@@ -541,7 +561,7 @@ export default function ArchitectureScreen() {
 
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      const archNode = node.data.archNode as ArchNode
+      const archNode = node.data.archNode as ArchNodeData
       setSelectedNode(archNode)
     },
     []
@@ -704,9 +724,11 @@ export default function ArchitectureScreen() {
             onNodeClick={onNodeClick}
             onEdgeUpdate={onEdgeUpdate}
             edgesUpdatable
-            selectionOnDrag
-            panOnDrag={[1, 2]}
+            nodeTypes={nodeTypes}
+            panOnDrag
+            selectionKeyCode="Control"
             multiSelectionKeyCode={['Control', 'Meta']}
+            selectionMode={SelectionMode.Partial}
             fitView
             fitViewOptions={{ padding: 0.2 }}
             minZoom={0.3}
@@ -720,7 +742,7 @@ export default function ArchitectureScreen() {
             />
             <MiniMap
               nodeColor={(n) => {
-                const archNode = n.data?.archNode as ArchNode | undefined
+                const archNode = n.data?.archNode as ArchNodeData | undefined
                 if (!archNode) return '#e8e8e6'
                 return STATUS_STYLES[archNode.status]?.border ?? '#e8e8e6'
               }}
