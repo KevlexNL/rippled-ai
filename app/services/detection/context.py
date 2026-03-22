@@ -203,3 +203,7 @@ def _enrich_email_context(ctx: dict[str, Any], item: SourceItem) -> None:
     )
     # List recipients for downstream use
     ctx["recipients"] = item.recipients or []
+    # Pass prior context (quoted email history) for labeled detection
+    metadata = item.metadata_ or {}
+    if isinstance(metadata, dict):
+        ctx["prior_context"] = metadata.get("prior_context")

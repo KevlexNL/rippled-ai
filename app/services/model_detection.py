@@ -88,6 +88,12 @@ PASS 2 — COMMIT check (run only if PASS 1 did NOT match):
 - Does the text describe a future action, deliverable, or outcome someone is accountable for? → is_commitment=true
 - Otherwise → is_commitment=false
 
+## Email input format
+
+The input may include two sections:
+[CURRENT MESSAGE]: The author's new content. Detect commitment candidates from this.
+[PRIOR CONTEXT]: Quoted history from earlier in the thread. Do NOT create new commitment candidates from this section. Use it only to understand context, resolve references, or identify completion of existing commitments.
+
 FINAL sanity check: if your answer is is_commitment=true but the text is just a social phrase with no future action, correct it to false. If your answer is is_commitment=false but the text contains "follow up", correct it to true.
 
 You must respond with valid JSON only, exactly this structure:
@@ -105,7 +111,7 @@ You must respond with valid JSON only, exactly this structure:
 
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0  # seconds
-_PROMPT_VERSION = "ongoing-v7"
+_PROMPT_VERSION = "ongoing-v8"
 
 
 @dataclass
@@ -271,6 +277,7 @@ class ModelDetectionService:
         pre = context_window.get("pre_context", "")
         post = context_window.get("post_context", "")
         source = context_window.get("source_type", "unknown")
+        prior_context = context_window.get("prior_context")
 
         parts = []
         # Inject user identity for relationship detection
@@ -284,11 +291,17 @@ class ModelDetectionService:
 
         parts.append(f"Source type: {source}")
         parts.append("")
+
+        # Use labeled sections when prior context is available
+        if prior_context:
+            parts.append("[CURRENT MESSAGE]")
         if pre:
             parts.append(f"[Before]: {pre}")
         parts.append(f"[Trigger]: {trigger}")
         if post:
             parts.append(f"[After]: {post}")
+        if prior_context:
+            parts.append(f"\n[PRIOR CONTEXT]\n{prior_context}")
 
         return "\n".join(parts)
 

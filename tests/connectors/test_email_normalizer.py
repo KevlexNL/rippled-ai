@@ -46,7 +46,9 @@ class TestNormaliseEmail:
         assert item.sender_email == "alice@example.com"
         assert item.sender_name == "Alice Smith"
         assert item.is_quoted_content is False
+        # content = full raw body, content_normalized = latest authored text
         assert "Friday" in (item.content or "")
+        assert "Friday" in (item.content_normalized or "")
 
     def test_outbound_email_direction(self):
         payload = _make_payload(direction="outbound")
@@ -60,7 +62,20 @@ class TestNormaliseEmail:
         with _patch_classifier():
             item = normalise_email(payload, "src-001")
         assert item.is_quoted_content is True
-        assert "> " not in (item.content or "")
+        # content = full raw body (source of truth)
+        assert "> " in (item.content or "")
+        # content_normalized = latest authored only
+        assert item.content_normalized == "Thanks."
+        assert "> " not in (item.content_normalized or "")
+        # prior_context stored in metadata
+        assert "prior_context" in item.metadata_
+        assert "Original message here" in item.metadata_["prior_context"]
+
+    def test_no_prior_context_in_metadata_when_no_quotes(self):
+        payload = _make_payload(body_plain="Clean email, no quotes.")
+        with _patch_classifier():
+            item = normalise_email(payload, "src-001")
+        assert "prior_context" not in item.metadata_
 
     def test_internal_sender_not_external(self):
         payload = _make_payload(from_email="alice@company.com")

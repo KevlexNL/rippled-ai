@@ -1,9 +1,9 @@
 """Normalise inbound email payloads to SourceItemCreate."""
 from datetime import timezone
 
+from app.connectors.email.content_splitter import split_email_content
 from app.connectors.email.schemas import RawEmailPayload
 from app.connectors.shared.participant_classifier import is_external_participant
-from app.connectors.shared.quoted_email_stripper import strip_quoted_content
 from app.models.schemas import SourceItemCreate
 
 
@@ -22,9 +22,10 @@ def normalise_email(
     else:
         occurred_at = occurred_at.astimezone(timezone.utc)
 
-    # Strip quoted content
+    # Split email into authored content and quoted history
     raw_body = payload.body_plain or ""
-    content, is_quoted = strip_quoted_content(raw_body)
+    latest_authored, prior_context = split_email_content(raw_body)
+    is_quoted = prior_context is not None
 
     # Thread ID: use in_reply_to if present, else message_id (start of thread)
     thread_id = _extract_thread_id(payload.message_id, payload.in_reply_to, payload.references)
@@ -36,6 +37,14 @@ def normalise_email(
     # Sender classification
     external = is_external_participant(payload.from_email)
 
+    # Build metadata with prior context when available
+    metadata: dict = {
+        "subject": payload.subject,
+        "raw_headers": payload.raw_headers or {},
+    }
+    if prior_context:
+        metadata["prior_context"] = prior_context
+
     return SourceItemCreate(
         source_id=source_id,
         source_type="email",
@@ -45,17 +54,14 @@ def normalise_email(
         sender_name=payload.from_name,
         sender_email=payload.from_email,
         is_external_participant=external,
-        content=content if content else None,
-        content_normalized=content.lower().strip() if content else None,
+        content=raw_body.strip() if raw_body.strip() else None,
+        content_normalized=latest_authored if latest_authored else None,
         has_attachment=payload.has_attachment,
         attachment_metadata={"attachments": payload.attachment_metadata} if payload.attachment_metadata else None,
         recipients=recipients if recipients else None,
         source_url=payload.source_url,
         occurred_at=occurred_at,
-        metadata_={
-            "subject": payload.subject,
-            "raw_headers": payload.raw_headers or {},
-        },
+        metadata_=metadata,
         is_quoted_content=is_quoted,
     )
 

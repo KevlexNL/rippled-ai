@@ -38,7 +38,7 @@ _BATCH_SIZE = 20
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0
 _DEFAULT_MODEL = "claude-sonnet-4-6"
-_PROMPT_VERSION = "seed-v6"
+_PROMPT_VERSION = "seed-v7"
 
 _SYSTEM_PROMPT = """You are a commitment extraction engine for a workplace intelligence system.
 
@@ -86,10 +86,17 @@ For each commitment found, extract:
 - title: a concise summary (max 80 chars)
 - is_external: true if this involves someone outside the organization
 
+## Email input format
+
+The input may include two sections:
+[CURRENT MESSAGE]: The author's new content. Detect commitment candidates from this.
+[PRIOR CONTEXT]: Quoted history from earlier in the thread. Do NOT create new commitment candidates from this section. Use it only to understand context, resolve references, or identify completion of existing commitments.
+
 BEFORE YOU RESPOND — self-check each extracted commitment:
 1. Remove any that are greetings, pleasantries, sign-offs, or classification labels
 2. Verify you have not missed any "follow up" phrases — scan the text one more time
 3. Confirm each remaining item describes a future action, not a past event or social nicety
+4. Verify NONE of your extracted commitments come solely from [PRIOR CONTEXT] — only [CURRENT MESSAGE] content generates new commitments
 
 Respond with valid JSON only:
 {
@@ -295,17 +302,24 @@ def _extract_commitments(
     Returns:
         _LLMResult with commitments=None if item was skipped (content too short).
     """
-    content = item.content or ""
-    if len(content.strip()) < 10:
+    # Use content_normalized (latest authored text) if available, else full content
+    latest_text = item.content_normalized or item.content or ""
+    if len(latest_text.strip()) < 10:
         return _LLMResult(commitments=None)
 
-    # Build context message
+    # Extract prior context from metadata if available
+    metadata = item.metadata_ or {}
+    prior_context = metadata.get("prior_context") if isinstance(metadata, dict) else None
+
+    # Build context message with labeled sections
     parts = [f"Source type: {item.source_type}"]
     if item.sender_name or item.sender_email:
         parts.append(f"From: {item.sender_name or ''} <{item.sender_email or ''}>")
     if item.direction:
         parts.append(f"Direction: {item.direction}")
-    parts.append(f"\n--- Email Content ---\n{content}")
+    parts.append(f"\n[CURRENT MESSAGE]\n{latest_text}")
+    if prior_context:
+        parts.append(f"\n[PRIOR CONTEXT]\n{prior_context}")
     user_message = "\n".join(parts)
 
     # Full prompt for audit logging

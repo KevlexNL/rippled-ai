@@ -22,6 +22,8 @@ class TestExtractCommitments:
         item = MagicMock(spec=SourceItem)
         item.id = "test-item-id"
         item.content = content
+        item.content_normalized = content  # latest authored text
+        item.metadata_ = {}
         item.source_type = "email"
         item.sender_name = "Alice"
         item.sender_email = "alice@example.com"
@@ -268,6 +270,8 @@ class TestExtractCommitmentsAuditMetadata:
         item = MagicMock(spec=SourceItem)
         item.id = "test-item-id"
         item.content = content
+        item.content_normalized = content
+        item.metadata_ = {}
         item.source_type = "email"
         item.sender_name = "Alice"
         item.sender_email = "alice@example.com"
@@ -437,6 +441,8 @@ class TestSeedPassAuditWriting:
         item = MagicMock(spec=SourceItem)
         item.id = item_id
         item.content = content
+        item.content_normalized = content
+        item.metadata_ = {}
         item.source_type = "email"
         item.sender_name = "Alice"
         item.sender_email = "alice@example.com"
@@ -511,7 +517,7 @@ class TestSeedPassAuditWriting:
         assert kw["raw_prompt"] is not None
         assert kw["raw_response"] == response_text
         assert kw["model"] == "claude-sonnet-4-6"
-        assert kw["prompt_version"] == "seed-v6"
+        assert kw["prompt_version"] == "seed-v7"
         assert kw["tokens_in"] == 100
         assert kw["tokens_out"] == 20
 
@@ -580,6 +586,8 @@ class TestSeedPassSkipLogic:
         item = MagicMock(spec=SourceItem)
         item.id = item_id
         item.content = content
+        item.content_normalized = content
+        item.metadata_ = {}
         item.source_type = "email"
         item.sender_name = "Alice"
         item.sender_email = "alice@example.com"
@@ -743,12 +751,12 @@ class TestPromptImprovementWOPromptImprovement:
             "Prompt version must be bumped after WO-RIPPLED-PROMPT-IMPROVEMENT changes"
         )
 
-    def test_prompt_version_is_v6(self):
-        """Seed prompt version must be seed-v6 after WO-RIPPLED-PROMPT-IMPROVEMENT v6 changes."""
+    def test_prompt_version_is_v7(self):
+        """Seed prompt version must be seed-v7 after email quoted text stripping changes."""
         from app.services.detection.seed_detector import _PROMPT_VERSION
 
-        assert _PROMPT_VERSION == "seed-v6", (
-            f"Expected seed-v6 but got {_PROMPT_VERSION}"
+        assert _PROMPT_VERSION == "seed-v7", (
+            f"Expected seed-v7 but got {_PROMPT_VERSION}"
         )
 
     def test_prompt_includes_business_follow_up_topics(self):
@@ -828,12 +836,12 @@ class TestModelDetectionPromptImprovement:
             "Model detection prompt version must be bumped after improvements"
         )
 
-    def test_model_prompt_version_is_v7(self):
-        """Model detection prompt version must be ongoing-v7."""
+    def test_model_prompt_version_is_v8(self):
+        """Model detection prompt version must be ongoing-v8 after email quoted text stripping changes."""
         from app.services.model_detection import _PROMPT_VERSION
 
-        assert _PROMPT_VERSION == "ongoing-v7", (
-            f"Expected ongoing-v7 but got {_PROMPT_VERSION}"
+        assert _PROMPT_VERSION == "ongoing-v8", (
+            f"Expected ongoing-v8 but got {_PROMPT_VERSION}"
         )
 
     def test_model_prompt_excludes_meta_references(self):
