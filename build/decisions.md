@@ -1,5 +1,20 @@
 # Build Decisions Log
 
+## WO-RIPPLED-PROMPT-IMPROVEMENT (run-1) — Prompt Positioning
+*Date: 2026-03-22 | Owner: Claude (Stage 3)*
+
+**Decision:** Restructured seed detector (seed-v9) and model detection (ongoing-v10) prompts to leverage primacy/recency effect for critical rules.
+
+**Rationale:** Audit aud-42 showed missed "follow up on budget" and false positive "greeting" despite both patterns being explicitly covered in prompts. Root cause: critical rules were positioned mid-prompt where LLMs pay least attention. Solution: move CRITICAL RULE (follow-ups) and ZERO TOLERANCE (greetings) to the very top of both prompts, consolidate duplicated greeting exclusions, keep BEFORE YOU RESPOND self-check at end for recency.
+
+**Changes:**
+- `seed_detector.py`: seed-v8 → seed-v9 — CRITICAL RULE + ZERO TOLERANCE moved to top
+- `model_detection.py`: ongoing-v9 → ongoing-v10 — same structural repositioning
+- Tests updated with version assertions and new structural positioning tests
+- `lessons.md` updated with primacy/recency pattern
+
+---
+
 ## Phase 03 — Detection Pipeline
 *Date: 2026-03-10 | Owner: Trinity*
 

@@ -149,7 +149,7 @@ class TestModelDetectionResult:
             tokens_out=50,
             model="gpt-4.1-mini",
             duration_ms=250,
-            prompt_version="ongoing-v9",
+            prompt_version="ongoing-v10",
         )
         assert result.raw_prompt == "test prompt"
         assert result.raw_response == "test response"
@@ -157,7 +157,7 @@ class TestModelDetectionResult:
         assert result.tokens_out == 50
         assert result.model == "gpt-4.1-mini"
         assert result.duration_ms == 250
-        assert result.prompt_version == "ongoing-v9"
+        assert result.prompt_version == "ongoing-v10"
 
 
 # ---------------------------------------------------------------------------
@@ -253,7 +253,7 @@ class TestModelDetectionServiceClassify:
         assert result.model == "gpt-4.1-mini"
         assert result.duration_ms is not None
         assert result.duration_ms >= 0
-        assert result.prompt_version == "ongoing-v9"
+        assert result.prompt_version == "ongoing-v10"
         assert result.parsed_result is not None
 
 
@@ -751,7 +751,7 @@ class TestModelDetectionSpeechAct:
         """Prompt version must be bumped to reflect speech_act addition."""
         from app.services.model_detection import _PROMPT_VERSION
         # Must be higher than ongoing-v8
-        assert _PROMPT_VERSION == "ongoing-v9"
+        assert _PROMPT_VERSION == "ongoing-v10"
 
 
 class TestConstants:

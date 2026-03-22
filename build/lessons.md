@@ -82,6 +82,13 @@ Track patterns from corrections to avoid repeating mistakes.
 
 ---
 
+### 2026-03-22 — Prompt structural positioning: primacy/recency over mid-prompt rules
+**Mistake:** Critical rules (follow-up detection, greeting exclusion) were listed mid-prompt after the role description and before examples. Despite correct content, LLMs still missed "follow up on budget" and extracted "greeting" as a commitment because the rules lacked positional prominence.
+**Pattern:** Move the two most critical rules to the TOP of the prompt (immediately after role description) using strong labels ("CRITICAL RULE", "ZERO TOLERANCE"). Consolidate greeting/social exclusions into the top-positioned rule rather than duplicating them mid-prompt in a separate NOT-a-commitment list. The "BEFORE YOU RESPOND" self-check at the end provides recency reinforcement. Primacy + recency = strongest LLM attention.
+**Severity:** Medium
+
+---
+
 ### 2026-03-17 — Suppression regex character class matches newlines
 **Mistake:** Greeting suppression pattern used `[^.]` (negated character class), which matches any character except literal period — including newlines. This caused multi-line suppression, wiping out commitment text on subsequent lines.
 **Pattern:** In multiline regex patterns, always use `[^.\n]` instead of `[^.]` when the intent is to match within a single line. Also limit greedy quantifiers with `{0,N}` to prevent suppression patterns from consuming content that contains actual signals.

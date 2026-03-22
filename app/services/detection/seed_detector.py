@@ -39,11 +39,20 @@ _BATCH_SIZE = 20
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0
 _DEFAULT_MODEL = "claude-sonnet-4-6"
-_PROMPT_VERSION = "seed-v8"
+_PROMPT_VERSION = "seed-v9"
 
 _SYSTEM_PROMPT = """You are a commitment extraction engine for a workplace intelligence system.
 
 Analyze the following email and extract ALL commitments, follow-ups, or obligations.
+
+CRITICAL RULE — FOLLOW-UPS: ANY form of "follow up" is ALWAYS a commitment. This includes "follow up on [topic]", "need to follow up", "will follow up", "should follow up", "follow up on budget", "follow up on headcount", "follow up on the proposal", "follow up on the timeline", etc. Never skip these. Missing a follow-up is the #1 detection error.
+
+ZERO TOLERANCE — GREETINGS AND SOCIAL PHRASES: The following are NEVER commitments. Do NOT extract them under any circumstances:
+- Greetings: "Hi", "Hello", "Hey", "Good morning", "Good afternoon", "Good evening", "Dear team", "Dear all"
+- Pleasantries: "Hope you're doing well", "Hope this finds you well", "Hope all is well", "Trust you are well", "Happy Friday", "Happy Monday"
+- Sign-offs: "Best regards", "Thanks", "Cheers", "Talk soon", "Warm regards", "Kind regards", "Best", "Regards"
+- Social niceties: "Looking forward to connecting", "Thank you for your time", "Thanks for getting back to me"
+- Classification labels: "greeting", "pleasantry", "filler", "acknowledgment" — these are labels, NOT commitments
 
 A commitment is a statement where someone obligates themselves or others to a specific
 future action, deliverable, or outcome. Cast a WIDE net — it is better to surface a
@@ -61,20 +70,11 @@ This includes:
 - Soft promises: "I'll see what I can do", "Let me look into it", "I'll ping them"
 
 NOT a commitment (NEVER extract these):
-- Greetings and salutations: "Hi", "Hello", "Hey", "Good morning", "Good afternoon", "Good evening", "Dear team", "Dear all"
-- Pleasantries and well-wishes: "Hope you're doing well", "Hope this finds you well", "Hope all is well", "Trust you are well", "Happy Friday", "Happy Monday"
-- Sign-offs and closings: "Best regards", "Thanks", "Cheers", "Talk soon", "Warm regards", "Kind regards", "Best", "Regards"
-- Social niceties: "Looking forward to connecting", "Thank you for your time", "Thanks for getting back to me"
 - Casual acknowledgments with NO implied action: "OK", "Sounds good", "Got it"
 - Pure questions with no self-assignment: "Should we...?", "What if we..."
 - Past-tense descriptions: "I already did X", "We completed Y"
 - Filler phrases: "By the way", "Just checking in" (but NOT "checking in on [topic]" — that IS a follow-up)
 - Informational statements with no action implication
-- Classification labels or meta-references: "greeting", "pleasantry", "filler" — these are labels, not commitments
-
-IMPORTANT: The word "greeting" itself is NEVER a commitment. Social pleasantries are NOT commitments regardless of phrasing. Do NOT extract classification labels (e.g. "greeting", "acknowledgment") as commitments.
-
-CRITICAL RULE — FOLLOW-UPS: ANY form of "follow up" is ALWAYS a commitment. This includes "follow up on [topic]", "need to follow up", "will follow up", "should follow up", "follow up on budget", "follow up on headcount", etc. Never skip these.
 
 When in doubt, INCLUDE it as a commitment with lower confidence (0.4-0.6).
 

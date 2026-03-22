@@ -291,7 +291,7 @@ class TestSeedDetectorSpeechAct:
     def test_prompt_version_bumped(self):
         """Prompt version must be bumped for speech_act addition."""
         from app.services.detection.seed_detector import _PROMPT_VERSION
-        assert _PROMPT_VERSION == "seed-v8"
+        assert _PROMPT_VERSION == "seed-v9"
 
     def test_speech_act_passthrough_in_commitment(self):
         """speech_act returned by LLM should be in the parsed commitment dict."""
@@ -581,7 +581,7 @@ class TestSeedPassAuditWriting:
         assert kw["raw_prompt"] is not None
         assert kw["raw_response"] == response_text
         assert kw["model"] == "claude-sonnet-4-6"
-        assert kw["prompt_version"] == "seed-v8"
+        assert kw["prompt_version"] == "seed-v9"
         assert kw["tokens_in"] == 100
         assert kw["tokens_out"] == 20
 
@@ -819,8 +819,8 @@ class TestPromptImprovementWOPromptImprovement:
         """Seed prompt version must be seed-v7 after email quoted text stripping changes."""
         from app.services.detection.seed_detector import _PROMPT_VERSION
 
-        assert _PROMPT_VERSION == "seed-v8", (
-            f"Expected seed-v7 but got {_PROMPT_VERSION}"
+        assert _PROMPT_VERSION == "seed-v9", (
+            f"Expected seed-v9 but got {_PROMPT_VERSION}"
         )
 
     def test_prompt_includes_business_follow_up_topics(self):
@@ -900,12 +900,12 @@ class TestModelDetectionPromptImprovement:
             "Model detection prompt version must be bumped after improvements"
         )
 
-    def test_model_prompt_version_is_v9(self):
-        """Model detection prompt version must be ongoing-v9 after speech_act classification."""
+    def test_model_prompt_version_is_v10(self):
+        """Model detection prompt version must be ongoing-v10 after prompt positioning improvements."""
         from app.services.model_detection import _PROMPT_VERSION
 
-        assert _PROMPT_VERSION == "ongoing-v9", (
-            f"Expected ongoing-v9 but got {_PROMPT_VERSION}"
+        assert _PROMPT_VERSION == "ongoing-v10", (
+            f"Expected ongoing-v10 but got {_PROMPT_VERSION}"
         )
 
     def test_model_prompt_excludes_meta_references(self):
@@ -933,6 +933,44 @@ class TestModelDetectionPromptImprovement:
         lower = _SYSTEM_PROMPT.lower()
         assert "before you respond" in lower or "before outputting" in lower or "self-check" in lower, (
             "Model detection prompt must have a self-validation section"
+        )
+
+
+class TestPromptPositioning:
+    """WO-RIPPLED-PROMPT-IMPROVEMENT (run-1): critical rules must be positioned
+    for primacy/recency effect — before examples list and reinforced at end."""
+
+    def test_seed_critical_rule_before_examples(self):
+        """Seed prompt: CRITICAL RULE must appear before the 'This includes:' list."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+
+        critical_pos = _SYSTEM_PROMPT.find("CRITICAL RULE")
+        includes_pos = _SYSTEM_PROMPT.find("This includes:")
+        assert critical_pos != -1, "Seed prompt must have CRITICAL RULE section"
+        assert critical_pos < includes_pos, (
+            "CRITICAL RULE must appear BEFORE 'This includes:' for primacy effect"
+        )
+
+    def test_seed_zero_tolerance_greeting_before_examples(self):
+        """Seed prompt: greeting exclusion rule must appear before examples list."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+
+        greeting_rule_pos = _SYSTEM_PROMPT.find("ZERO TOLERANCE")
+        includes_pos = _SYSTEM_PROMPT.find("This includes:")
+        assert greeting_rule_pos != -1, "Seed prompt must have ZERO TOLERANCE section for greetings"
+        assert greeting_rule_pos < includes_pos, (
+            "ZERO TOLERANCE greeting rule must appear BEFORE examples for primacy effect"
+        )
+
+    def test_model_critical_rule_before_canonical(self):
+        """Model prompt: CRITICAL RULE must appear before canonical structure section."""
+        from app.services.model_detection import _SYSTEM_PROMPT
+
+        critical_pos = _SYSTEM_PROMPT.find("CRITICAL RULE")
+        canonical_pos = _SYSTEM_PROMPT.find("Canonical commitment")
+        assert critical_pos != -1, "Model prompt must have CRITICAL RULE section"
+        assert critical_pos < canonical_pos, (
+            "CRITICAL RULE must appear BEFORE canonical structure for primacy effect"
         )
 
 
