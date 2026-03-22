@@ -263,6 +263,70 @@ class TestExtractCommitments:
         assert mock_client.messages.create.call_count == 2
 
 
+# ---------------------------------------------------------------------------
+# speech_act in seed detector — WO-RIPPLED-SPEECH-ACT-CLASSIFICATION
+# ---------------------------------------------------------------------------
+
+class TestSeedDetectorSpeechAct:
+    """Seed detector prompt must include speech_act and pass it through."""
+
+    def _make_source_item(self, content: str = "I will send the report by Friday") -> SourceItem:
+        item = MagicMock(spec=SourceItem)
+        item.id = "test-item-id"
+        item.content = content
+        item.content_normalized = content
+        item.metadata_ = {}
+        item.source_type = "email"
+        item.sender_name = "Alice"
+        item.sender_email = "alice@example.com"
+        item.direction = "inbound"
+        return item
+
+    def test_prompt_contains_speech_act_field(self):
+        """Seed detector system prompt must include speech_act in output schema."""
+        from app.services.detection.seed_detector import _SYSTEM_PROMPT
+        assert "speech_act" in _SYSTEM_PROMPT
+        assert "self_commitment" in _SYSTEM_PROMPT
+
+    def test_prompt_version_bumped(self):
+        """Prompt version must be bumped for speech_act addition."""
+        from app.services.detection.seed_detector import _PROMPT_VERSION
+        assert _PROMPT_VERSION == "seed-v8"
+
+    def test_speech_act_passthrough_in_commitment(self):
+        """speech_act returned by LLM should be in the parsed commitment dict."""
+        from app.services.detection.seed_detector import _extract_commitments
+
+        mock_client = MagicMock()
+        commitment_data = {
+            "commitments": [
+                {
+                    "trigger_phrase": "Can you send me the report?",
+                    "who_committed": "Alice",
+                    "directed_at": "Bob",
+                    "urgency": "medium",
+                    "commitment_type": "send",
+                    "title": "Send report",
+                    "is_external": False,
+                    "confidence": 0.85,
+                    "speech_act": "request",
+                }
+            ]
+        }
+        mock_content_block = SimpleNamespace(text=json.dumps(commitment_data))
+        mock_response = SimpleNamespace(
+            content=[mock_content_block],
+            usage=SimpleNamespace(input_tokens=10, output_tokens=20),
+        )
+        mock_client.messages.create.return_value = mock_response
+
+        item = self._make_source_item("Can you send me the report?")
+        result = _extract_commitments(mock_client, "claude-sonnet-4-6", item)
+
+        assert len(result.commitments) == 1
+        assert result.commitments[0]["speech_act"] == "request"
+
+
 class TestExtractCommitmentsAuditMetadata:
     """Test that _extract_commitments returns full audit metadata in _LLMResult."""
 
@@ -517,7 +581,7 @@ class TestSeedPassAuditWriting:
         assert kw["raw_prompt"] is not None
         assert kw["raw_response"] == response_text
         assert kw["model"] == "claude-sonnet-4-6"
-        assert kw["prompt_version"] == "seed-v7"
+        assert kw["prompt_version"] == "seed-v8"
         assert kw["tokens_in"] == 100
         assert kw["tokens_out"] == 20
 
@@ -755,7 +819,7 @@ class TestPromptImprovementWOPromptImprovement:
         """Seed prompt version must be seed-v7 after email quoted text stripping changes."""
         from app.services.detection.seed_detector import _PROMPT_VERSION
 
-        assert _PROMPT_VERSION == "seed-v7", (
+        assert _PROMPT_VERSION == "seed-v8", (
             f"Expected seed-v7 but got {_PROMPT_VERSION}"
         )
 
@@ -836,12 +900,12 @@ class TestModelDetectionPromptImprovement:
             "Model detection prompt version must be bumped after improvements"
         )
 
-    def test_model_prompt_version_is_v8(self):
-        """Model detection prompt version must be ongoing-v8 after email quoted text stripping changes."""
+    def test_model_prompt_version_is_v9(self):
+        """Model detection prompt version must be ongoing-v9 after speech_act classification."""
         from app.services.model_detection import _PROMPT_VERSION
 
-        assert _PROMPT_VERSION == "ongoing-v8", (
-            f"Expected ongoing-v8 but got {_PROMPT_VERSION}"
+        assert _PROMPT_VERSION == "ongoing-v9", (
+            f"Expected ongoing-v9 but got {_PROMPT_VERSION}"
         )
 
     def test_model_prompt_excludes_meta_references(self):

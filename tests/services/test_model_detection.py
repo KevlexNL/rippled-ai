@@ -100,6 +100,29 @@ class TestModelDetectionResult:
         assert result.suggested_owner == "Alice"
         assert result.suggested_deadline == "2026-03-20"
 
+    def test_result_has_speech_act_field(self):
+        """ModelDetectionResult must carry speech_act classification."""
+        result = ModelDetectionResult(
+            is_commitment=True,
+            confidence=0.9,
+            explanation="Self-commitment detected",
+            suggested_owner="Alice",
+            suggested_deadline=None,
+            speech_act="self_commitment",
+        )
+        assert result.speech_act == "self_commitment"
+
+    def test_result_speech_act_defaults_none(self):
+        """speech_act defaults to None for backward compatibility."""
+        result = ModelDetectionResult(
+            is_commitment=True,
+            confidence=0.9,
+            explanation="test",
+            suggested_owner=None,
+            suggested_deadline=None,
+        )
+        assert result.speech_act is None
+
     def test_result_nullable_fields(self):
         result = ModelDetectionResult(
             is_commitment=False,
@@ -126,7 +149,7 @@ class TestModelDetectionResult:
             tokens_out=50,
             model="gpt-4.1-mini",
             duration_ms=250,
-            prompt_version="ongoing-v8",
+            prompt_version="ongoing-v9",
         )
         assert result.raw_prompt == "test prompt"
         assert result.raw_response == "test response"
@@ -134,7 +157,7 @@ class TestModelDetectionResult:
         assert result.tokens_out == 50
         assert result.model == "gpt-4.1-mini"
         assert result.duration_ms == 250
-        assert result.prompt_version == "ongoing-v8"
+        assert result.prompt_version == "ongoing-v9"
 
 
 # ---------------------------------------------------------------------------
@@ -230,7 +253,7 @@ class TestModelDetectionServiceClassify:
         assert result.model == "gpt-4.1-mini"
         assert result.duration_ms is not None
         assert result.duration_ms >= 0
-        assert result.prompt_version == "ongoing-v8"
+        assert result.prompt_version == "ongoing-v9"
         assert result.parsed_result is not None
 
 
@@ -624,6 +647,112 @@ class TestHybridDetectionResultStructure:
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# ModelDetectionService — speech_act classification
+# ---------------------------------------------------------------------------
+
+class TestModelDetectionSpeechAct:
+    """speech_act field must be in prompt, parsed from response, and on result."""
+
+    def test_prompt_contains_speech_act_guidance(self):
+        """System prompt must include speech_act classification guidance."""
+        from app.services.model_detection import _SYSTEM_PROMPT
+        assert "speech_act" in _SYSTEM_PROMPT
+        assert "request" in _SYSTEM_PROMPT
+        assert "self_commitment" in _SYSTEM_PROMPT
+
+    def test_classify_parses_speech_act_from_response(self):
+        """speech_act returned by LLM should appear on the result."""
+        import json
+        service = ModelDetectionService(api_key="test-key", model="gpt-4.1-mini")
+        content = json.dumps({
+            "is_commitment": True,
+            "confidence": 0.9,
+            "explanation": "Speaker commits to sending report",
+            "suggested_owner": "Alice",
+            "suggested_deadline": "Friday",
+            "deliverable": "report",
+            "counterparty": "Bob",
+            "user_relationship": "mine",
+            "structure_complete": True,
+            "speech_act": "self_commitment",
+        })
+        msg = MagicMock()
+        msg.content = content
+        choice = MagicMock()
+        choice.message = msg
+        response = MagicMock()
+        response.choices = [choice]
+        response.usage = MagicMock()
+        response.usage.prompt_tokens = 100
+        response.usage.completion_tokens = 50
+        with patch.object(service._client.chat.completions, "create", return_value=response):
+            result = service.classify(_make_candidate())
+        assert result is not None
+        assert result.speech_act == "self_commitment"
+
+    def test_classify_parses_request_speech_act(self):
+        """request speech_act should be parsed correctly."""
+        import json
+        service = ModelDetectionService(api_key="test-key", model="gpt-4.1-mini")
+        content = json.dumps({
+            "is_commitment": True,
+            "confidence": 0.85,
+            "explanation": "Speaker asks someone to send report",
+            "suggested_owner": "Bob",
+            "suggested_deadline": None,
+            "deliverable": "report",
+            "counterparty": "Alice",
+            "user_relationship": "watching",
+            "structure_complete": True,
+            "speech_act": "request",
+        })
+        msg = MagicMock()
+        msg.content = content
+        choice = MagicMock()
+        choice.message = msg
+        response = MagicMock()
+        response.choices = [choice]
+        response.usage = MagicMock()
+        response.usage.prompt_tokens = 100
+        response.usage.completion_tokens = 50
+        with patch.object(service._client.chat.completions, "create", return_value=response):
+            result = service.classify(_make_candidate())
+        assert result is not None
+        assert result.speech_act == "request"
+
+    def test_classify_speech_act_none_when_missing(self):
+        """Backward compat: missing speech_act in response defaults to None."""
+        import json
+        service = ModelDetectionService(api_key="test-key", model="gpt-4.1-mini")
+        content = json.dumps({
+            "is_commitment": True,
+            "confidence": 0.8,
+            "explanation": "commitment",
+            "suggested_owner": "Alice",
+            "suggested_deadline": None,
+        })
+        msg = MagicMock()
+        msg.content = content
+        choice = MagicMock()
+        choice.message = msg
+        response = MagicMock()
+        response.choices = [choice]
+        response.usage = MagicMock()
+        response.usage.prompt_tokens = 100
+        response.usage.completion_tokens = 50
+        with patch.object(service._client.chat.completions, "create", return_value=response):
+            result = service.classify(_make_candidate())
+        assert result is not None
+        assert result.speech_act is None
+
+    def test_prompt_version_bumped(self):
+        """Prompt version must be bumped to reflect speech_act addition."""
+        from app.services.model_detection import _PROMPT_VERSION
+        # Must be higher than ongoing-v8
+        assert _PROMPT_VERSION == "ongoing-v9"
+
 
 class TestConstants:
     def test_ambiguous_lower_is_decimal(self):

@@ -39,7 +39,7 @@ _BATCH_SIZE = 20
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0
 _DEFAULT_MODEL = "claude-sonnet-4-6"
-_PROMPT_VERSION = "seed-v7"
+_PROMPT_VERSION = "seed-v8"
 
 _SYSTEM_PROMPT = """You are a commitment extraction engine for a workplace intelligence system.
 
@@ -78,6 +78,19 @@ CRITICAL RULE — FOLLOW-UPS: ANY form of "follow up" is ALWAYS a commitment. Th
 
 When in doubt, INCLUDE it as a commitment with lower confidence (0.4-0.6).
 
+## Speech act classification
+
+For each commitment, classify what the speaker is doing:
+- "request": asking someone else to do something ("can you send me X?", "please handle this")
+- "self_commitment": speaker commits to doing something themselves ("I'll send it", "I will handle this")
+- "acceptance": speaker accepts ownership of a prior request ("sure, I'll take care of it", "on it")
+- "status_update": progress report with no new obligation ("we're halfway through", "update: still working on it")
+- "completion": signals delivery or done ("sent", "done", "uploaded the file", "delivered above")
+- "cancellation": withdrawing a prior commitment ("actually I can't make it", "disregard my earlier message")
+- "decline": refusing a request ("I can't take this on", "not able to commit to this")
+- "reassignment": transferring ownership ("passing this to John", "can you take this instead?")
+- "informational": no commitment content at all
+
 For each commitment found, extract:
 - trigger_phrase: the exact words that signal the commitment
 - who_committed: who made the commitment (name or role)
@@ -108,6 +121,7 @@ Respond with valid JSON only:
       "directed_at": "...",
       "urgency": "high|medium|low",
       "commitment_type": "...",
+      "speech_act": "request|self_commitment|acceptance|status_update|completion|cancellation|decline|reassignment|informational",
       "title": "...",
       "is_external": true|false,
       "confidence": 0.0-1.0
@@ -465,12 +479,21 @@ def _create_commitment_and_signal(
     }
     commitment_type = raw_type if raw_type in valid_types else "other"
 
+    # Validate speech_act value
+    _valid_speech_acts = {
+        "request", "self_commitment", "acceptance", "status_update",
+        "completion", "cancellation", "decline", "reassignment", "informational",
+    }
+    raw_speech_act = c_data.get("speech_act")
+    speech_act = raw_speech_act if raw_speech_act in _valid_speech_acts else None
+
     commitment = Commitment(
         user_id=user_id,
         title=str(c_data.get("title", "Untitled commitment"))[:255],
         description=c_data.get("trigger_phrase"),
         commitment_text=c_data.get("trigger_phrase"),
         commitment_type=commitment_type,
+        speech_act=speech_act,
         priority_class=priority_class,
         context_type=context_type,
         suggested_owner=c_data.get("who_committed"),

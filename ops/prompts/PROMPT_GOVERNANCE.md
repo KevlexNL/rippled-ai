@@ -27,13 +27,14 @@ Kevin can veto any prompt change. Rolled back immediately if vetoed.
 | v3 | ~2026-03-17 | Trinity | Added canonical structure enforcement ([Owner] promised [Deliverable] to [Counterparty]) |
 | v4 | 2026-03-18 | Trinity | Added greeting/pleasantry exclusions, bare follow-up patterns, user_relationship field |
 | v5 | 2026-03-19 | Trinity | Strengthened follow-up topic examples, checking-in-on pattern, classification label exclusions |
-| v6 (current) | 2026-03-20 | Trinity | Self-validation step, critical follow-up rule, judge quality rubric (WO-RIPPLED-PROMPT-IMPROVEMENT) |
+| v6 | 2026-03-20 | Trinity | Self-validation step, critical follow-up rule, judge quality rubric (WO-RIPPLED-PROMPT-IMPROVEMENT) |
+| v7 (current) | 2026-03-22 | Trinity | Added speech_act classification field — ongoing-v9, seed-v8 (WO-RIPPLED-SPEECH-ACT-CLASSIFICATION) |
 
 ---
 
-## Current Active Prompt: ongoing-v6
+## Current Active Prompt: ongoing-v9 / seed-v8
 
-File: `ops/prompts/detection-prompt-v6.md`
+File: `ops/prompts/detection-prompt-v7.md`
 
 ---
 

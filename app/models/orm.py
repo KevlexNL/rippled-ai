@@ -200,6 +200,7 @@ class Commitment(Base):
     counterparty_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     # Commitment structure enforcement
     counterparty_resolved: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    speech_act: Mapped[str | None] = mapped_column(String(30), nullable=True)
     user_relationship: Mapped[str | None] = mapped_column(_user_relationship_enum, nullable=True)
     structure_complete: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
     post_event_reviewed: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)

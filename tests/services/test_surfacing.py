@@ -72,6 +72,7 @@ def make_commitment(**kwargs) -> types.SimpleNamespace:
         "surfacing_reason": None,
         "is_surfaced": False,
         "surfaced_at": None,
+        "speech_act": None,
     }
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)
@@ -374,6 +375,150 @@ class TestSurfacingRouter:
 # ---------------------------------------------------------------------------
 # TestSurfacingRunner
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# TestSurfacingRouter — speech_act routing (WO-RIPPLED-SPEECH-ACT-CLASSIFICATION)
+# ---------------------------------------------------------------------------
+
+class TestSurfacingRouterSpeechAct:
+    """Speech act classification affects surfacing routing decisions."""
+
+    def test_request_without_acceptance_routes_to_none(self):
+        """request speech_act → watching relationship → not surfaced."""
+        commitment = make_commitment(
+            speech_act="request",
+            user_relationship="watching",
+            context_type="internal",
+            confidence_commitment=Decimal("0.8"),
+            confidence_actionability=Decimal("0.8"),
+            observe_until=None,
+        )
+        result = route(commitment)
+        assert result.surface is None
+        assert "watching" in result.reason
+
+    def test_self_commitment_surfaces_normally(self):
+        """self_commitment with high scores should surface to main."""
+        commitment = make_commitment(
+            speech_act="self_commitment",
+            user_relationship="mine",
+            context_type="external",
+            confidence_commitment=Decimal("0.9"),
+            confidence_owner=Decimal("0.85"),
+            confidence_actionability=Decimal("0.85"),
+            resolved_deadline=datetime.now(timezone.utc),
+            observe_until=None,
+        )
+        result = route(commitment)
+        assert result.surface == "main"
+
+    def test_status_update_not_surfaced(self):
+        """status_update speech_act → never surfaced, regardless of score."""
+        commitment = make_commitment(
+            speech_act="status_update",
+            context_type="external",
+            confidence_commitment=Decimal("0.9"),
+            confidence_owner=Decimal("0.85"),
+            confidence_actionability=Decimal("0.85"),
+            resolved_deadline=datetime.now(timezone.utc),
+            observe_until=None,
+        )
+        result = route(commitment)
+        assert result.surface is None
+        assert "status_update" in result.reason or "no-surface speech act" in result.reason
+
+    def test_informational_not_surfaced(self):
+        """informational speech_act → never surfaced."""
+        commitment = make_commitment(
+            speech_act="informational",
+            context_type="external",
+            confidence_commitment=Decimal("0.9"),
+            confidence_actionability=Decimal("0.9"),
+            observe_until=None,
+        )
+        result = route(commitment)
+        assert result.surface is None
+
+    def test_cancellation_not_surfaced(self):
+        """cancellation speech_act → not surfaced (lifecycle handler manages it)."""
+        commitment = make_commitment(
+            speech_act="cancellation",
+            context_type="internal",
+            confidence_commitment=Decimal("0.8"),
+            confidence_actionability=Decimal("0.8"),
+            observe_until=None,
+        )
+        result = route(commitment)
+        assert result.surface is None
+
+    def test_completion_not_surfaced(self):
+        """completion speech_act → not surfaced (completion service manages it)."""
+        commitment = make_commitment(
+            speech_act="completion",
+            context_type="internal",
+            confidence_commitment=Decimal("0.8"),
+            confidence_actionability=Decimal("0.8"),
+            observe_until=None,
+        )
+        result = route(commitment)
+        assert result.surface is None
+
+    def test_decline_not_surfaced(self):
+        """decline speech_act → not surfaced."""
+        commitment = make_commitment(
+            speech_act="decline",
+            context_type="internal",
+            confidence_commitment=Decimal("0.8"),
+            confidence_actionability=Decimal("0.8"),
+            observe_until=None,
+        )
+        result = route(commitment)
+        assert result.surface is None
+
+    def test_acceptance_surfaces_normally(self):
+        """acceptance speech_act should surface like a self_commitment."""
+        commitment = make_commitment(
+            speech_act="acceptance",
+            user_relationship="mine",
+            context_type="external",
+            confidence_commitment=Decimal("0.9"),
+            confidence_owner=Decimal("0.85"),
+            confidence_actionability=Decimal("0.85"),
+            resolved_deadline=datetime.now(timezone.utc),
+            observe_until=None,
+        )
+        result = route(commitment)
+        assert result.surface in ("main", "shortlist")
+
+    def test_reassignment_surfaces_normally(self):
+        """reassignment speech_act should surface normally."""
+        commitment = make_commitment(
+            speech_act="reassignment",
+            user_relationship="mine",
+            context_type="external",
+            confidence_commitment=Decimal("0.9"),
+            confidence_owner=Decimal("0.85"),
+            confidence_actionability=Decimal("0.85"),
+            resolved_deadline=datetime.now(timezone.utc),
+            observe_until=None,
+        )
+        result = route(commitment)
+        assert result.surface in ("main", "shortlist")
+
+    def test_none_speech_act_surfaces_normally(self):
+        """None speech_act (backward compat) should surface normally."""
+        commitment = make_commitment(
+            speech_act=None,
+            context_type="external",
+            confidence_commitment=Decimal("0.9"),
+            confidence_owner=Decimal("0.85"),
+            confidence_actionability=Decimal("0.85"),
+            resolved_deadline=datetime.now(timezone.utc),
+            observe_until=None,
+        )
+        result = route(commitment)
+        assert result.surface == "main"
+
 
 class TestSurfacingRunner:
     def _make_mock_db(self, commitments: list) -> MagicMock:

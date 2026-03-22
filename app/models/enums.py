@@ -108,6 +108,18 @@ class UserRelationship(str, enum.Enum):
     watching = "watching"
 
 
+class SpeechAct(str, enum.Enum):
+    request = "request"
+    self_commitment = "self_commitment"
+    acceptance = "acceptance"
+    status_update = "status_update"
+    completion = "completion"
+    cancellation = "cancellation"
+    decline = "decline"
+    reassignment = "reassignment"
+    informational = "informational"
+
+
 class CommitmentType(str, enum.Enum):
     send = "send"
     review = "review"

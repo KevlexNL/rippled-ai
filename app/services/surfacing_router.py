@@ -86,7 +86,24 @@ def route(commitment, proximity_hours: float | None = None) -> RoutingResult:
             reason="structure incomplete — held for triage",
         )
 
-    # --- Step 0b: Watching relationship gate ---
+    # --- Step 0b: Speech act gate ---
+    # Certain speech acts should never be surfaced — they are handled by
+    # other subsystems (completion service, lifecycle handler) or represent
+    # non-actionable content.
+    speech_act = getattr(commitment, "speech_act", None)
+    _NO_SURFACE_SPEECH_ACTS = {
+        "status_update", "informational", "completion",
+        "cancellation", "decline",
+    }
+    if speech_act in _NO_SURFACE_SPEECH_ACTS:
+        return RoutingResult(
+            surface=None,
+            priority_score=priority,
+            classifier=classifier_result,
+            reason=f"no-surface speech act: {speech_act}",
+        )
+
+    # --- Step 0c: Watching relationship gate ---
     user_relationship = getattr(commitment, "user_relationship", None)
     if user_relationship == "watching":
         return RoutingResult(

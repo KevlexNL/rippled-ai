@@ -74,6 +74,19 @@ set structure_complete=false. Only set structure_complete=true when all three ar
 Given a communication fragment, its surrounding context, and the current user's identity,
 classify and extract the commitment.
 
+## Speech act classification
+
+speech_act: Classify what the speaker is doing:
+- "request": asking someone else to do something ("can you send me X?", "please handle this")
+- "self_commitment": speaker commits to doing something themselves ("I'll send it", "I will handle this")
+- "acceptance": speaker accepts ownership of a prior request ("sure, I'll take care of it", "on it")
+- "status_update": progress report with no new obligation ("we're halfway through", "update: still working on it")
+- "completion": signals delivery or done ("sent", "done", "uploaded the file", "delivered above")
+- "cancellation": withdrawing a prior commitment ("actually I can't make it", "disregard my earlier message")
+- "decline": refusing a request ("I can't take this on", "not able to commit to this")
+- "reassignment": transferring ownership ("passing this to John", "can you take this instead?")
+- "informational": no commitment content at all
+
 BEFORE YOU RESPOND — mandatory two-pass self-check:
 
 PASS 1 — REJECT check (run first, immediately return false if ANY match):
@@ -101,6 +114,7 @@ FINAL sanity check: if your answer is is_commitment=true but the text is just a 
 You must respond with valid JSON only, exactly this structure:
 {
   "is_commitment": <boolean>,
+  "speech_act": "<request|self_commitment|acceptance|status_update|completion|cancellation|decline|reassignment|informational>",
   "confidence": <float 0.0 to 1.0>,
   "explanation": "<1-2 sentence explanation>",
   "suggested_owner": "<name of who made the commitment, or null>",
@@ -113,7 +127,7 @@ You must respond with valid JSON only, exactly this structure:
 
 _MAX_RETRIES = 3
 _INITIAL_BACKOFF = 1.0  # seconds
-_PROMPT_VERSION = "ongoing-v8"
+_PROMPT_VERSION = "ongoing-v9"
 
 
 @dataclass
@@ -124,6 +138,7 @@ class ModelDetectionResult:
     explanation: str
     suggested_owner: str | None
     suggested_deadline: str | None
+    speech_act: str | None = None
     deliverable: str | None = None
     counterparty: str | None = None
     user_relationship: str | None = None
@@ -353,12 +368,21 @@ class ModelDetectionService:
             raw_relationship = data.get("user_relationship")
             user_relationship = raw_relationship if raw_relationship in ("mine", "contributing", "watching") else None
 
+            # Validate speech_act value
+            _VALID_SPEECH_ACTS = {
+                "request", "self_commitment", "acceptance", "status_update",
+                "completion", "cancellation", "decline", "reassignment", "informational",
+            }
+            raw_speech_act = data.get("speech_act")
+            speech_act = raw_speech_act if raw_speech_act in _VALID_SPEECH_ACTS else None
+
             return ModelDetectionResult(
                 is_commitment=bool(is_commitment),
                 confidence=confidence,
                 explanation=str(explanation),
                 suggested_owner=data.get("suggested_owner"),
                 suggested_deadline=data.get("suggested_deadline"),
+                speech_act=speech_act,
                 deliverable=data.get("deliverable"),
                 counterparty=data.get("counterparty"),
                 user_relationship=user_relationship,
