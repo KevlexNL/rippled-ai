@@ -10,12 +10,35 @@ class SourceType(str, enum.Enum):
 
 
 class LifecycleState(str, enum.Enum):
+    """Lifecycle states for commitments.
+
+    proposed — Detected, not yet reviewed by user. Default for all new commitments.
+    needs_clarification — System cannot resolve enough structure. Waiting for more context.
+    active — Commitment is real, confirmed, and open. User is aware.
+    confirmed — User has explicitly verified this commitment is real.
+    in_progress — Work has started. User or system flagged as underway.
+    dormant — Not relevant now, retained for future surfacing. User said "not now."
+    delivered — Action appears taken / thing sent. System-detected from completion signals.
+    completed — Work fully done. User confirmed or strong completion evidence.
+    canceled — Commitment explicitly withdrawn or declined.
+    closed — Obligation no longer requires attention (covers completed + canceled + stale).
+    discarded — Wrong extraction, noise, or explicitly rejected. Never surfaces again.
+
+    Delivered vs Completed vs Closed:
+    - delivered = the thing was sent/done (system-detected, may need user confirmation)
+    - completed = user confirmed it's fully done
+    - closed = no longer needs attention (broader)
+    """
+
     proposed = "proposed"
     needs_clarification = "needs_clarification"
     active = "active"
     confirmed = "confirmed"
+    in_progress = "in_progress"
     dormant = "dormant"
     delivered = "delivered"
+    completed = "completed"
+    canceled = "canceled"
     closed = "closed"
     discarded = "discarded"
 

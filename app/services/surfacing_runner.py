@@ -32,8 +32,10 @@ from app.services.surfacing_router import route
 
 logger = logging.getLogger(__name__)
 
-# Lifecycle states that are eligible for surfacing evaluation
-_ACTIVE_STATES = ("proposed", "active", "needs_clarification")
+# Lifecycle states that are eligible for surfacing evaluation.
+# in_progress and confirmed surface alongside active — user is working on / aware of these.
+# completed and canceled are terminal and never surface.
+_ACTIVE_STATES = ("proposed", "active", "needs_clarification", "confirmed", "in_progress")
 
 
 def _build_proximity_map(db: Session, commitment_ids: list[str]) -> dict[str, float]:

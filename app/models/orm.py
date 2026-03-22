@@ -27,7 +27,8 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 # create_type=False tells SQLAlchemy not to CREATE TYPE (they already exist in the DB).
 _source_type = ENUM('meeting', 'slack', 'email', name='source_type', create_type=False)
 _lifecycle_state = ENUM(
-    'proposed', 'needs_clarification', 'active', 'confirmed', 'dormant', 'delivered', 'closed', 'discarded',
+    'proposed', 'needs_clarification', 'active', 'confirmed', 'in_progress',
+    'dormant', 'delivered', 'completed', 'canceled', 'closed', 'discarded',
     name='lifecycle_state', create_type=False,
 )
 _signal_role = ENUM(

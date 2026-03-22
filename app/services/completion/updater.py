@@ -4,7 +4,7 @@ Applies scorer output to the database: updates commitment fields, writes
 CommitmentSignal (insert-or-ignore pattern), writes LifecycleTransition.
 
 No-op guards:
-- lifecycle_state == "closed": complete no-op (no writes of any kind)
+- lifecycle_state in {closed, completed, canceled, discarded}: complete no-op (no writes)
 - lifecycle_state == "delivered": write signal if confidence >= 0.40, no transition
 
 Threshold logic:
@@ -15,6 +15,8 @@ Threshold logic:
 Public API:
     apply_completion_result(commitment, evidence, score, db) -> LifecycleTransition | None
     apply_auto_close(commitment, db) -> LifecycleTransition
+    apply_cancellation(commitment, db, trigger_source_item_id) -> LifecycleTransition | None
+    apply_user_confirmed_completion(commitment, db) -> LifecycleTransition | None
 """
 from __future__ import annotations
 
@@ -117,9 +119,15 @@ def apply_completion_result(
     """
     current_state = commitment.lifecycle_state
 
-    # Complete no-op for closed commitments
-    if current_state == LifecycleState.closed.value:
-        logger.debug("Commitment %s already closed — skipping", commitment.id)
+    # Complete no-op for terminal states
+    _terminal = {
+        LifecycleState.closed.value,
+        LifecycleState.completed.value,
+        LifecycleState.canceled.value,
+        LifecycleState.discarded.value,
+    }
+    if current_state in _terminal:
+        logger.debug("Commitment %s in terminal state %s — skipping", commitment.id, current_state)
         return None
 
     # Below signal threshold: no writes at all
@@ -214,5 +222,105 @@ def apply_auto_close(
     logger.info(
         "Commitment %s auto-closed (was delivered, threshold exceeded)",
         commitment.id,
+    )
+    return transition
+
+
+def apply_cancellation(
+    commitment: Any,
+    db: Session,
+    *,
+    trigger_source_item_id: str | None = None,
+) -> LifecycleTransition | None:
+    """Transition a commitment to canceled (speech_act=cancellation signal).
+
+    Only allowed from states where cancellation makes sense per transition rules:
+    active, confirmed, in_progress.
+
+    Args:
+        commitment: Duck-typed Commitment ORM object.
+        db: Synchronous SQLAlchemy Session.
+        trigger_source_item_id: Source item that triggered the cancellation.
+
+    Returns:
+        LifecycleTransition if state changed, None if disallowed.
+    """
+    from app.services.lifecycle_transitions import is_transition_allowed
+
+    from_state = commitment.lifecycle_state
+    if not is_transition_allowed(from_state, LifecycleState.canceled.value):
+        logger.debug(
+            "Commitment %s: cancellation disallowed from state %s",
+            commitment.id, from_state,
+        )
+        return None
+
+    now = datetime.now(timezone.utc)
+    commitment.lifecycle_state = LifecycleState.canceled.value
+    commitment.state_changed_at = now
+
+    transition = LifecycleTransition(
+        id=str(uuid.uuid4()),
+        commitment_id=commitment.id,
+        user_id=commitment.user_id,
+        from_state=from_state,
+        to_state=LifecycleState.canceled.value,
+        trigger_source_item_id=trigger_source_item_id,
+        trigger_reason="cancellation_signal",
+        confidence_at_transition=None,
+    )
+    db.add(transition)
+
+    logger.info(
+        "Commitment %s transitioned %s → canceled",
+        commitment.id, from_state,
+    )
+    return transition
+
+
+def apply_user_confirmed_completion(
+    commitment: Any,
+    db: Session,
+) -> LifecycleTransition | None:
+    """Transition a delivered commitment to completed (user confirmation).
+
+    Only allowed from delivered state per transition rules.
+
+    Args:
+        commitment: Duck-typed Commitment ORM object.
+        db: Synchronous SQLAlchemy Session.
+
+    Returns:
+        LifecycleTransition if state changed, None if disallowed.
+    """
+    from app.services.lifecycle_transitions import is_transition_allowed
+
+    from_state = commitment.lifecycle_state
+    if not is_transition_allowed(from_state, LifecycleState.completed.value):
+        logger.debug(
+            "Commitment %s: user-confirmed completion disallowed from state %s",
+            commitment.id, from_state,
+        )
+        return None
+
+    now = datetime.now(timezone.utc)
+    commitment.lifecycle_state = LifecycleState.completed.value
+    commitment.state_changed_at = now
+
+    transition = LifecycleTransition(
+        id=str(uuid.uuid4()),
+        commitment_id=commitment.id,
+        user_id=commitment.user_id,
+        from_state=from_state,
+        to_state=LifecycleState.completed.value,
+        trigger_source_item_id=None,
+        trigger_reason="user_confirmed_completion",
+        confidence_at_transition=None,
+    )
+    db.add(transition)
+
+    logger.info(
+        "Commitment %s transitioned %s → completed (user confirmed)",
+        commitment.id, from_state,
     )
     return transition
