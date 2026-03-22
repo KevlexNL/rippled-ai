@@ -1,0 +1,79 @@
+site_name: Rippled.ai
+site_description: Commitment intelligence engine — living product documentation
+site_url: https://kevlexnl.github.io/rippled-ai
+repo_url: https://github.com/KevlexNL/rippled-ai
+repo_name: KevlexNL/rippled-ai
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+    - content.action.edit
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mermaid2
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight
+  - pymdownx.details
+  - admonition
+  - tables
+  - attr_list
+  - md_in_html
+
+nav:
+  - Home: index.md
+  - Architecture:
+    - Overview: architecture/overview.md
+    - Signal Pipeline: architecture/signal-pipeline.md
+    - Commitment Lifecycle: architecture/lifecycle.md
+    - Data Model: architecture/data-model.md
+  - Product:
+    - Product Truth: product/truth.md
+    - Domain Policy: product/domain-policy.md
+    - Audience & ICP: product/audience.md
+  - Prompts:
+    - Overview: prompts/index.md
+    - Detection (v4): prompts/detection-v4.md
+    - Seed (v3): prompts/seed-v3.md
+    - Judge: prompts/judge.md
+  - Decisions:
+    - Log: decisions/index.md
+  - Work Orders:
+    - Active: workorders/active.md
+    - Backlog: workorders/backlog.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/KevlexNL/rippled-ai
