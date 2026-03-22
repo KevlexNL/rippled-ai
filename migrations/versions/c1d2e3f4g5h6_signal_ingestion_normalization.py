@@ -9,7 +9,7 @@ and the direction enum type.
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import ENUM, JSONB, UUID
 
 
 # revision identifiers
@@ -18,9 +18,13 @@ down_revision = "n8o9p0q1r2s3"
 branch_labels = None
 depends_on = None
 
+# Reference existing enums without creating them
+_source_type = ENUM("meeting", "slack", "email", name="source_type", create_type=False)
+_direction = ENUM("inbound", "outbound", "unknown", name="direction", create_type=False)
+
 
 def upgrade() -> None:
-    # Create direction enum type
+    # Create direction enum type (source_type already exists from Phase 01)
     direction_enum = sa.Enum("inbound", "outbound", "unknown", name="direction")
     direction_enum.create(op.get_bind(), checkfirst=True)
 
@@ -28,7 +32,7 @@ def upgrade() -> None:
     op.create_table(
         "raw_signal_ingests",
         sa.Column("id", UUID(as_uuid=False), server_default=sa.text("gen_random_uuid()"), primary_key=True),
-        sa.Column("source_type", sa.Enum("meeting", "slack", "email", name="source_type", create_type=False), nullable=False),
+        sa.Column("source_type", _source_type, nullable=False),
         sa.Column("provider", sa.String(50), nullable=False),
         sa.Column("provider_message_id", sa.String(), nullable=False),
         sa.Column("provider_thread_id", sa.String(), nullable=True),
@@ -47,7 +51,7 @@ def upgrade() -> None:
         "normalized_signals",
         sa.Column("id", UUID(as_uuid=False), server_default=sa.text("gen_random_uuid()"), primary_key=True),
         sa.Column("raw_signal_ingest_id", UUID(as_uuid=False), sa.ForeignKey("raw_signal_ingests.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("source_type", sa.Enum("meeting", "slack", "email", name="source_type", create_type=False), nullable=False),
+        sa.Column("source_type", _source_type, nullable=False),
         sa.Column("source_subtype", sa.String(30), nullable=True),
         sa.Column("provider", sa.String(50), nullable=False),
         sa.Column("provider_message_id", sa.String(), nullable=False),
@@ -55,7 +59,7 @@ def upgrade() -> None:
         sa.Column("provider_account_id", sa.String(), nullable=True),
         sa.Column("signal_timestamp", sa.DateTime(timezone=True), nullable=False),
         sa.Column("authored_at", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("direction", sa.Enum("inbound", "outbound", "unknown", name="direction", create_type=False), nullable=True),
+        sa.Column("direction", _direction, nullable=True),
         sa.Column("is_inbound", sa.Boolean(), server_default=sa.text("false"), nullable=False),
         sa.Column("is_outbound", sa.Boolean(), server_default=sa.text("false"), nullable=False),
         sa.Column("subject", sa.Text(), nullable=True),
