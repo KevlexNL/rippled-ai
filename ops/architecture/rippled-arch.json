@@ -8,6 +8,8 @@
       "description": "Main SPA — React + Vite frontend served by FastAPI",
       "code_path": "frontend/src/App.tsx",
       "git_sha": "6f694d3",
+      "pseudologic": "• React Router initializes with auth-guarded routes\n• useAuth() checks Supabase session on mount\n• Authenticated users see Main/Shortlist/Commitments tabs\n• Admin users get additional /admin routes\n• API calls go through apiClient with auth headers\n• Vite dev server proxies /api to FastAPI backend",
+      "broader_context": "The single entry point for all user interaction with Rippled. Users manage commitments, review signals, and configure integrations entirely through this app.",
       "wos": []
     },
     {
@@ -18,6 +20,8 @@
       "description": "Supabase Auth sign-up flow",
       "code_path": "frontend/src/screens/SignUpScreen.tsx",
       "git_sha": "6f694d3",
+      "pseudologic": "• User enters email + password on sign-up form\n• Calls Supabase Auth signUp() method\n• Supabase creates auth user and sends confirmation email\n• On confirmation, user row created in public schema\n• Redirects to guided onboarding flow",
+      "broader_context": "Creates the user account that all commitment tracking is anchored to. Without sign-up, nothing else in the system activates.",
       "wos": []
     },
     {
@@ -28,6 +32,8 @@
       "description": "Supabase Auth login + password recovery",
       "code_path": "frontend/src/screens/LoginScreen.tsx",
       "git_sha": "6f694d3",
+      "pseudologic": "• User enters email + password\n• Calls Supabase Auth signInWithPassword()\n• On success, stores session token and redirects to dashboard\n• Forgot password triggers resetPasswordForEmail()\n• Password reset link sent via Supabase email template",
+      "broader_context": "Gate that ensures only authenticated users access their commitment data. Handles the session lifecycle that all API calls depend on.",
       "wos": []
     },
     {
@@ -38,6 +44,8 @@
       "description": "Account settings — display name, email preferences",
       "code_path": "frontend/src/screens/settings/AccountSettingsScreen.tsx",
       "git_sha": "6f694d3",
+      "pseudologic": "• Loads current user profile from /api/v1/users/me\n• Displays editable fields: display name, notification preferences\n• Saves changes via PATCH to user settings endpoint\n• Updates local auth context on success",
+      "broader_context": "Lets users control how they appear in the system and how they receive notifications about their commitments.",
       "wos": []
     },
     {
@@ -48,6 +56,8 @@
       "description": "Connect Email, DMs, Calendar, Meetings. Manage LLM token.",
       "code_path": "frontend/src/screens/settings/IntegrationsSettingsScreen.tsx",
       "git_sha": "6f694d3",
+      "pseudologic": "• Lists available connectors: Email (IMAP), Slack, Read.ai, Calendar\n• Each connector shows connect/disconnect status\n• OAuth flows for Slack; credential entry for IMAP/API keys\n• LLM API key (OpenAI) stored encrypted in user_settings\n• Credentials saved via /api/v1/integrations endpoint",
+      "broader_context": "The critical setup step — without integrations connected, no source items flow in and no commitments are ever detected. This is where the data pipeline begins.",
       "wos": []
     },
     {
@@ -58,6 +68,8 @@
       "description": "Per-channel approval before initial seed pass processes historical data",
       "code_path": "app/services/detection/seed_detector.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• User sees list of available channels/sources after connecting\n• Each channel requires explicit approval before historical scan\n• Approved channels trigger seed detection task via Celery\n• Seed detector processes historical messages through the same detection pipeline\n• Results appear as commitments with older timestamps",
+      "broader_context": "Prevents the system from overwhelming users with hundreds of historical commitments on first connect. Users control which channels get backfilled.",
       "wos": []
     },
     {
@@ -68,6 +80,8 @@
       "description": "Step-by-step wizard for new users — integrations, identity, seed",
       "code_path": "frontend/src/screens/OnboardingScreen.tsx",
       "git_sha": "6f694d3",
+      "pseudologic": "• Multi-step wizard with progress indicator\n• Step 1: Connect at least one integration (email/Slack)\n• Step 2: Confirm identity — verify name/email for owner resolution\n• Step 3: Approve seed channels for historical backfill\n• Marks onboarding complete in user settings on finish\n• Redirects to main dashboard (Active screen)",
+      "broader_context": "Ensures new users set up the minimum viable configuration so the system can start detecting commitments immediately. Without this, users would land on an empty dashboard.",
       "wos": []
     },
     {
@@ -78,6 +92,8 @@
       "description": "Identity profile system — maps emails/names to confirmed user identities",
       "code_path": "app/services/identity/",
       "git_sha": "6f694d3",
+      "pseudologic": "• User confirms their known names/emails during onboarding\n• Stored as UserIdentityProfile rows (name, email, source)\n• Owner resolver matches extracted owner strings against profiles\n• Uses exact match, substring match, then fuzzy match (threshold 0.75)\n• Resolves suggested_owner to a confirmed user_id or leaves unresolved",
+      "broader_context": "Makes it possible to attribute commitments to the right person. Without identity resolution, the system can't determine who owns a detected commitment.",
       "wos": []
     },
     {
@@ -88,6 +104,8 @@
       "description": "Main dashboard — Active tab showing highest-priority commitments",
       "code_path": "frontend/src/screens/ActiveScreen.tsx",
       "git_sha": "6f694d3",
+      "pseudologic": "• Fetches commitments from /api/v1/commitments with surfaced_as filter\n• Groups by context (thread/source) with inline badges\n• Sorted by priority_score descending\n• Each card shows: deliverable, owner, counterparty, deadline, confidence\n• User actions: confirm, dismiss, snooze (not now), skip\n• Actions update lifecycle_state via PATCH endpoint",
+      "broader_context": "The primary screen users see daily. This is where commitment intelligence becomes actionable — users review what the system found and decide what matters.",
       "wos": []
     },
     {
@@ -98,6 +116,8 @@
       "description": "Raw message/event stored as source_item from any connector",
       "code_path": "app/api/routes/source_items.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• Webhook/poller delivers raw message to /api/v1/source-items\n• Validates source ownership (user must own the source)\n• Creates SourceItem row with content, sender, timestamps, metadata\n• Deduplicates by external_id to prevent double-processing\n• Fires detect_commitments Celery task asynchronously\n• Returns created source item ID",
+      "broader_context": "The funnel entry point for all raw communication data. Every email, Slack message, and meeting transcript enters the system here before any intelligence is applied.",
       "wos": []
     },
     {
@@ -108,8 +128,10 @@
       "description": "Determines if a source item contains a commitment-like signal using hybrid detection (rule-based + LLM)",
       "code_path": "app/services/model_detection.py",
       "git_sha": "6f694d3",
-      "prompt_version": "ongoing-v4",
+      "prompt_version": "ongoing-v7",
       "prompt_file": "ops/prompts/detection-prompt-v6.md",
+      "pseudologic": "• Receives source item content from Celery task\n• Two-pass detection: rule-based pattern matching first, then LLM\n• Rule-based: regex patterns for 'I will', 'follow up', etc. per source type\n• Suppression patterns filter out greetings, sign-offs, pleasantries\n• LLM call (GPT-4.1-mini): system prompt defines commitment taxonomy\n• LLM performs self-check pass — validates its own extractions against reject-first rules\n• Returns ModelDetectionResult with is_commitment, confidence, explanation\n• Logs every run to detection_audit with prompt_version for eval tracking",
+      "broader_context": "The core intelligence of Rippled. This is where raw text becomes structured commitment candidates. Detection quality directly determines whether users trust the product.",
       "wos": ["WO-RIPPLED-COMMITMENT-STRUCTURE-DETECTION"],
       "open_questions": ["Should delegated asks be first-class before acceptance?"]
     },
@@ -119,6 +141,8 @@
       "layer": "signal_pipeline",
       "status": "planned",
       "description": "Classify signal_type (self_commitment, delegated_action, follow_up_intent, etc.)",
+      "pseudologic": "• Takes detected commitment candidate as input\n• Classifies into signal types: self_commitment, delegated_action, follow_up_intent\n• May run as separate LLM call or be folded into detection prompt\n• Output informs surfacing priority (delegated actions score differently)\n• Classification stored on commitment row for filtering",
+      "broader_context": "Adds nuance beyond 'is this a commitment?' — understanding the type of commitment changes how it should be prioritized and presented to the user.",
       "wos": [],
       "open_questions": ["Separate classifier or part of detection prompt?"]
     },
@@ -130,8 +154,10 @@
       "description": "Extracts owner, deliverable, deadline, counterparty from detected signals",
       "code_path": "app/services/model_detection.py",
       "git_sha": "6f694d3",
-      "prompt_version": "ongoing-v4",
+      "prompt_version": "ongoing-v7",
       "prompt_file": "ops/prompts/detection-prompt-v6.md",
+      "pseudologic": "• Part of the same LLM call as detection (single prompt, structured JSON output)\n• Extracts: suggested_owner, deliverable text, deadline (if mentioned), counterparty\n• LLM returns structured JSON with all fields\n• Deadline parsing normalizes relative dates ('next week', 'Friday') to absolute\n• Missing fields left as null — system tolerates partial extraction\n• All extracted fields are 'suggested values' — user confirms later",
+      "broader_context": "Turns a vague 'yes this is a commitment' signal into actionable structured data. The extracted fields (who, what, when, for whom) are what users actually see and act on.",
       "wos": []
     },
     {
@@ -142,6 +168,8 @@
       "description": "Maps extracted owner name/email to confirmed identity profiles",
       "code_path": "app/services/identity/",
       "git_sha": "6f694d3",
+      "pseudologic": "• Takes suggested_owner string from structured extraction\n• Loads all UserIdentityProfile rows for the user\n• Tries exact match on name/email fields\n• Falls back to substring match (either direction)\n• Falls back to fuzzy match using SequenceMatcher (threshold 0.75)\n• Returns resolved user_id or None if no match found",
+      "broader_context": "Bridges the gap between what an LLM extracts ('John will handle this') and who that person actually is in the system. Critical for showing commitments to the right user.",
       "wos": []
     },
     {
@@ -152,6 +180,8 @@
       "description": "Decides whether commitment goes to Main, Shortlist, or held for triage based on priority scoring",
       "code_path": "app/services/surfacing_router.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• Runs classifier to get dimension scores (externality, timing, consequence, burden, confidence)\n• Computes priority_score 0-100 via weighted formula\n• Checks observation window — holds commitment if still in silent period\n• Routes by score: ≥60 → Main, ≥35 → Shortlist, <35 → held internally\n• If critical ambiguity detected and score ≥25 → Clarifications surface\n• Returns RoutingResult with surface destination and human-readable reason",
+      "broader_context": "The quality gate between detection and user visibility. Prevents low-confidence noise from reaching users while ensuring high-stakes commitments surface immediately.",
       "wos": []
     },
     {
@@ -162,6 +192,8 @@
       "description": "Final pipeline output — commitment row created in DB, surfaced or held",
       "code_path": "app/services/surfacing_runner.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• Surfacing sweep runs periodically via Celery task\n• Loads all commitments in active lifecycle states (proposed, active, needs_clarification)\n• Pre-computes proximity map: hours until delivery events per commitment\n• For each commitment: classify → score → route\n• Updates surfaced_as, priority_score, dimension scores on commitment row\n• Appends SurfacingAudit row if surface destination changed\n• Returns summary dict with counts of changes made",
+      "broader_context": "The final step where a detected signal becomes visible (or stays held). This is the boundary between the AI pipeline and the user-facing product.",
       "wos": []
     },
     {
@@ -172,6 +204,8 @@
       "description": "Initial state — system detected a commitment candidate",
       "code_path": "app/models/orm.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• Default lifecycle_state when a commitment row is first created\n• Commitment exists in DB but may not yet be visible to user\n• Eligible for surfacing evaluation on next sweep\n• Can transition to: surfaced (meets threshold), dismissed, or remain proposed",
+      "broader_context": "The starting point for every commitment in the system. A 'proposed' commitment is the system's hypothesis that hasn't yet been validated by scoring or the user.",
       "wos": []
     },
     {
@@ -182,6 +216,8 @@
       "description": "Commitment visible on Main or Shortlist tabs",
       "code_path": "app/services/surfacing_runner.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• Commitment passed surfacing threshold (priority_score ≥ 35)\n• surfaced_as set to 'main' or 'shortlist'\n• Now visible in user's dashboard with full card details\n• User can take action: confirm, dismiss, snooze, skip",
+      "broader_context": "The moment the system's work becomes visible to the user. This is the product's core value delivery — surfacing what matters before it falls through the cracks.",
       "wos": []
     },
     {
@@ -192,6 +228,8 @@
       "description": "User explicitly confirmed this is a real commitment",
       "code_path": "app/api/routes/commitments.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• User clicks 'Confirm' on a surfaced commitment card\n• PATCH /api/v1/commitments/{id} with lifecycle_state='confirmed'\n• Commitment moves from suggested to user-validated\n• Remains visible and tracked until delivered or closed\n• Confirmation signal fed back to improve detection quality",
+      "broader_context": "User validation that the AI got it right. Confirmed commitments are the highest-trust items in the system and anchor the user's workflow.",
       "wos": []
     },
     {
@@ -202,6 +240,8 @@
       "description": "User snoozed — will resurface later",
       "code_path": "app/api/routes/commitments.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• User clicks 'Not Now' on a surfaced commitment\n• PATCH endpoint sets lifecycle_state='dormant'\n• Commitment hidden from active views\n• May resurface on next surfacing sweep if conditions change\n• Allows users to defer without permanently dismissing",
+      "broader_context": "Gives users control over timing without losing track. A snoozed commitment isn't forgotten — it comes back when it becomes relevant again.",
       "wos": []
     },
     {
@@ -212,6 +252,8 @@
       "description": "User chose to skip without dismissing — may revisit",
       "code_path": "app/api/routes/commitments.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• User clicks 'Skip' on a surfaced commitment\n• PATCH endpoint sets lifecycle_state='skipped'\n• Removed from active views but not permanently dismissed\n• Weaker signal than 'Not Now' — user unsure rather than deferring\n• Available in history for later review",
+      "broader_context": "A soft pass that doesn't count against detection quality. Users who aren't sure about a commitment can skip it without consequence.",
       "wos": []
     },
     {
@@ -222,6 +264,8 @@
       "description": "User marked as not-a-commitment — discarded from view",
       "code_path": "app/api/routes/commitments.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• User clicks 'Dismiss' on a surfaced commitment\n• PATCH endpoint sets lifecycle_state='dismissed'\n• Permanently removed from active views\n• Strong negative signal — this was a false positive\n• Dismissal data used by LLM Judge to evaluate detection quality",
+      "broader_context": "The user's way of telling the system it got it wrong. Dismissed commitments are critical training signal for improving detection accuracy over time.",
       "wos": []
     },
     {
@@ -230,6 +274,8 @@
       "layer": "commitment_lifecycle",
       "status": "planned",
       "description": "System detected completion evidence — auto-matched to open commitment",
+      "pseudologic": "• Monitor incoming source items for completion signals\n• Match completion evidence to open confirmed commitments\n• Matching strategies: thread-based > semantic similarity > manual\n• Auto-transition lifecycle_state to 'delivered' on match\n• User can confirm or reject the delivery detection",
+      "broader_context": "Closes the loop on commitment tracking. Without delivery detection, users must manually mark every commitment as done, which defeats the purpose of automated tracking.",
       "wos": [],
       "open_questions": ["Delivery detection matching strategy: thread > semantic > manual"]
     },
@@ -239,6 +285,8 @@
       "layer": "commitment_lifecycle",
       "status": "planned",
       "description": "User confirmed obligation is fully resolved",
+      "pseudologic": "• User confirms that a delivered commitment is truly complete\n• Terminal lifecycle state — no further transitions\n• Commitment archived but retained for analytics\n• Contributes to reliability scoring and trust metrics",
+      "broader_context": "The final state confirming the obligation cycle is complete. Closed commitments are the measure of the system's end-to-end value.",
       "wos": []
     },
     {
@@ -249,6 +297,8 @@
       "description": "Logs every detection run — source item, parsed result, prompt version, model used",
       "code_path": "app/models/orm.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• Every model_detection.py call writes a DetectionAudit row\n• Stores: source_item_id, raw LLM response, parsed_result JSON, model name\n• Records prompt_version used for that run\n• Enables before/after comparison when prompts change\n• Queryable by admin review UI for spot-checking",
+      "broader_context": "The accountability layer for AI decisions. Without audit logs, there's no way to understand why the system made a particular detection decision or track quality over time.",
       "wos": []
     },
     {
@@ -260,6 +310,8 @@
       "code_path": "app/services/llm_judge.py",
       "git_sha": "6f694d3",
       "prompt_version": "judge-v2",
+      "pseudologic": "• Runs weekly via Celery scheduled task\n• Pulls recent DetectionAudit rows as evaluation sample\n• For each audit row: sends source content + model output to Claude Sonnet\n• Judge prompt asks: missed commitments? false positives? quality rating 1-5?\n• Parses structured JSON response from judge\n• Accumulates results into LlmJudgeRun aggregate row\n• If average quality < threshold, flags for prompt improvement\n• Incorporates user feedback (SignalFeedback) for ground truth comparison",
+      "broader_context": "The automated quality assurance system. Uses a stronger model (Claude Sonnet) to evaluate the detection model's (GPT-4.1-mini) output, creating a feedback loop that drives prompt improvements.",
       "wos": []
     },
     {
@@ -270,6 +322,8 @@
       "description": "Regression testing for detection quality — runs against golden set",
       "code_path": "app/services/eval/",
       "git_sha": "6f694d3",
+      "pseudologic": "• Maintains a golden set of labeled source items with expected outputs\n• Runs detection pipeline against each golden item\n• Compares actual vs expected: precision, recall, F1\n• Reports regressions when a prompt change degrades quality\n• Can be triggered manually or as part of prompt change CI",
+      "broader_context": "Prevents prompt improvements from accidentally breaking cases that already work. The safety net that gives confidence to iterate on detection quality.",
       "wos": []
     },
     {
@@ -281,6 +335,8 @@
       "code_path": "ops/prompts/",
       "git_sha": "6f694d3",
       "prompt_file": "ops/prompts/PROMPT_GOVERNANCE.md",
+      "pseudologic": "• Prompt files stored as markdown in ops/prompts/ directory\n• Each prompt versioned with naming convention (e.g., detection-prompt-v6.md)\n• PROMPT_GOVERNANCE.md defines change process and review requirements\n• _PROMPT_VERSION constant in code references the active version\n• Changes require eval harness run + LLM judge review before deploy",
+      "broader_context": "Treats prompts as first-class code artifacts with version control and governance. Prevents ad-hoc prompt changes from degrading detection quality in production.",
       "wos": []
     },
     {
@@ -291,6 +347,8 @@
       "description": "Polls IMAP inbox for new messages, creates source_items",
       "code_path": "app/api/routes/webhooks/email.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• Celery periodic task polls IMAP server for new messages\n• Authenticates using encrypted credentials from user_settings\n• Fetches unread messages since last poll timestamp\n• Parses email: extracts body, sender, recipients, thread_id\n• Creates SourceItem row per email with source_type='email'\n• Marks messages as seen to avoid re-processing",
+      "broader_context": "One of the primary data sources for commitment detection. Email is where many business commitments are made, especially with external stakeholders.",
       "wos": []
     },
     {
@@ -301,6 +359,8 @@
       "description": "Slack webhook + OAuth connector for DM/channel messages",
       "code_path": "app/api/routes/webhooks/slack.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• OAuth2 flow connects user's Slack workspace\n• Receives real-time events via Slack Events API webhook\n• Processes message events from approved channels/DMs\n• Extracts: message text, sender, channel, thread_ts, timestamp\n• Creates SourceItem row per message with source_type='slack'\n• Handles Slack URL verification challenge on webhook setup",
+      "broader_context": "Captures the fast-moving informal commitments made in chat. Slack messages are often where 'I'll handle that' happens but gets forgotten without tracking.",
       "wos": []
     },
     {
@@ -311,6 +371,8 @@
       "description": "Meeting transcript webhook from Read.ai — creates source_items from transcript",
       "code_path": "app/api/routes/webhooks/meetings.py",
       "git_sha": "6f694d3",
+      "pseudologic": "• Receives webhook POST from Read.ai after meeting ends\n• Payload contains full meeting transcript with speaker labels\n• Segments transcript into logical conversation blocks\n• Creates SourceItem rows with source_type='meeting'\n• Includes meeting metadata: title, attendees, duration\n• Triggers detection pipeline on each segment",
+      "broader_context": "Captures commitments made in live meetings — the highest-value and most commonly forgotten source. Meeting action items are where Rippled provides the most differentiated value.",
       "wos": []
     },
     {
@@ -319,6 +381,8 @@
       "layer": "integrations",
       "status": "planned",
       "description": "Google/Outlook calendar integration for deadline correlation",
+      "pseudologic": "• Will connect to Google Calendar / Outlook Calendar APIs\n• Polls for upcoming events and deadlines\n• Creates Event rows for delivery deadline correlation\n• Enables proximity spike scoring (C3) for approaching deadlines\n• Links calendar events to commitments via CommitmentEventLink",
+      "broader_context": "Adds temporal intelligence — knowing when a commitment's deadline is approaching changes its priority. Calendar integration turns static commitments into time-aware obligations.",
       "wos": []
     }
   ],

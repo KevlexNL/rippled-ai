@@ -30,6 +30,8 @@ interface ArchNode {
   git_sha?: string
   prompt_version?: string
   prompt_file?: string
+  pseudologic?: string
+  broader_context?: string
   wos?: string[]
   open_questions?: string[]
 }
@@ -161,9 +163,28 @@ function DetailPanel({
   node: ArchNode
   onClose: () => void
 }) {
-  const [promptExpanded, setPromptExpanded] = useState(false)
+  const [promptExpanded, setPromptExpanded] = useState(!!node.prompt_file)
   const [promptText, setPromptText] = useState<string | null>(null)
   const [promptLoading, setPromptLoading] = useState(false)
+
+  // Auto-load prompt when panel opens if node has a prompt_file
+  useEffect(() => {
+    if (!node.prompt_file) return
+    setPromptLoading(true)
+    fetch(`/${node.prompt_file}`)
+      .then((resp) => {
+        if (resp.ok) return resp.text()
+        return '(Could not load prompt file)'
+      })
+      .then((text) => {
+        setPromptText(text)
+        setPromptExpanded(true)
+      })
+      .catch(() => {
+        setPromptText('(Could not load prompt file)')
+      })
+      .finally(() => setPromptLoading(false))
+  }, [node.prompt_file])
 
   const { data: auditRows } = useQuery({
     queryKey: ['admin', 'audit-sample', node.prompt_version],
@@ -175,24 +196,8 @@ function DetailPanel({
     staleTime: 60_000,
   })
 
-  async function loadPrompt() {
-    if (!node.prompt_file || promptText !== null) {
-      setPromptExpanded(!promptExpanded)
-      return
-    }
-    setPromptLoading(true)
-    try {
-      const resp = await fetch(`/${node.prompt_file}`)
-      if (resp.ok) {
-        setPromptText(await resp.text())
-      } else {
-        setPromptText('(Could not load prompt file)')
-      }
-    } catch {
-      setPromptText('(Could not load prompt file)')
-    }
-    setPromptLoading(false)
-    setPromptExpanded(true)
+  function togglePrompt() {
+    setPromptExpanded(!promptExpanded)
   }
 
   const statusBadge = STATUS_BADGE[node.status] ?? STATUS_BADGE.stable
@@ -238,6 +243,14 @@ function DetailPanel({
           <p className="text-[13px] text-[#4b5563] leading-relaxed">{node.description}</p>
         </div>
 
+        {/* Why it matters */}
+        {node.broader_context && (
+          <div>
+            <div className="text-[11px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1">Why it matters</div>
+            <p className="text-[13px] text-[#4b5563] leading-relaxed">{node.broader_context}</p>
+          </div>
+        )}
+
         {/* Code path */}
         {node.code_path && (
           <div>
@@ -248,6 +261,24 @@ function DetailPanel({
             {node.git_sha && (
               <span className="ml-2 text-[11px] text-[#9ca3af]">@ {node.git_sha}</span>
             )}
+          </div>
+        )}
+
+        {/* How it works (pseudologic) */}
+        {node.pseudologic && (
+          <div>
+            <div className="text-[11px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1">How it works</div>
+            <div className="space-y-0.5">
+              {node.pseudologic.split('\n').map((line, i) => (
+                <p
+                  key={i}
+                  className="text-[12px] text-[#4b5563] leading-relaxed"
+                  style={{ paddingLeft: line.startsWith('•') ? '8px' : '0' }}
+                >
+                  {line}
+                </p>
+              ))}
+            </div>
           </div>
         )}
 
@@ -288,7 +319,7 @@ function DetailPanel({
               <span className="text-[12px] text-[#191919] font-medium">{node.prompt_version}</span>
               {node.prompt_file && (
                 <button
-                  onClick={loadPrompt}
+                  onClick={togglePrompt}
                   className="text-[11px] text-[#2563eb] hover:text-[#1d4ed8] font-medium"
                 >
                   {promptLoading ? 'Loading…' : promptExpanded ? 'Hide prompt' : 'View prompt'}
@@ -351,9 +382,12 @@ export default function ArchitectureScreen() {
   const [selectedNode, setSelectedNode] = useState<ArchNode | null>(null)
   const [archData, setArchData] = useState<ArchData | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   // Load architecture data from static JSON
   useEffect(() => {
+    setArchData(null)
+    setLoadError(null)
     fetch('/ops/architecture/rippled-arch.json')
       .then((r) => {
         if (!r.ok) throw new Error(`Failed to load: ${r.status}`)
@@ -361,7 +395,7 @@ export default function ArchitectureScreen() {
       })
       .then((data: ArchData) => setArchData(data))
       .catch((e) => setLoadError(e.message))
-  }, [])
+  }, [refreshKey])
 
   // Compute React Flow nodes/edges from data
   const rfNodes = useMemo(() => {
@@ -489,7 +523,22 @@ export default function ArchitectureScreen() {
             Architecture
           </button>
         </div>
-        <div className="ml-auto flex-shrink-0" />
+        <div className="ml-auto flex-shrink-0">
+          <button
+            onClick={() => setRefreshKey((k) => k + 1)}
+            disabled={!archData && !loadError}
+            className="text-[13px] text-[#6b7280] hover:text-[#191919] border border-[#e8e8e6] hover:border-[#d1d5db] px-3 py-1 rounded transition-colors disabled:opacity-50"
+          >
+            {!archData && !loadError ? (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-3 h-3 border border-[#6b7280] border-t-transparent rounded-full animate-spin" />
+                Loading
+              </span>
+            ) : (
+              'Refresh'
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
