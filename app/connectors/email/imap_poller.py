@@ -256,7 +256,7 @@ def _poll_source(source: Source) -> dict:
                             continue
 
                         with get_sync_session() as db:
-                            item = normalise_email(payload, source_id)
+                            item, _signal = normalise_email(payload, source_id)
                             _, created = ingest_item(item, user_id, db)
                             if created:
                                 ingested += 1
@@ -382,7 +382,7 @@ def poll_new_messages(user_id: str) -> dict:
                             continue
 
                         with get_sync_session() as db:
-                            item = normalise_email(payload, source_id)
+                            item, _signal = normalise_email(payload, source_id)
                             _, created = ingest_item(item, user_id, db)
                             if created:
                                 ingested += 1

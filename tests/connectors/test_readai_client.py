@@ -184,7 +184,7 @@ class TestReadAINormalizer:
             },
         }
 
-        item = normalise_readai_meeting(meeting, source_id="src-001")
+        item, _signal = normalise_readai_meeting(meeting, source_id="src-001")
 
         assert item.source_type == "meeting"
         assert item.external_id == "meeting-abc-123"
@@ -213,7 +213,7 @@ class TestReadAINormalizer:
             "transcript": None,
         }
 
-        item = normalise_readai_meeting(meeting, source_id="src-001")
+        item, _signal = normalise_readai_meeting(meeting, source_id="src-001")
 
         assert item.content is not None
         assert "Brief catch-up" in item.content
@@ -233,7 +233,7 @@ class TestReadAINormalizer:
             "transcript": None,
         }
 
-        item = normalise_readai_meeting(meeting, source_id="src-001")
+        item, _signal = normalise_readai_meeting(meeting, source_id="src-001")
         assert item.external_id == "unique-meeting-id"
 
 

@@ -36,26 +36,26 @@ def _patch_classifier(is_external: bool = False):
 class TestNormaliseMeetingTranscript:
     def test_one_source_item_per_meeting(self):
         with _patch_classifier():
-            item = normalise_meeting_transcript(_make_payload(), "src-001")
+            item, _signal = normalise_meeting_transcript(_make_payload(), "src-001")
         assert item is not None
         assert item.source_type == "meeting"
 
     def test_external_id_equals_meeting_id(self):
         with _patch_classifier():
-            item = normalise_meeting_transcript(_make_payload(), "src-001")
+            item, _signal = normalise_meeting_transcript(_make_payload(), "src-001")
         assert item.external_id == "meeting-001"
         assert item.thread_id == "meeting-001"
 
     def test_content_is_full_transcript_with_speakers(self):
         with _patch_classifier():
-            item = normalise_meeting_transcript(_make_payload(), "src-001")
+            item, _signal = normalise_meeting_transcript(_make_payload(), "src-001")
         assert "[Alice]:" in item.content
         assert "[Bob]:" in item.content
         assert "I'll prepare the report." in item.content
 
     def test_segments_stored_in_metadata(self):
         with _patch_classifier():
-            item = normalise_meeting_transcript(_make_payload(), "src-001")
+            item, _signal = normalise_meeting_transcript(_make_payload(), "src-001")
         assert item.metadata_["segments"] is not None
         assert len(item.metadata_["segments"]) == 2
 
@@ -63,16 +63,16 @@ class TestNormaliseMeetingTranscript:
         started = datetime(2024, 3, 1, 14, 0, 0, tzinfo=timezone.utc)
         payload = _make_payload(started_at=started)
         with _patch_classifier():
-            item = normalise_meeting_transcript(payload, "src-001")
+            item, _signal = normalise_meeting_transcript(payload, "src-001")
         assert item.occurred_at == started
 
     def test_external_participant_flag(self):
         with _patch_classifier(is_external=True):
-            item = normalise_meeting_transcript(_make_payload(), "src-001")
+            item, _signal = normalise_meeting_transcript(_make_payload(), "src-001")
         assert item.is_external_participant is True
 
     def test_participants_in_recipients(self):
         with _patch_classifier():
-            item = normalise_meeting_transcript(_make_payload(), "src-001")
+            item, _signal = normalise_meeting_transcript(_make_payload(), "src-001")
         assert item.recipients is not None
         assert any(r["email"] == "alice@example.com" for r in item.recipients)

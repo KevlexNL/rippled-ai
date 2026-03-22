@@ -81,7 +81,7 @@ def backfill_meetings(
                 errors += 1
                 continue
 
-            item = normalise_readai_meeting(detail, source_id=str(source_id))
+            item, _signal = normalise_readai_meeting(detail, source_id=str(source_id))
 
             # Add batch tracking to metadata
             if item.metadata_:

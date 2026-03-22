@@ -22,6 +22,7 @@ from sqlalchemy import and_, func, select, update
 from sqlalchemy.orm import Session
 
 from app.connectors.shared.credentials_utils import decrypt_value
+from app.connectors.shared.normalized_signal import NormalizedSignal
 from app.models.orm import (
     Commitment,
     CommitmentSignal,
@@ -295,31 +296,57 @@ def run_seed_pass(user_id: str, db: Session) -> SeedPassResult:
 
 
 def _extract_commitments(
-    client: anthropic.Anthropic, model: str, item: SourceItem
+    client: anthropic.Anthropic,
+    model: str,
+    item: SourceItem,
+    signal: NormalizedSignal | None = None,
 ) -> _LLMResult:
     """Call Anthropic LLM to extract commitments from a source item.
+
+    When a NormalizedSignal is provided, uses its latest_authored_text and
+    prior_context_text instead of raw SourceItem content. This ensures the
+    detection pipeline never sees raw email bodies with quoted history.
 
     Returns:
         _LLMResult with commitments=None if item was skipped (content too short).
     """
-    # Use content_normalized (latest authored text) if available, else full content
-    latest_text = item.content_normalized or item.content or ""
+    # Prefer NormalizedSignal fields over raw SourceItem content
+    if signal is not None:
+        latest_text = signal.latest_authored_text
+        prior_context = signal.prior_context_text
+    else:
+        # Fallback for items without a signal (backward compatibility)
+        latest_text = item.content_normalized or item.content or ""
+        metadata = item.metadata_ or {}
+        prior_context = metadata.get("prior_context") if isinstance(metadata, dict) else None
+
     if len(latest_text.strip()) < 10:
         return _LLMResult(commitments=None)
 
-    # Extract prior context from metadata if available
-    metadata = item.metadata_ or {}
-    prior_context = metadata.get("prior_context") if isinstance(metadata, dict) else None
-
     # Build context message with labeled sections
     parts = [f"Source type: {item.source_type}"]
-    if item.sender_name or item.sender_email:
+
+    # Use signal participants for richer sender info when available
+    if signal is not None and signal.actor_participants:
+        actor = signal.actor_participants[0]
+        parts.append(f"From: {actor.name or ''} <{actor.email or ''}>")
+    elif item.sender_name or item.sender_email:
         parts.append(f"From: {item.sender_name or ''} <{item.sender_email or ''}>")
+
     if item.direction:
         parts.append(f"Direction: {item.direction}")
+
+    # Add addressed participants from signal for owner resolution context
+    if signal is not None and signal.addressed_participants:
+        addressed_names = [
+            p.name or p.email or "unknown"
+            for p in signal.addressed_participants
+        ]
+        parts.append(f"To: {', '.join(addressed_names)}")
+
     parts.append(f"\n[CURRENT MESSAGE]\n{latest_text}")
     if prior_context:
-        parts.append(f"\n[PRIOR CONTEXT]\n{prior_context}")
+        parts.append(f"\n[PRIOR CONTEXT — quoted history for reference only, do NOT extract new commitments from this section]\n{prior_context}")
     user_message = "\n".join(parts)
 
     # Full prompt for audit logging

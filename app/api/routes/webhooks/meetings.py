@@ -110,7 +110,7 @@ async def receive_meeting_transcript(
     user_id = await _verify_meeting_auth(x_user_id, x_rippled_webhook_secret, db)
 
     source = await _get_or_create_source(user_id, payload.meeting_id, db)
-    item = normalise_meeting_transcript(payload, source.id)
+    item, _signal = normalise_meeting_transcript(payload, source.id)
 
     # Ingest inline
     from app.api.routes.source_items import _build_item, _enqueue_detection

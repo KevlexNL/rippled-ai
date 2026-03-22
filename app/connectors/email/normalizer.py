@@ -1,8 +1,9 @@
-"""Normalise inbound email payloads to SourceItemCreate."""
+"""Normalise inbound email payloads to SourceItemCreate + NormalizedSignal."""
 from datetime import timezone
 
 from app.connectors.email.content_splitter import split_email_content
 from app.connectors.email.schemas import RawEmailPayload
+from app.connectors.shared.normalized_signal import NormalizedSignal, Participant
 from app.connectors.shared.participant_classifier import is_external_participant
 from app.models.schemas import SourceItemCreate
 
@@ -10,8 +11,8 @@ from app.models.schemas import SourceItemCreate
 def normalise_email(
     payload: RawEmailPayload,
     source_id: str,
-) -> SourceItemCreate:
-    """Translate a RawEmailPayload into a SourceItemCreate.
+) -> tuple[SourceItemCreate, NormalizedSignal]:
+    """Translate a RawEmailPayload into a SourceItemCreate and NormalizedSignal.
 
     Strips quoted content and classifies participant as internal/external.
     """
@@ -45,7 +46,7 @@ def normalise_email(
     if prior_context:
         metadata["prior_context"] = prior_context
 
-    return SourceItemCreate(
+    item = SourceItemCreate(
         source_id=source_id,
         source_type="email",
         external_id=payload.message_id,
@@ -64,6 +65,41 @@ def normalise_email(
         metadata_=metadata,
         is_quoted_content=is_quoted,
     )
+
+    # Build NormalizedSignal
+    actor = Participant(
+        name=payload.from_name,
+        email=payload.from_email,
+        role="sender",
+    )
+    addressed = [
+        Participant(email=e, role="recipient") for e in payload.to
+    ] + [
+        Participant(email=e, role="cc") for e in payload.cc
+    ]
+
+    # Attachments as list of dicts
+    attachments = []
+    if payload.attachment_metadata:
+        attachments = payload.attachment_metadata
+
+    signal = NormalizedSignal(
+        signal_id=payload.message_id,
+        source_type="email",
+        source_thread_id=thread_id,
+        source_message_id=payload.message_id,
+        occurred_at=occurred_at,
+        authored_at=occurred_at,
+        actor_participants=[actor],
+        addressed_participants=addressed,
+        visible_participants=[actor] + addressed,
+        latest_authored_text=latest_authored or "",
+        prior_context_text=prior_context,
+        attachments=attachments,
+        metadata={"subject": payload.subject},
+    )
+
+    return item, signal
 
 
 def _extract_thread_id(

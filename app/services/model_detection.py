@@ -21,6 +21,8 @@ from typing import Any
 
 from openai import OpenAI, RateLimitError
 
+from app.connectors.shared.normalized_signal import NormalizedSignal
+
 logger = logging.getLogger(__name__)
 
 _SYSTEM_PROMPT = """You are a commitment extraction engine for a workplace intelligence system.
@@ -153,7 +155,13 @@ class ModelDetectionService:
         else:
             self._client = None  # type: ignore[assignment]
 
-    def classify(self, candidate: Any, user_name: str | None = None, user_email: str | None = None) -> ModelDetectionResult | None:
+    def classify(
+        self,
+        candidate: Any,
+        user_name: str | None = None,
+        user_email: str | None = None,
+        signal: NormalizedSignal | None = None,
+    ) -> ModelDetectionResult | None:
         """Classify a candidate as commitment / not-commitment.
 
         Args:
@@ -161,6 +169,9 @@ class ModelDetectionService:
                        Must have .context_window (dict or None) and .raw_text.
             user_name: Display name of the logged-in user (for relationship detection).
             user_email: Email of the logged-in user (for relationship detection).
+            signal: Optional NormalizedSignal. When provided, uses its
+                    latest_authored_text and prior_context_text instead of
+                    raw context_window content.
 
         Returns:
             ModelDetectionResult on success, None on any failure.
@@ -169,7 +180,12 @@ class ModelDetectionService:
             logger.debug("ModelDetectionService: no API key, skipping")
             return None
 
-        context_window = candidate.context_window
+        # When a NormalizedSignal is provided, build context from it
+        if signal is not None:
+            context_window = self._signal_to_context_window(signal, candidate)
+        else:
+            context_window = candidate.context_window
+
         if not context_window:
             logger.debug(
                 "Candidate %s has no context_window — skipping model call",
@@ -271,6 +287,23 @@ class ModelDetectionService:
                 return None
 
         return None  # unreachable, but satisfies type checker
+
+    @staticmethod
+    def _signal_to_context_window(signal: NormalizedSignal, candidate: Any) -> dict:
+        """Build a context_window dict from a NormalizedSignal.
+
+        Uses latest_authored_text as trigger_text and prior_context_text
+        as explicitly labelled prior context.
+        """
+        # Use candidate's trigger_text if available (more specific), fall back to signal
+        cw = getattr(candidate, "context_window", None) or {}
+        return {
+            "trigger_text": cw.get("trigger_text", signal.latest_authored_text),
+            "pre_context": cw.get("pre_context", ""),
+            "post_context": cw.get("post_context", ""),
+            "source_type": signal.source_type,
+            "prior_context": signal.prior_context_text,
+        }
 
     def _build_user_message(self, context_window: dict, user_name: str | None = None, user_email: str | None = None) -> str:
         trigger = context_window.get("trigger_text", "")

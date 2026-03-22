@@ -1,10 +1,11 @@
-"""Normalise Read.ai meeting API responses to SourceItemCreate.
+"""Normalise Read.ai meeting API responses to SourceItemCreate + NormalizedSignal.
 
 Stores Read.ai's action_items as reference_action_items in metadata
 (calibration signal, not ground truth commitments). See WO-RIPPLED-MEETING-BACKFILL.
 """
 from datetime import datetime, timezone
 
+from app.connectors.shared.normalized_signal import NormalizedSignal, Participant
 from app.connectors.shared.participant_classifier import is_external_participant
 from app.models.schemas import SourceItemCreate
 
@@ -12,8 +13,8 @@ from app.models.schemas import SourceItemCreate
 def normalise_readai_meeting(
     meeting: dict,
     source_id: str,
-) -> SourceItemCreate:
-    """Convert a Read.ai meeting detail response to a SourceItemCreate.
+) -> tuple[SourceItemCreate, NormalizedSignal]:
+    """Convert a Read.ai meeting detail response to a SourceItemCreate and NormalizedSignal.
 
     Content priority:
     1. Transcript segments formatted as "[Speaker]: text"
@@ -49,7 +50,7 @@ def normalise_readai_meeting(
     sender_name = organiser.get("name") if organiser else None
     sender_email = organiser.get("email") if organiser else None
 
-    return SourceItemCreate(
+    item = SourceItemCreate(
         source_id=source_id,
         source_type="meeting",
         external_id=meeting_id,
@@ -74,6 +75,37 @@ def normalise_readai_meeting(
         is_quoted_content=False,
     )
 
+    # Build NormalizedSignal
+    # Actor participants = speakers from transcript (if available)
+    actors = _extract_speakers(transcript)
+
+    # Visible participants = all meeting attendees
+    visible = [
+        Participant(
+            name=p.get("name"),
+            email=p.get("email"),
+            role="attendee",
+        )
+        for p in participants
+    ]
+
+    signal = NormalizedSignal(
+        signal_id=meeting_id,
+        source_type="meeting",
+        source_thread_id=meeting_id,
+        source_message_id=None,
+        occurred_at=occurred_at,
+        authored_at=occurred_at,
+        actor_participants=actors,
+        addressed_participants=[],
+        visible_participants=visible,
+        latest_authored_text=content,
+        prior_context_text=None,
+        metadata={"title": title},
+    )
+
+    return item, signal
+
 
 def _build_content(transcript: dict | None, summary: dict | None) -> str:
     """Build content string from transcript segments or summary."""
@@ -88,3 +120,13 @@ def _build_content(transcript: dict | None, summary: dict | None) -> str:
         return summary["overview"]
 
     return ""
+
+
+def _extract_speakers(transcript: dict | None) -> list[Participant]:
+    """Extract unique speakers from transcript as actor participants."""
+    if not transcript or not transcript.get("segments"):
+        return []
+    speaker_names = list(dict.fromkeys(
+        seg.get("speaker", "Unknown") for seg in transcript["segments"]
+    ))
+    return [Participant(name=name, role="speaker") for name in speaker_names]

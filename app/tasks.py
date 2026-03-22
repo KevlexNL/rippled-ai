@@ -419,7 +419,7 @@ def process_slack_event(self, payload: dict) -> dict:
         if not user_id:
             return {"status": "skipped", "reason": "no user configured for this team"}
 
-        item = normalise_slack_event(event, source_id, slack_user_id=slack_user_id or "")
+        item, _signal = normalise_slack_event(event, source_id, slack_user_id=slack_user_id or "")
         if item is None:
             return {"status": "filtered"}
 

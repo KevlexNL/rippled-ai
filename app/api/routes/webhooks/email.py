@@ -100,7 +100,7 @@ async def receive_inbound_email(
         raise HTTPException(status_code=403, detail="Invalid webhook secret")
 
     source = await _get_or_create_source(user_id, payload.from_email, db)
-    item = normalise_email(payload, source.id)
+    item, _signal = normalise_email(payload, source.id)
 
     try:
         result = await _ingest_async(item, user_id, db)

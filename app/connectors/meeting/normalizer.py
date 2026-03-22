@@ -1,4 +1,4 @@
-"""Normalise meeting transcript payloads to SourceItemCreate.
+"""Normalise meeting transcript payloads to SourceItemCreate + NormalizedSignal.
 
 One SourceItem per meeting (per Q1 decision).
 Full transcript as content; segments stored in metadata_.
@@ -6,6 +6,7 @@ Full transcript as content; segments stored in metadata_.
 from datetime import timezone
 
 from app.connectors.meeting.schemas import MeetingTranscriptPayload
+from app.connectors.shared.normalized_signal import NormalizedSignal, Participant
 from app.connectors.shared.participant_classifier import is_external_participant
 from app.models.schemas import SourceItemCreate
 
@@ -13,8 +14,8 @@ from app.models.schemas import SourceItemCreate
 def normalise_meeting_transcript(
     payload: MeetingTranscriptPayload,
     source_id: str,
-) -> SourceItemCreate:
-    """Translate a MeetingTranscriptPayload into a single SourceItemCreate.
+) -> tuple[SourceItemCreate, NormalizedSignal]:
+    """Translate a MeetingTranscriptPayload into a SourceItemCreate and NormalizedSignal.
 
     Content = full transcript as "[Speaker]: text" lines.
     Segments are stored in metadata_ for traceability.
@@ -48,7 +49,7 @@ def normalise_meeting_transcript(
     sender_name = organiser.get("name") if organiser else None
     sender_email = organiser.get("email") if organiser else None
 
-    return SourceItemCreate(
+    item = SourceItemCreate(
         source_id=source_id,
         source_type="meeting",
         external_id=payload.meeting_id,
@@ -71,3 +72,35 @@ def normalise_meeting_transcript(
         },
         is_quoted_content=False,
     )
+
+    # Build NormalizedSignal
+    # Actor participants = unique speakers from transcript
+    speaker_names = list(dict.fromkeys(seg.speaker for seg in payload.segments))
+    actors = [Participant(name=name, role="speaker") for name in speaker_names]
+
+    # Visible participants = all meeting attendees
+    visible = [
+        Participant(
+            name=p.get("name"),
+            email=p.get("email"),
+            role="attendee",
+        )
+        for p in payload.participants
+    ]
+
+    signal = NormalizedSignal(
+        signal_id=payload.meeting_id,
+        source_type="meeting",
+        source_thread_id=payload.meeting_id,
+        source_message_id=None,
+        occurred_at=occurred_at,
+        authored_at=occurred_at,
+        actor_participants=actors,
+        addressed_participants=[],  # meetings don't have directed recipients
+        visible_participants=visible,
+        latest_authored_text=content,
+        prior_context_text=None,  # meetings have no quoted history
+        metadata={"title": payload.meeting_title},
+    )
+
+    return item, signal
