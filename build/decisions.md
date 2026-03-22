@@ -1,5 +1,32 @@
 # Build Decisions Log
 
+## WO-RIPPLED-LLM-ORCHESTRATION — Staged Pipeline Architecture
+*Date: 2026-03-22 | Owner: Claude (Stage 3)*
+
+**Decision:** Replaced monolithic interpretation step with a staged orchestration pipeline (6 stages) operating on NormalizedSignal objects.
+
+**Architecture:**
+- Stage 0: Eligibility check (deterministic — no LLM)
+- Stage 1: Candidate gate (cheap model, binary relevance)
+- Stage 2: Speech-act classification (cheap model, closed enum)
+- Stage 3: Commitment field extraction (LLM, conditional on stages 1-2)
+- Stage 4: Deterministic routing decision (code only, no LLM)
+- Stage 5: Optional escalation (strong model, only when warranted)
+- Stage 6: Persistence and logging (every stage persisted)
+
+**Key design choices:**
+- Separate pipeline SpeechAct enum from existing DB SpeechAct (pipeline has `delegation`, `suggestion`, `unclear` not in DB)
+- Model routing config externalized (cheap-first by default, escalation uses gpt-4.1)
+- All thresholds in code/config, never in prompts (WO 8.4 compliance)
+- Markdown fence stripping on all LLM responses (lesson 2026-03-17)
+- Replay runner compares 6 key fields between prior and new runs
+
+**New tables:** `signal_processing_runs`, `signal_processing_stage_runs`, `candidate_signal_records`
+**New modules:** `app/services/orchestration/` (13 files)
+**Tests:** 83 new tests, 0 regressions
+
+---
+
 ## WO-RIPPLED-PROMPT-IMPROVEMENT (run-1, duplicate) — Judge Hardening + WO Dedup
 *Date: 2026-03-22 | Owner: Claude (Stage 3)*
 

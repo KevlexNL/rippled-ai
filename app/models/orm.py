@@ -671,3 +671,72 @@ class LlmJudgeRun(Base):
     raw_judge_output: Mapped[str | None] = mapped_column(Text, nullable=True)
     run_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+# ---------------------------------------------------------------------------
+# LLM Orchestration Layer (Track 2)
+# ---------------------------------------------------------------------------
+
+class SignalProcessingRun(Base):
+    """Top-level record for one orchestration pipeline run."""
+    __tablename__ = "signal_processing_runs"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    normalized_signal_id: Mapped[str] = mapped_column(
+        _uuid(), ForeignKey("normalized_signals.id", ondelete="CASCADE"), nullable=False, index=True,
+    )
+    pipeline_version: Mapped[str] = mapped_column(String(30), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)  # success, failed, partial_success
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    error_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    final_routing_action: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    final_routing_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+
+class SignalProcessingStageRun(Base):
+    """Per-stage record within an orchestration run."""
+    __tablename__ = "signal_processing_stage_runs"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    signal_processing_run_id: Mapped[str] = mapped_column(
+        _uuid(), ForeignKey("signal_processing_runs.id", ondelete="CASCADE"), nullable=False, index=True,
+    )
+    stage_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    stage_order: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)  # success, failed, skipped
+    model_provider: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    model_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    prompt_template_id: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    prompt_version: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    input_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    output_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    duration_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    token_usage_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    error_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class CandidateSignalRecord(Base):
+    """Candidate record produced by the orchestration pipeline for downstream use."""
+    __tablename__ = "candidate_signal_records"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    normalized_signal_id: Mapped[str] = mapped_column(
+        _uuid(), ForeignKey("normalized_signals.id", ondelete="CASCADE"), nullable=False, index=True,
+    )
+    signal_processing_run_id: Mapped[str] = mapped_column(
+        _uuid(), ForeignKey("signal_processing_runs.id", ondelete="CASCADE"), nullable=False, index=True,
+    )
+    candidate_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    speech_act: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    owner_resolution: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    owner_text: Mapped[str | None] = mapped_column(String, nullable=True)
+    deliverable_text: Mapped[str | None] = mapped_column(String, nullable=True)
+    timing_text: Mapped[str | None] = mapped_column(String, nullable=True)
+    target_text: Mapped[str | None] = mapped_column(String, nullable=True)
+    evidence_span: Mapped[str | None] = mapped_column(Text, nullable=True)
+    evidence_source: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    field_confidence_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    routing_action: Mapped[str] = mapped_column(String(50), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
