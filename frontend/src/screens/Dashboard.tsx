@@ -11,7 +11,7 @@ import type { CommitmentRead, CommitmentCreate } from '../types'
 import type { ClarificationRead } from '../api/clarifications'
 import type { StatsRead } from '../api/stats'
 import type { EventRead } from '../api/events'
-import { dedupById, groupByContextType, getGroupStatusColor, getSourceLabel } from '../utils/grouping'
+import { dedupById, buildDashboardGroups, getGroupStatusColor } from '../utils/grouping'
 import { getContexts } from '../api/contexts'
 import type { CommitmentContextRead } from '../api/contexts'
 import SourceGroup from '../components/SourceGroup'
@@ -160,10 +160,7 @@ export default function Dashboard() {
     }
   })
 
-  const groups = groupByContextType(allCommitments)
-  const sourceTypes = (['meeting', 'slack', 'email', 'unknown'] as const).filter(
-    (st) => groups[st].length > 0
-  )
+  const dashboardGroups = buildDashboardGroups(allCommitments, contextMap)
 
   const overviewCounts: OverviewCounts = {
     main: mainResult.data?.length ?? 0,
@@ -277,21 +274,33 @@ export default function Dashboard() {
         )}
         {allCommitments.length > 0 && (
           <>
-            {sourceTypes.map((st) => {
-              const groupCommitments = groups[st]
-              const color = getGroupStatusColor(groupCommitments)
-              const label = getSourceLabel(st)
+            {dashboardGroups.groups.map((group) => {
+              const color = getGroupStatusColor(group.commitments)
               return (
                 <SourceGroup
-                  key={st}
-                  label={label}
+                  key={group.key}
+                  label={group.label}
                   color={color}
-                  commitments={groupCommitments}
-                  onPress={() => navigate(`/source/${st}`)}
+                  commitments={group.commitments}
+                  onPress={() =>
+                    dashboardGroups.mode === 'source'
+                      ? navigate(`/source/${group.key}`)
+                      : navigate(`/commitments?context=${group.key}`)
+                  }
                   contextMap={contextMap}
                 />
               )
             })}
+            {dashboardGroups.ungrouped.length > 0 && (
+              <SourceGroup
+                key="ungrouped"
+                label="Other commitments"
+                color={getGroupStatusColor(dashboardGroups.ungrouped)}
+                commitments={dashboardGroups.ungrouped}
+                onPress={() => navigate('/commitments')}
+                contextMap={contextMap}
+              />
+            )}
           </>
         )}
       </div>

@@ -97,6 +97,55 @@ export function groupByContextId(
   return { groups, ungrouped, hasContexts }
 }
 
+export interface DashboardGroup {
+  key: string
+  label: string
+  commitments: CommitmentRead[]
+}
+
+export interface DashboardGroupResult {
+  mode: 'context' | 'source'
+  groups: DashboardGroup[]
+  ungrouped: CommitmentRead[]
+}
+
+/**
+ * Build dashboard display groups. Uses context grouping when any commitment
+ * has a context_id assigned; falls back to source-type grouping otherwise.
+ */
+export function buildDashboardGroups(
+  commitments: CommitmentRead[],
+  contextMap: Map<string, string>,
+): DashboardGroupResult {
+  const hasAnyContext = commitments.some((c) => c.context_id)
+
+  if (hasAnyContext) {
+    const { groups: ctxGroups, ungrouped } = groupByContextId(commitments)
+    const groups: DashboardGroup[] = Object.entries(ctxGroups)
+      .map(([ctxId, items]) => ({
+        key: ctxId,
+        label: contextMap.get(ctxId) ?? ctxId.slice(0, 8),
+        commitments: items,
+      }))
+      .sort((a, b) => b.commitments.length - a.commitments.length)
+
+    return { mode: 'context', groups, ungrouped }
+  }
+
+  // Fallback: group by source type
+  const sourceGroups = groupByContextType(commitments)
+  const sourceTypes: SourceType[] = ['meeting', 'slack', 'email', 'unknown']
+  const groups: DashboardGroup[] = sourceTypes
+    .filter((st) => sourceGroups[st].length > 0)
+    .map((st) => ({
+      key: st,
+      label: SOURCE_LABELS[st],
+      commitments: sourceGroups[st],
+    }))
+
+  return { mode: 'source', groups, ungrouped: [] }
+}
+
 /**
  * Compute the worst status color for a group of commitments.
  * Re-exports getGroupStatusColor for convenience.

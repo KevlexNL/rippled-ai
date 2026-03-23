@@ -1,4 +1,7 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,6 +13,9 @@ from app.models.schemas import (
     CommitmentContextRead,
     CommitmentRead,
 )
+from app.services.context_assigner import match_commitment_to_context
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/contexts", tags=["contexts"])
 
@@ -89,3 +95,59 @@ async def create_context(
     await db.flush()
     await db.refresh(context)
     return _context_to_schema(context, 0)
+
+
+class AutoAssignResult(BaseModel):
+    total: int
+    assigned: int
+    skipped: int
+
+
+@router.post("/auto-assign", response_model=AutoAssignResult)
+async def bulk_auto_assign(
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> AutoAssignResult:
+    """Bulk auto-assign contexts to unassigned commitments for the current user."""
+    # Load all contexts for user
+    ctx_result = await db.execute(
+        select(CommitmentContext).where(CommitmentContext.user_id == user_id)
+    )
+    contexts = ctx_result.scalars().all()
+
+    if not contexts:
+        return AutoAssignResult(total=0, assigned=0, skipped=0)
+
+    # Load commitments without context_id
+    commit_result = await db.execute(
+        select(Commitment).where(
+            Commitment.user_id == user_id,
+            Commitment.context_id.is_(None),
+        )
+    )
+    commitments = commit_result.scalars().all()
+
+    assigned = 0
+    skipped = 0
+
+    for commitment in commitments:
+        match = match_commitment_to_context(commitment, contexts)
+        if match:
+            commitment.context_id = match.id
+            assigned += 1
+        else:
+            skipped += 1
+
+    if assigned:
+        await db.flush()
+
+    logger.info(
+        "bulk_auto_assign: user=%s total=%d assigned=%d skipped=%d",
+        user_id, len(commitments), assigned, skipped,
+    )
+
+    return AutoAssignResult(
+        total=len(commitments),
+        assigned=assigned,
+        skipped=skipped,
+    )

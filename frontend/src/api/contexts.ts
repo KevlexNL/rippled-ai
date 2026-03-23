@@ -20,3 +20,12 @@ export const getContexts = () =>
 
 export const createContext = (body: CommitmentContextCreate) =>
   apiPost<CommitmentContextRead>('/api/v1/contexts', body)
+
+export interface AutoAssignResult {
+  total: number
+  assigned: number
+  skipped: number
+}
+
+export const autoAssignContexts = () =>
+  apiPost<AutoAssignResult>('/api/v1/contexts/auto-assign', {})

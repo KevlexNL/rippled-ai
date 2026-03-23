@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user_id
 from app.db.deps import get_db
-from app.models.orm import CandidateCommitment, Commitment, CommitmentAmbiguity, CommitmentCandidate, CommitmentEventLink, CommitmentSignal, Event, LifecycleTransition, SourceItem, SurfacingAudit
+from app.models.orm import CandidateCommitment, Commitment, CommitmentAmbiguity, CommitmentCandidate, CommitmentContext, CommitmentEventLink, CommitmentSignal, Event, LifecycleTransition, SourceItem, SurfacingAudit
 from app.models.schemas import (
     CommitmentAmbiguityCreate,
     CommitmentAmbiguityRead,
@@ -225,6 +225,19 @@ async def create_commitment(
         observation_window_hours=body.observation_window_hours,
         lifecycle_state="proposed",
     )
+    # Auto-assign context if not explicitly provided
+    if not body.context_id:
+        from app.services.context_assigner import match_commitment_to_context
+
+        ctx_result = await db.execute(
+            select(CommitmentContext).where(CommitmentContext.user_id == user_id)
+        )
+        user_contexts = ctx_result.scalars().all()
+        if user_contexts:
+            match = match_commitment_to_context(commitment, user_contexts)
+            if match:
+                commitment.context_id = match.id
+
     db.add(commitment)
     await db.flush()
     await db.refresh(commitment)
