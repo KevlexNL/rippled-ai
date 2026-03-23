@@ -514,7 +514,7 @@ def run_model_detection_pass(self, candidate_id: str) -> dict:
                 cost = estimate_cost(audit_model, audit_tokens_in, audit_tokens_out) if audit_model else None
                 write_audit_entry(
                     db,
-                    source_item_id=candidate.source_item_id,
+                    source_item_id=candidate.originating_item_id,
                     user_id=candidate.user_id,
                     tier_used="tier_3",
                     confidence=result.get("model_confidence"),

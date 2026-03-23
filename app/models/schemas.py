@@ -242,6 +242,10 @@ class CommitmentRead(_Base):
     source_sender_name: str | None = None
     source_sender_email: str | None = None
     source_occurred_at: datetime | None = None
+    # Phase C1 — detection method (from originating candidate)
+    detection_method: str | None = None  # deterministic | model-assisted | model-overridden
+    model_classification: str | None = None
+    model_confidence: Decimal | None = None
     # Skip state
     skipped_at: datetime | None = None
     skip_reason: str | None = None

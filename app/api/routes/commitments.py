@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user_id
 from app.db.deps import get_db
-from app.models.orm import Commitment, CommitmentAmbiguity, CommitmentEventLink, CommitmentSignal, Event, LifecycleTransition, SourceItem, SurfacingAudit
+from app.models.orm import CandidateCommitment, Commitment, CommitmentAmbiguity, CommitmentCandidate, CommitmentEventLink, CommitmentSignal, Event, LifecycleTransition, SourceItem, SurfacingAudit
 from app.models.schemas import (
     CommitmentAmbiguityCreate,
     CommitmentAmbiguityRead,
@@ -34,13 +34,18 @@ VALID_TRANSITIONS: dict[str, list[str]] = {
 }
 
 
-def _commitment_to_schema(row: Commitment, origin_source: SourceItem | None = None) -> CommitmentRead:
+def _commitment_to_schema(
+    row: Commitment,
+    origin_source: SourceItem | None = None,
+    origin_candidate: CommitmentCandidate | None = None,
+) -> CommitmentRead:
     schema = CommitmentRead.model_validate(row)
     schema.linked_events = []
     if origin_source:
         schema.source_sender_name = origin_source.sender_name
         schema.source_sender_email = origin_source.sender_email
         schema.source_occurred_at = origin_source.occurred_at
+    _inject_detection_fields(schema, origin_candidate)
     return schema
 
 
@@ -66,6 +71,33 @@ async def _fetch_origin_source_map(
     return source_map
 
 
+async def _fetch_origin_candidate_map(
+    commitment_ids: list[str], db: AsyncSession
+) -> dict[str, CommitmentCandidate]:
+    """Batch-fetch the originating candidate for a list of commitment IDs."""
+    if not commitment_ids:
+        return {}
+    result = await db.execute(
+        select(CandidateCommitment.commitment_id, CommitmentCandidate)
+        .join(CommitmentCandidate, CommitmentCandidate.id == CandidateCommitment.candidate_id)
+        .where(CandidateCommitment.commitment_id.in_(commitment_ids))
+        .order_by(CandidateCommitment.created_at.asc())
+    )
+    candidate_map: dict[str, CommitmentCandidate] = {}
+    for commitment_id, candidate in result:
+        if commitment_id not in candidate_map:
+            candidate_map[commitment_id] = candidate
+    return candidate_map
+
+
+def _inject_detection_fields(schema: CommitmentRead, candidate: CommitmentCandidate | None) -> None:
+    """Inject detection method fields from the originating candidate."""
+    if candidate:
+        schema.detection_method = candidate.detection_method
+        schema.model_classification = candidate.model_classification
+        schema.model_confidence = candidate.model_confidence
+
+
 async def _build_commitment_with_events(row: Commitment, db: AsyncSession) -> CommitmentRead:
     """Build CommitmentRead with linked_events and origin source for single-commitment endpoints."""
     result = await db.execute(
@@ -80,6 +112,7 @@ async def _build_commitment_with_events(row: Commitment, db: AsyncSession) -> Co
     )
     pairs = list(result)
     source_map = await _fetch_origin_source_map([row.id], db)
+    candidate_map = await _fetch_origin_candidate_map([row.id], db)
     origin_source = source_map.get(row.id)
     schema = CommitmentRead.model_validate(row)
     schema.linked_events = [
@@ -96,6 +129,7 @@ async def _build_commitment_with_events(row: Commitment, db: AsyncSession) -> Co
         schema.source_sender_name = origin_source.sender_name
         schema.source_sender_email = origin_source.sender_email
         schema.source_occurred_at = origin_source.occurred_at
+    _inject_detection_fields(schema, candidate_map.get(row.id))
     return schema
 
 
@@ -142,8 +176,10 @@ async def list_commitments(
     q = q.order_by(Commitment.created_at.desc()).limit(limit).offset(offset)
     result = await db.execute(q)
     rows = list(result.scalars())
-    source_map = await _fetch_origin_source_map([r.id for r in rows], db)
-    return [_commitment_to_schema(row, source_map.get(row.id)) for row in rows]
+    ids = [r.id for r in rows]
+    source_map = await _fetch_origin_source_map(ids, db)
+    candidate_map = await _fetch_origin_candidate_map(ids, db)
+    return [_commitment_to_schema(row, source_map.get(row.id), candidate_map.get(row.id)) for row in rows]
 
 
 @router.post("", response_model=CommitmentRead, status_code=201)
