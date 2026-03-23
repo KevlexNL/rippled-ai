@@ -33,6 +33,9 @@ _RETRY_BACKOFF_SECONDS = 2  # doubles each retry: 2s, 4s
 # Errors worth retrying (DNS resolution, transient network)
 _RETRYABLE_ERRORS = (socket.gaierror, ConnectionRefusedError, ConnectionResetError, OSError)
 
+# RFC 2606 reserved domains — never attempt IMAP connections to these
+_RESERVED_DOMAINS = {"example.com", "example.org", "example.net"}
+
 
 def _build_search_criteria(last_synced_at: datetime | None) -> str:
     """Build IMAP search criteria based on sync state.
@@ -183,6 +186,15 @@ def _poll_source(source: Source) -> dict:
 
     if not host or not user:
         logger.info("Email source %s has no IMAP host/user — skipping", source.id)
+        return {"ingested": 0, "duplicates": 0, "errors": 0, "skipped": True}
+
+    # Skip RFC 2606 reserved domains (placeholder/test sources)
+    host_domain = host.lower().split(".", 1)[-1] if "." in host else host.lower()
+    if host_domain in _RESERVED_DOMAINS:
+        logger.info(
+            "Email source %s uses reserved domain %s — skipping (placeholder credentials)",
+            source.id, host,
+        )
         return {"ingested": 0, "duplicates": 0, "errors": 0, "skipped": True}
 
     ingested = 0

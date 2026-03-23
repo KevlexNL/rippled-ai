@@ -26,5 +26,5 @@
   "next_action": "Monitor pipeline health. Await Monday direction from Kevin (scheduled call 2026-03-23 09:00 CET).",
   "claude_code_session": null,
   "blockers_for_kevin": [],
-  "notes": "Celery worker was already deployed and operational. All WO acceptance criteria verified: worker logs show active task execution, source_items=435, commitment_signals=261, commitments=274 for Kevin's user_id. FK race retries in clarification tasks are expected (handled by retry logic). One email source (imap.example.com) failing — likely placeholder credentials."
+  "notes": "Celery worker was already deployed and operational. All WO acceptance criteria verified: worker logs show active task execution, source_items=435, commitment_signals=261, commitments=274 for Kevin's user_id. FK race retries in clarification tasks are expected (handled by retry logic). Placeholder email source (imap.example.com) deactivated via migration + RFC 2606 guard added to poller (WO-004)."
 }

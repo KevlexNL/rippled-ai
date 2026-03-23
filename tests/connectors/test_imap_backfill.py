@@ -43,10 +43,10 @@ class TestPollSourceBackfill:
         s.is_active = True
         s.last_synced_at = last_synced_at
         s.credentials = {
-            "imap_host": "imap.example.com",
+            "imap_host": "imap.test-mail.local",
             "imap_port": 993,
             "imap_ssl": True,
-            "imap_user": "u@example.com",
+            "imap_user": "u@test-mail.local",
             "imap_password": "pass",
         }
         return s

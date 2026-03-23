@@ -112,10 +112,10 @@ class TestPollSource:
         """Source credentials override env-var defaults."""
         source = _make_source(
             credentials={
-                "imap_host": "custom-imap.example.com",
+                "imap_host": "custom-imap.test-mail.local",
                 "imap_port": 993,
                 "imap_ssl": True,
-                "imap_user": "custom@example.com",
+                "imap_user": "custom@test-mail.local",
                 "imap_password": "custom-pass",
             }
         )
@@ -128,10 +128,10 @@ class TestPollSource:
         with patch(
             "app.connectors.email.imap_poller.decrypt_credentials",
             return_value={
-                "imap_host": "custom-imap.example.com",
+                "imap_host": "custom-imap.test-mail.local",
                 "imap_port": 993,
                 "imap_ssl": True,
-                "imap_user": "custom@example.com",
+                "imap_user": "custom@test-mail.local",
                 "imap_password": "custom-pass",
             },
         ):
@@ -153,10 +153,10 @@ class TestPollSource:
         mock_conn.login.return_value = ("OK", [b"Logged in"])
 
         mock_settings = MagicMock()
-        mock_settings.imap_host = "env-imap.example.com"
+        mock_settings.imap_host = "env-imap.test-mail.local"
         mock_settings.imap_port = 993
         mock_settings.imap_ssl = True
-        mock_settings.imap_user = "env@example.com"
+        mock_settings.imap_user = "env@test-mail.local"
         mock_settings.imap_password = "env-pass"
         mock_settings.imap_sent_folder = "Sent"
 
@@ -166,7 +166,7 @@ class TestPollSource:
                     result = imap_poller._poll_source(source)
 
         # Verify IMAP4_SSL called with env-var host
-        mock_imap.assert_called_once_with("env-imap.example.com", 993)
+        mock_imap.assert_called_once_with("env-imap.test-mail.local", 993)
         assert isinstance(result, dict)
 
     def test_source_missing_host_skipped(self):
@@ -186,5 +186,28 @@ class TestPollSource:
                 result = imap_poller._poll_source(source)
 
         # Skipped sources return the skipped flag, not counted as errors
+        assert result.get("skipped") is True
+        assert result.get("errors", 0) == 0
+
+    @pytest.mark.parametrize("host", [
+        "imap.example.com",
+        "mail.example.org",
+        "smtp.example.net",
+        "IMAP.EXAMPLE.COM",
+    ])
+    def test_reserved_domain_host_skipped(self, host):
+        """Sources with RFC 2606 reserved domain hostnames are skipped."""
+        source = _make_source(credentials={
+            "imap_host": host,
+            "imap_user": "user@example.com",
+            "imap_password": "pass",
+        })
+
+        with patch(
+            "app.connectors.email.imap_poller.decrypt_credentials",
+            return_value=source.credentials,
+        ):
+            result = imap_poller._poll_source(source)
+
         assert result.get("skipped") is True
         assert result.get("errors", 0) == 0
