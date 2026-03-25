@@ -2,11 +2,19 @@
 import re
 from datetime import datetime, timezone
 
-from app.connectors.shared.normalized_signal import NormalizedSignal, Participant
+from app.connectors.shared.normalized_signal import (
+    NormalizedAttachment,
+    NormalizedParticipant,
+    NormalizedSignal,
+    Participant,
+)
+from app.models.enums import Direction, NormalizationFlag, ParticipantRole
 from app.models.schemas import SourceItemCreate
 
 # Match Slack @mentions: <@U123ABC>
 _MENTION_RE = re.compile(r"<@(U[A-Z0-9]+)>")
+# Match Slack quoted blocks: >>> or > at line start
+_QUOTED_BLOCK_RE = re.compile(r"(?:^|\n)>{1,3}\s")
 
 
 def normalise_slack_event(
@@ -122,7 +130,7 @@ def normalise_slack_event(
     # Prior context: parent message text if this is a thread reply
     parent_text = event.get("parent_message", {}).get("text") if event.get("thread_ts") else None
 
-    # Attachment dicts for signal
+    # Attachment dicts for signal (legacy field)
     sig_attachments = []
     if files:
         sig_attachments = [
@@ -130,10 +138,45 @@ def normalise_slack_event(
             for f in files
         ]
 
+    # WO fields: typed sender participant
+    sender_participant = NormalizedParticipant(
+        display_name=sender_name,
+        role=ParticipantRole.sender,
+    )
+
+    # WO fields: typed mentioned participants
+    mentioned_participants = [
+        NormalizedParticipant(display_name=uid, role=ParticipantRole.to)
+        for uid in mentioned_ids
+    ]
+
+    # WO fields: all participants
+    all_participants = [sender_participant] + mentioned_participants
+
+    # WO fields: typed attachment metadata
+    norm_attachments = [
+        NormalizedAttachment(
+            filename=f.get("name"),
+            mime_type=f.get("mimetype"),
+            size_bytes=f.get("size"),
+            provider_attachment_id=f.get("id"),
+        )
+        for f in files
+    ]
+
+    # WO fields: normalization flags
+    norm_flags: list[NormalizationFlag] = []
+    if files:
+        norm_flags.append(NormalizationFlag.attachment_present)
+    if _QUOTED_BLOCK_RE.search(text):
+        norm_flags.append(NormalizationFlag.quoted_text_detected)
+
+    thread_ts_raw = event.get("thread_ts")
+
     signal = NormalizedSignal(
         signal_id=ts,
         source_type="slack",
-        source_thread_id=thread_ts if event.get("thread_ts") else None,
+        source_thread_id=thread_ts_raw or None,
         source_message_id=ts,
         occurred_at=occurred_at,
         authored_at=occurred_at,
@@ -144,6 +187,20 @@ def normalise_slack_event(
         prior_context_text=parent_text,
         attachments=sig_attachments,
         metadata={"channel": channel, "team": event.get("team")},
+        # WO fields
+        provider="slack",
+        provider_message_id=ts,
+        provider_thread_id=thread_ts_raw or None,
+        provider_account_id=event.get("team"),
+        signal_timestamp=occurred_at,
+        direction=Direction.inbound,
+        is_inbound=True,
+        is_outbound=False,
+        text_present=bool(text),
+        sender=sender_participant,
+        participants=all_participants,
+        attachment_metadata=norm_attachments,
+        normalization_flags=norm_flags,
     )
 
     return item, signal

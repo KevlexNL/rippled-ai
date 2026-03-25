@@ -409,11 +409,20 @@ def process_slack_event(self, payload: dict) -> dict:
     Looks up the Slack Source by team_id to get per-source user_id and
     slack_user_id from credentials. Falls back to global env-var config
     when no matching Source exists.
+
+    Persists both SourceItem (for detection pipeline) and
+    RawSignalIngest + NormalizedSignal (for normalization pipeline).
     """
+    import hashlib
+    import json as json_lib
+
     from app.connectors.slack.normalizer import normalise_slack_event
     from app.connectors.shared.credentials_utils import decrypt_credentials
     from app.connectors.shared.ingestor import get_or_create_source_sync, ingest_item
+    from app.models.enums import SourceType
     from app.models.orm import Source
+    from app.models.schemas import RawSignalIngestCreate
+    from app.services.normalization.normalization_repository import NormalizationRepository
     from sqlalchemy import select
 
     try:
@@ -454,15 +463,45 @@ def process_slack_event(self, payload: dict) -> dict:
         if not user_id:
             return {"status": "skipped", "reason": "no user configured for this team"}
 
-        item, _signal = normalise_slack_event(event, source_id, slack_user_id=slack_user_id or "")
+        item, signal = normalise_slack_event(event, source_id, slack_user_id=slack_user_id or "")
         if item is None:
             return {"status": "filtered"}
 
         with get_sync_session() as db:
             _, created = ingest_item(item, user_id, db)
 
+            # Persist RawSignalIngest + NormalizedSignal
+            if signal is not None and created:
+                repo = NormalizationRepository(db)
+                payload_json_str = json_lib.dumps(payload, sort_keys=True, default=str)
+                payload_hash = hashlib.sha256(payload_json_str.encode()).hexdigest()
+
+                # Deduplicate by payload hash
+                existing = repo.find_raw_ingest_by_hash(payload_hash)
+                if existing is None:
+                    ts = event.get("ts", "")
+                    raw_ingest = repo.save_raw_ingest(RawSignalIngestCreate(
+                        source_type=SourceType.slack,
+                        provider="slack",
+                        provider_message_id=ts,
+                        provider_thread_id=event.get("thread_ts"),
+                        provider_account_id=team_id,
+                        received_at=signal.occurred_at,
+                        payload_json=payload,
+                        payload_hash=payload_hash,
+                    ))
+                    repo.update_parse_status(raw_ingest.id, "success")
+                    repo.save_normalized_signal(signal, raw_ingest.id)
+
         return {"status": "ingested" if created else "duplicate"}
     except Exception as exc:
+        logger.error(
+            "process_slack_event failed (retry %d/%d): %s — team_id=%s",
+            self.request.retries,
+            self.max_retries,
+            exc,
+            payload.get("team_id"),
+        )
         raise self.retry(exc=exc)
 
 
