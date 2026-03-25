@@ -6,8 +6,9 @@ Full transcript as content; segments stored in metadata_.
 from datetime import timezone
 
 from app.connectors.meeting.schemas import MeetingTranscriptPayload
-from app.connectors.shared.normalized_signal import NormalizedSignal, Participant
+from app.connectors.shared.normalized_signal import NormalizedParticipant, NormalizedSignal, Participant
 from app.connectors.shared.participant_classifier import is_external_participant
+from app.models.enums import Direction, NormalizationFlag, ParticipantRole
 from app.models.schemas import SourceItemCreate
 
 
@@ -78,7 +79,7 @@ def normalise_meeting_transcript(
     speaker_names = list(dict.fromkeys(seg.speaker for seg in payload.segments))
     actors = [Participant(name=name, role="speaker") for name in speaker_names]
 
-    # Visible participants = all meeting attendees
+    # Visible participants = all meeting attendees (legacy)
     visible = [
         Participant(
             name=p.get("name"),
@@ -87,6 +88,22 @@ def normalise_meeting_transcript(
         )
         for p in payload.participants
     ]
+
+    # NormalizedParticipant list (new WO field)
+    normalized_participants = [
+        NormalizedParticipant(
+            email=p.get("email"),
+            display_name=p.get("name"),
+            role=ParticipantRole.unknown,
+            is_primary_user=False,
+        )
+        for p in payload.participants
+    ]
+
+    # Normalization flags
+    flags: list[NormalizationFlag] = []
+    if any(seg.speaker == "Unknown" for seg in payload.segments):
+        flags.append(NormalizationFlag.speaker_unresolved)
 
     signal = NormalizedSignal(
         signal_id=payload.meeting_id,
@@ -100,6 +117,15 @@ def normalise_meeting_transcript(
         visible_participants=visible,
         latest_authored_text=content,
         prior_context_text=None,  # meetings have no quoted history
+        # New WO fields
+        provider_message_id=payload.meeting_id,
+        signal_timestamp=occurred_at,
+        direction=Direction.inbound,
+        is_inbound=True,
+        is_outbound=False,
+        text_present=bool(content),
+        participants=normalized_participants,
+        normalization_flags=flags,
         metadata={"title": payload.meeting_title},
     )
 

@@ -5,8 +5,9 @@ Stores Read.ai's action_items as reference_action_items in metadata
 """
 from datetime import datetime, timezone
 
-from app.connectors.shared.normalized_signal import NormalizedSignal, Participant
+from app.connectors.shared.normalized_signal import NormalizedParticipant, NormalizedSignal, Participant
 from app.connectors.shared.participant_classifier import is_external_participant
+from app.models.enums import Direction, NormalizationFlag, ParticipantRole
 from app.models.schemas import SourceItemCreate
 
 
@@ -79,7 +80,7 @@ def normalise_readai_meeting(
     # Actor participants = speakers from transcript (if available)
     actors = _extract_speakers(transcript)
 
-    # Visible participants = all meeting attendees
+    # Visible participants = all meeting attendees (legacy)
     visible = [
         Participant(
             name=p.get("name"),
@@ -88,6 +89,22 @@ def normalise_readai_meeting(
         )
         for p in participants
     ]
+
+    # NormalizedParticipant list (new WO field)
+    normalized_participants = [
+        NormalizedParticipant(
+            email=p.get("email"),
+            display_name=p.get("name"),
+            role=ParticipantRole.unknown,
+            is_primary_user=False,
+        )
+        for p in participants
+    ]
+
+    # Normalization flags
+    flags: list[NormalizationFlag] = []
+    if _has_unresolved_speakers(transcript):
+        flags.append(NormalizationFlag.speaker_unresolved)
 
     signal = NormalizedSignal(
         signal_id=meeting_id,
@@ -101,7 +118,22 @@ def normalise_readai_meeting(
         visible_participants=visible,
         latest_authored_text=content,
         prior_context_text=None,
-        metadata={"title": title},
+        # New WO fields
+        provider="readai",
+        provider_message_id=meeting_id,
+        provider_thread_id=None,
+        signal_timestamp=occurred_at,
+        direction=Direction.inbound,
+        is_inbound=True,
+        is_outbound=False,
+        text_present=bool(content),
+        participants=normalized_participants,
+        normalization_flags=flags,
+        metadata={
+            "title": title,
+            "duration_ms": duration_ms,
+            "reference_action_items": action_items,
+        },
     )
 
     return item, signal
@@ -130,3 +162,13 @@ def _extract_speakers(transcript: dict | None) -> list[Participant]:
         seg.get("speaker", "Unknown") for seg in transcript["segments"]
     ))
     return [Participant(name=name, role="speaker") for name in speaker_names]
+
+
+def _has_unresolved_speakers(transcript: dict | None) -> bool:
+    """Check if any speaker in the transcript is unresolved ('Unknown')."""
+    if not transcript or not transcript.get("segments"):
+        return False
+    return any(
+        seg.get("speaker", "Unknown") == "Unknown"
+        for seg in transcript["segments"]
+    )

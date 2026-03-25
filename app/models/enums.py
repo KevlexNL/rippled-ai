@@ -145,6 +145,7 @@ class NormalizationFlag(str, enum.Enum):
     attachment_present = "attachment_present"
     malformed_headers = "malformed_headers"
     sender_unresolved = "sender_unresolved"
+    speaker_unresolved = "speaker_unresolved"
     multiple_possible_authored_blocks = "multiple_possible_authored_blocks"
 
 

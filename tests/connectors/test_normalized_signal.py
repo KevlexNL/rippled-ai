@@ -3,7 +3,8 @@
 from datetime import datetime, timezone
 from unittest.mock import patch
 
-from app.connectors.shared.normalized_signal import NormalizedSignal, Participant
+from app.connectors.shared.normalized_signal import NormalizedSignal, NormalizedParticipant, Participant
+from app.models.enums import Direction, NormalizationFlag
 
 
 class TestNormalizedSignalDataclass:
@@ -289,8 +290,8 @@ class TestMeetingNormalizerSignal:
 class TestReadaiNormalizerSignal:
     """Read.ai normalizer must return (SourceItemCreate, NormalizedSignal)."""
 
-    def _make_meeting(self):
-        return {
+    def _make_meeting(self, **overrides):
+        data = {
             "id": "readai-001",
             "title": "Weekly Sync",
             "start_time_ms": 1704110400000,
@@ -308,6 +309,8 @@ class TestReadaiNormalizerSignal:
             "summary": {"overview": "Sprint sync discussion."},
             "action_items": [{"text": "Send notes", "assignee": "Alice"}],
         }
+        data.update(overrides)
+        return data
 
     def test_returns_tuple(self):
         from app.connectors.meeting.readai_normalizer import normalise_readai_meeting
@@ -326,3 +329,179 @@ class TestReadaiNormalizerSignal:
         speaker_names = [p.name for p in signal.actor_participants]
         assert "Alice" in speaker_names
         assert "Bob" in speaker_names
+
+    # --- New WO field tests ---
+
+    def test_signal_provider_is_readai(self):
+        from app.connectors.meeting.readai_normalizer import normalise_readai_meeting
+
+        with patch("app.connectors.meeting.readai_normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_readai_meeting(self._make_meeting(), "src-001")
+        assert signal.provider == "readai"
+
+    def test_signal_provider_message_id_from_meeting_id(self):
+        from app.connectors.meeting.readai_normalizer import normalise_readai_meeting
+
+        with patch("app.connectors.meeting.readai_normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_readai_meeting(self._make_meeting(), "src-001")
+        assert signal.provider_message_id == "readai-001"
+
+    def test_signal_provider_thread_id_is_none(self):
+        from app.connectors.meeting.readai_normalizer import normalise_readai_meeting
+
+        with patch("app.connectors.meeting.readai_normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_readai_meeting(self._make_meeting(), "src-001")
+        assert signal.provider_thread_id is None
+
+    def test_signal_direction_is_inbound(self):
+        from app.connectors.meeting.readai_normalizer import normalise_readai_meeting
+
+        with patch("app.connectors.meeting.readai_normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_readai_meeting(self._make_meeting(), "src-001")
+        assert signal.direction == Direction.inbound
+        assert signal.is_inbound is True
+        assert signal.is_outbound is False
+
+    def test_signal_timestamp_from_start_time(self):
+        from app.connectors.meeting.readai_normalizer import normalise_readai_meeting
+
+        with patch("app.connectors.meeting.readai_normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_readai_meeting(self._make_meeting(), "src-001")
+        expected = datetime.fromtimestamp(1704110400000 / 1000, tz=timezone.utc)
+        assert signal.signal_timestamp == expected
+
+    def test_signal_text_present_with_transcript(self):
+        from app.connectors.meeting.readai_normalizer import normalise_readai_meeting
+
+        with patch("app.connectors.meeting.readai_normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_readai_meeting(self._make_meeting(), "src-001")
+        assert signal.text_present is True
+
+    def test_signal_text_present_false_when_no_content(self):
+        from app.connectors.meeting.readai_normalizer import normalise_readai_meeting
+
+        meeting = self._make_meeting(transcript=None, summary=None)
+        with patch("app.connectors.meeting.readai_normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_readai_meeting(meeting, "src-001")
+        assert signal.text_present is False
+
+    def test_signal_participants_as_normalized_participants(self):
+        from app.connectors.meeting.readai_normalizer import normalise_readai_meeting
+
+        with patch("app.connectors.meeting.readai_normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_readai_meeting(self._make_meeting(), "src-001")
+        assert len(signal.participants) == 2
+        assert all(isinstance(p, NormalizedParticipant) for p in signal.participants)
+        emails = [p.email for p in signal.participants]
+        assert "alice@company.com" in emails
+        assert "bob@external.com" in emails
+
+    def test_signal_no_normalization_flags_for_resolved_speakers(self):
+        from app.connectors.meeting.readai_normalizer import normalise_readai_meeting
+
+        with patch("app.connectors.meeting.readai_normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_readai_meeting(self._make_meeting(), "src-001")
+        assert NormalizationFlag.speaker_unresolved not in signal.normalization_flags
+
+    def test_signal_speaker_unresolved_flag_when_unknown_speaker(self):
+        from app.connectors.meeting.readai_normalizer import normalise_readai_meeting
+
+        meeting = self._make_meeting()
+        meeting["transcript"]["segments"].append(
+            {"speaker": "Unknown", "text": "Something was said."}
+        )
+        with patch("app.connectors.meeting.readai_normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_readai_meeting(meeting, "src-001")
+        assert NormalizationFlag.speaker_unresolved in signal.normalization_flags
+
+    def test_signal_metadata_includes_title_and_duration(self):
+        from app.connectors.meeting.readai_normalizer import normalise_readai_meeting
+
+        with patch("app.connectors.meeting.readai_normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_readai_meeting(self._make_meeting(), "src-001")
+        assert signal.metadata["title"] == "Weekly Sync"
+        assert signal.metadata["duration_ms"] == 1800000
+
+    def test_signal_metadata_includes_reference_action_items(self):
+        from app.connectors.meeting.readai_normalizer import normalise_readai_meeting
+
+        with patch("app.connectors.meeting.readai_normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_readai_meeting(self._make_meeting(), "src-001")
+        assert "reference_action_items" in signal.metadata
+        assert len(signal.metadata["reference_action_items"]) == 1
+
+
+class TestMeetingNormalizerWoFields:
+    """Generic meeting normalizer must populate new WO fields."""
+
+    def _make_payload(self):
+        from app.connectors.meeting.schemas import MeetingTranscriptPayload, TranscriptSegment
+
+        return MeetingTranscriptPayload(
+            meeting_id="mtg-001",
+            meeting_title="Sprint Review",
+            started_at=datetime(2024, 1, 1, 14, 0, 0, tzinfo=timezone.utc),
+            segments=[
+                TranscriptSegment(speaker="Alice", text="I'll handle the deployment.", start_seconds=0, end_seconds=5),
+                TranscriptSegment(speaker="Bob", text="I'll review the PR.", start_seconds=5, end_seconds=10),
+            ],
+            participants=[
+                {"name": "Alice", "email": "alice@company.com"},
+                {"name": "Bob", "email": "bob@external.com"},
+            ],
+        )
+
+    def test_signal_provider_message_id(self):
+        from app.connectors.meeting.normalizer import normalise_meeting_transcript
+
+        with patch("app.connectors.meeting.normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_meeting_transcript(self._make_payload(), "src-001")
+        assert signal.provider_message_id == "mtg-001"
+
+    def test_signal_direction_inbound(self):
+        from app.connectors.meeting.normalizer import normalise_meeting_transcript
+
+        with patch("app.connectors.meeting.normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_meeting_transcript(self._make_payload(), "src-001")
+        assert signal.direction == Direction.inbound
+        assert signal.is_inbound is True
+
+    def test_signal_timestamp_from_started_at(self):
+        from app.connectors.meeting.normalizer import normalise_meeting_transcript
+
+        with patch("app.connectors.meeting.normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_meeting_transcript(self._make_payload(), "src-001")
+        expected = datetime(2024, 1, 1, 14, 0, 0, tzinfo=timezone.utc)
+        assert signal.signal_timestamp == expected
+
+    def test_signal_text_present(self):
+        from app.connectors.meeting.normalizer import normalise_meeting_transcript
+
+        with patch("app.connectors.meeting.normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_meeting_transcript(self._make_payload(), "src-001")
+        assert signal.text_present is True
+
+    def test_signal_participants_as_normalized_participants(self):
+        from app.connectors.meeting.normalizer import normalise_meeting_transcript
+
+        with patch("app.connectors.meeting.normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_meeting_transcript(self._make_payload(), "src-001")
+        assert len(signal.participants) == 2
+        assert all(isinstance(p, NormalizedParticipant) for p in signal.participants)
+
+    def test_signal_speaker_unresolved_flag(self):
+        from app.connectors.meeting.normalizer import normalise_meeting_transcript
+        from app.connectors.meeting.schemas import MeetingTranscriptPayload, TranscriptSegment
+
+        payload = MeetingTranscriptPayload(
+            meeting_id="mtg-002",
+            meeting_title="Call",
+            started_at=datetime(2024, 1, 1, 14, 0, 0, tzinfo=timezone.utc),
+            segments=[
+                TranscriptSegment(speaker="Unknown", text="Something.", start_seconds=0, end_seconds=5),
+            ],
+            participants=[{"name": "Alice", "email": "alice@company.com"}],
+        )
+        with patch("app.connectors.meeting.normalizer.is_external_participant", return_value=False):
+            _, signal = normalise_meeting_transcript(payload, "src-001")
+        assert NormalizationFlag.speaker_unresolved in signal.normalization_flags
