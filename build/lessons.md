@@ -100,3 +100,10 @@ Track patterns from corrections to avoid repeating mistakes.
 **Mistake:** Greeting suppression pattern used `[^.]` (negated character class), which matches any character except literal period — including newlines. This caused multi-line suppression, wiping out commitment text on subsequent lines.
 **Pattern:** In multiline regex patterns, always use `[^.\n]` instead of `[^.]` when the intent is to match within a single line. Also limit greedy quantifiers with `{0,N}` to prevent suppression patterns from consuming content that contains actual signals.
 **Severity:** Medium
+
+---
+
+### 2026-03-25 — asyncpg has TWO prepared statement caches for PgBouncer
+**Mistake:** Engine had `statement_cache_size=0` in `connect_args` but still got `InvalidSQLStatementNameError` on every query through Supabase PgBouncer. The `statement_cache_size` only disables asyncpg's internal LRU cache. asyncpg has a separate `prepared_statement_cache_size` that controls named prepared statements (`__asyncpg_stmt_N__`), which must also be set to 0.
+**Pattern:** When configuring asyncpg for PgBouncer/transaction-pool mode, always set BOTH `statement_cache_size=0` AND `prepared_statement_cache_size=0` in `connect_args`. Also add `pool_pre_ping=True` to detect stale connections after PgBouncer recycling.
+**Severity:** Critical
