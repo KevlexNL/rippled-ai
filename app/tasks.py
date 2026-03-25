@@ -163,10 +163,14 @@ def detect_commitments(self, source_item_id: str) -> dict:
 
 @celery_app.task(name="app.tasks.run_detection_sweep")
 def run_detection_sweep(limit: int = 100) -> dict:
-    """Sweep source_items that have no commitment_candidates yet.
+    """Sweep source_items that haven't been processed yet.
 
     Catches items that were ingested while Celery was down or where
     the inline _enqueue_detection() failed silently.
+
+    Uses seed_processed_at as an idempotency guard so each item is
+    only scanned once.  After processing, seed_processed_at is set
+    to prevent re-scanning on the next sweep.
 
     Scheduled every 5 minutes via Celery Beat.
 
@@ -174,14 +178,26 @@ def run_detection_sweep(limit: int = 100) -> dict:
         limit: Maximum number of items to process per sweep.
 
     Returns:
-        Dict with 'processed' and 'candidates_created' counts.
+        Dict with 'processed', 'candidates_created', 'skipped', and
+        'unprocessed_found' counts.
     """
-    from sqlalchemy import select, and_
+    from sqlalchemy import select, and_, update, func
     from app.models.orm import SourceItem, CommitmentCandidate
 
     logger.info("Pipeline: detection sweep starting")
 
-    # Find source_items with no associated candidates
+    # Count already-processed items (for observability)
+    with get_sync_session() as session:
+        skipped = session.execute(
+            select(func.count()).select_from(SourceItem).where(
+                and_(
+                    SourceItem.seed_processed_at.isnot(None),
+                    SourceItem.is_quoted_content.is_(False),
+                )
+            )
+        ).scalar() or 0
+
+    # Find source_items that haven't been processed yet
     has_candidate = (
         select(CommitmentCandidate.id)
         .where(CommitmentCandidate.originating_item_id == SourceItem.id)
@@ -195,6 +211,7 @@ def run_detection_sweep(limit: int = 100) -> dict:
                 and_(
                     ~has_candidate,
                     SourceItem.is_quoted_content.is_(False),
+                    SourceItem.seed_processed_at.is_(None),
                 )
             )
             .order_by(SourceItem.ingested_at.asc())
@@ -208,6 +225,13 @@ def run_detection_sweep(limit: int = 100) -> dict:
         try:
             with get_sync_session() as session:
                 result = run_detection(str(item_id), session)
+                # Mark item as processed so it won't be re-scanned
+                session.execute(
+                    update(SourceItem)
+                    .where(SourceItem.id == item_id)
+                    .values(seed_processed_at=func.now())
+                )
+                session.commit()
             total_candidates += len(result)
             processed += 1
             logger.info(
@@ -221,13 +245,15 @@ def run_detection_sweep(limit: int = 100) -> dict:
             )
 
     logger.info(
-        "Pipeline: detection sweep complete — %d item(s) processed, %d candidate(s) created",
-        processed, total_candidates,
+        "Pipeline: detection sweep complete — %d new item(s) processed, "
+        "%d candidate(s) created, %d already-processed item(s) skipped",
+        processed, total_candidates, skipped,
     )
     return {
         "processed": processed,
         "candidates_created": total_candidates,
         "unprocessed_found": len(unprocessed_ids),
+        "skipped": skipped,
     }
 
 

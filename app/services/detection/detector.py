@@ -369,6 +369,15 @@ def run_detection(source_item_id: str, db: Session) -> list[CommitmentCandidate]
                     source_item_id, pattern.name, exc,
                 )
 
+    # Write a "no_match" audit entry when no candidates were found and the
+    # item was not suppressed (suppressed items already get their own audit).
+    if not created:
+        write_audit_entry(
+            db, source_item_id=source_item_id, user_id=item.user_id,
+            tier_used="no_match",
+            commitment_created=False,
+        )
+
     logger.info(
         "Detection complete for item %s: %d candidate(s) created",
         source_item_id, len(created),
