@@ -38,6 +38,12 @@ def _make_mock_db(commitment_id: str = "commit-001"):
     mock_session = AsyncMock()
     mock_session.flush = AsyncMock()
 
+    # Mock db.execute() to return a result whose .scalars().all() → []
+    # (needed for the context auto-assign query added in WO-002)
+    mock_result = MagicMock()
+    mock_result.scalars.return_value.all.return_value = []
+    mock_session.execute = AsyncMock(return_value=mock_result)
+
     added = []
 
     def mock_add(obj):
