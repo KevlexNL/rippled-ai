@@ -1,5 +1,25 @@
 # Build Decisions Log
 
+## WO-RIPPLED-CANDIDATE-PROMOTION-BROKEN — Fix Promotion Pipeline
+*Date: 2026-03-25 | Owner: Claude (Stage 3)*
+
+**Problem:** 274 commitment_candidates created since launch, 0 ever promoted. Promotion failures were invisible due to silent exception handling and SQL NULL semantics.
+
+**Root causes fixed:**
+1. `run_clarification_task` swallowed exceptions silently — generic `except Exception` retried 3x with no logging, then abandoned. Added ERROR-level logging with candidate_id, retry count, and actual exception.
+2. Clarification sweep used `observe_until <= now` — NULL values silently excluded from results. Added `observe_until IS NULL` branch to treat missing observation window as expired.
+3. No promotion activity logging — sweep ran silently. Added INFO-level log with found/enqueued counts.
+
+**Files changed:**
+- `app/tasks.py` — Error logging in task, NULL handling in sweep, activity logging
+- `tests/services/test_candidate_promotion.py` — 6 new tests covering all 3 bugs
+- `tests/services/test_clarification.py` — Updated stale flush count assertion
+- `scripts/backfill_promote_candidates.py` — Backfill script for existing candidates
+
+**Backfill:** `python scripts/backfill_promote_candidates.py` promotes eligible candidates. Idempotent (skips already-promoted). Use `--dry-run` to preview.
+
+---
+
 ## WO-RIPPLED-LLM-ORCHESTRATION — Staged Pipeline Architecture
 *Date: 2026-03-22 | Owner: Claude (Stage 3)*
 

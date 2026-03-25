@@ -259,6 +259,10 @@ def run_clarification_task(self, candidate_id: str) -> dict:
         )
         raise self.retry(exc=exc, countdown=5)
     except Exception as exc:
+        logger.error(
+            "Clarification task FAILED for candidate %s (retry %d/%d): %s",
+            candidate_id, self.request.retries, self.max_retries, exc,
+        )
         raise self.retry(exc=exc)
 
 
@@ -286,6 +290,7 @@ def run_clarification_batch() -> dict:
                 CommitmentCandidate.was_discarded.is_(False),
                 or_(
                     CommitmentCandidate.observe_until <= now,
+                    CommitmentCandidate.observe_until.is_(None),
                     CommitmentCandidate.confidence_score >= D("0.75"),
                 ),
             )
@@ -296,6 +301,10 @@ def run_clarification_batch() -> dict:
         run_clarification_task.delay(str(cid))
         enqueued += 1
 
+    logger.info(
+        "Clarification sweep: %d candidate(s) found, %d enqueued for promotion",
+        len(candidate_ids), enqueued,
+    )
     return {"enqueued": enqueued}
 
 

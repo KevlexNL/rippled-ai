@@ -697,7 +697,8 @@ class TestClarifier:
         assert transitions[0].trigger_reason == "phase04_clarification"
 
     def test_clarifier_flushes_session(self):
-        """Verify db.flush() is called at end of clarified flow."""
+        """Verify db.flush() is called twice: once after promotion (FK safety)
+        and once at end of clarified flow."""
         from app.services.clarification.clarifier import run_clarification
 
         candidate = _make_candidate(
@@ -717,4 +718,5 @@ class TestClarifier:
              patch("app.services.clarification.clarifier.generate_suggestions", return_value={}):
             run_clarification(str(candidate.id), db)
 
-        db.flush.assert_called_once()
+        # Two flushes: post-promotion FK flush (line 113) + final flush (line 158)
+        assert db.flush.call_count == 2

@@ -103,6 +103,13 @@ Track patterns from corrections to avoid repeating mistakes.
 
 ---
 
+### 2026-03-25 — Silent exception handling + NULL SQL comparisons mask pipeline failures
+**Mistake:** `run_clarification_task` caught all exceptions with `except Exception as exc: raise self.retry(exc=exc)` — no logging. After 3 retries, tasks silently failed. Separately, the clarification sweep used `observe_until <= now` which returns NULL (falsy) for NULL values, permanently excluding candidates with NULL `observe_until` and confidence < 0.75. Combined: 274 candidates piled up with 0 ever promoted, and no error evidence in logs.
+**Pattern:** (1) Always log at ERROR level before retrying Celery tasks — include candidate_id, retry count, and the actual exception message. (2) When filtering on nullable datetime columns in SQL, always include an explicit `IS NULL` branch in the OR clause. NULL comparisons silently evaluate to NULL, which is falsy. (3) Batch sweep tasks must log their activity counts (found/enqueued) so absence of promotion is detectable in logs.
+**Severity:** Critical
+
+---
+
 ### 2026-03-25 — asyncpg has TWO prepared statement caches for PgBouncer
 **Mistake:** Engine had `statement_cache_size=0` in `connect_args` but still got `InvalidSQLStatementNameError` on every query through Supabase PgBouncer. The `statement_cache_size` only disables asyncpg's internal LRU cache. asyncpg has a separate `prepared_statement_cache_size` that controls named prepared statements (`__asyncpg_stmt_N__`), which must also be set to 0.
 **Pattern:** When configuring asyncpg for PgBouncer/transaction-pool mode, always set BOTH `statement_cache_size=0` AND `prepared_statement_cache_size=0` in `connect_args`. Also add `pool_pre_ping=True` to detect stale connections after PgBouncer recycling.
