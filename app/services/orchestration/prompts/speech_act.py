@@ -41,6 +41,7 @@ def build_user_prompt(
     direction: str | None,
     candidate_type: str,
     gate_confidence: float,
+    participants: list[str] | None = None,
 ) -> str:
     parts = [
         f"Source type: {source_type}",
@@ -50,6 +51,8 @@ def build_user_prompt(
         parts.append(f"Subject: {subject}")
     if direction:
         parts.append(f"Direction: {direction}")
+    if source_type == "meeting" and participants:
+        parts.append(f"Meeting participants: {', '.join(participants)}")
     parts.append(f"\n--- Latest authored text ---\n{latest_authored_text}")
     if prior_context_text:
         parts.append(f"\n--- Prior context (quoted/thread) ---\n{prior_context_text[:500]}")

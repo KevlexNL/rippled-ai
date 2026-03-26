@@ -43,7 +43,7 @@ _PROMPT_VERSION = "seed-v9"
 
 _SYSTEM_PROMPT = """You are a commitment extraction engine for a workplace intelligence system.
 
-Analyze the following email and extract ALL commitments, follow-ups, or obligations.
+Analyze the following message and extract ALL commitments, follow-ups, or obligations.
 
 CRITICAL RULE — FOLLOW-UPS: ANY form of "follow up" is ALWAYS a commitment. This includes "follow up on [topic]", "need to follow up", "will follow up", "should follow up", "follow up on budget", "follow up on headcount", "follow up on the proposal", "follow up on the timeline", etc. Never skip these. Missing a follow-up is the #1 detection error.
 
@@ -99,6 +99,18 @@ For each commitment found, extract:
 - commitment_type: one of "send", "review", "follow_up", "deliver", "investigate", "introduce", "coordinate", "update", "delegate", "schedule", "confirm", "other"
 - title: a concise summary (max 80 chars)
 - is_external: true if this involves someone outside the organization
+
+## Meeting transcript input format
+
+When analyzing meeting transcripts:
+- Each speaker turn is labeled with the speaker's name (e.g., "[Kevin]: I'll send the report")
+- Read.ai action items (if present in the ACTION ITEMS section) are high-confidence commitment signals — always extract these
+- Look for first-person future tense by named speakers: "I'll", "I will", "I can have", "let me", "I'll take care of"
+- Tag the speaker making the commitment as who_committed (the assignee)
+- Tag the person they're committing to as directed_at (the beneficiary)
+- Meeting-level context (title, date, participants) provides additional signal for owner resolution
+- Requests directed at specific participants ("Kevin, can you...?") should tag the addressee as who_committed
+- Implicit commitments from agreements ("Sounds good, I'll do that") need tracking — tag the agreeing speaker
 
 ## Email input format
 
@@ -357,6 +369,32 @@ def _extract_commitments(
             for p in signal.addressed_participants
         ]
         parts.append(f"To: {', '.join(addressed_names)}")
+
+    # Meeting-specific context: title, participants, action items
+    if item.source_type == "meeting":
+        metadata = item.metadata_ or {}
+        title = metadata.get("title")
+        if title:
+            parts.append(f"Meeting title: {title}")
+
+        # Extract unique speakers from segments
+        segments = metadata.get("segments") or []
+        speakers = list(dict.fromkeys(
+            seg.get("speaker", "Unknown") for seg in segments if isinstance(seg, dict)
+        ))
+        if speakers:
+            parts.append(f"Speakers: {', '.join(speakers)}")
+
+        # Read.ai action items as high-confidence hints
+        action_items = metadata.get("reference_action_items") or []
+        if action_items:
+            ai_lines = ["[ACTION ITEMS — high-confidence commitment signals from meeting AI]:"]
+            for ai in action_items:
+                assignee = ai.get("assignee", "unassigned")
+                due = ai.get("due", "")
+                due_str = f" (due: {due})" if due else ""
+                ai_lines.append(f"- {ai.get('title', 'untitled')} [assignee: {assignee}]{due_str}")
+            parts.append("\n".join(ai_lines))
 
     parts.append(f"\n[CURRENT MESSAGE]\n{latest_text}")
     if prior_context:
