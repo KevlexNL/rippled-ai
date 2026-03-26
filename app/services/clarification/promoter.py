@@ -146,6 +146,10 @@ def promote_candidate(
         lifecycle_state=lifecycle_state,
     )
     db.add(commitment)
+    # Flush commitment first so FK constraints on CandidateCommitment and
+    # CommitmentAmbiguity are satisfied — SQLAlchemy cannot infer insert
+    # order from raw UUID FK columns without ORM relationships.
+    db.flush()
 
     # CandidateCommitment join
     join_record = CandidateCommitment(

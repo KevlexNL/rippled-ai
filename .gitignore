@@ -49,3 +49,4 @@ frontend-admin/dist/
 /test-results/
 /node_modules/
 frontend-admin/node_modules/
+backups/
