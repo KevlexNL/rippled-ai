@@ -50,3 +50,9 @@ frontend-admin/dist/
 /node_modules/
 frontend-admin/node_modules/
 backups/
+
+# Generated/local dirs
+.obsidian/
+site/
+playwright-report/
+test-results/
