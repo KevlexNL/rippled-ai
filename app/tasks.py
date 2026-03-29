@@ -467,6 +467,23 @@ def process_slack_event(self, payload: dict) -> dict:
         if item is None:
             return {"status": "filtered"}
 
+        # Thread enrichment: fetch full thread context for replies
+        if signal is not None and event.get("thread_ts"):
+            try:
+                from app.connectors.slack.thread_enricher import ThreadEnricher
+                from app.connectors.slack.normalizer import enrich_signal_with_thread
+
+                bot_token = creds.get("bot_token", "")
+                if bot_token:
+                    enricher = ThreadEnricher(bot_token=bot_token)
+                    thread_messages = enricher.fetch_thread(
+                        event.get("channel", ""),
+                        event["thread_ts"],
+                    )
+                    signal = enrich_signal_with_thread(signal, thread_messages)
+            except Exception:
+                logger.warning("Thread enrichment failed, continuing with original signal")
+
         with get_sync_session() as db:
             _, created = ingest_item(item, user_id, db)
 

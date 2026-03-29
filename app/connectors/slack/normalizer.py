@@ -206,6 +206,44 @@ def normalise_slack_event(
     return item, signal
 
 
+def enrich_signal_with_thread(
+    signal: NormalizedSignal,
+    thread_messages: list[dict[str, str]],
+) -> NormalizedSignal:
+    """Enrich a NormalizedSignal with full thread context.
+
+    Builds ``prior_context_text`` from messages preceding the current one
+    and sets ``thread_position`` to the 0-based index of the current message.
+
+    Returns the signal unchanged if ``thread_messages`` is empty.
+    """
+    if not thread_messages:
+        return signal
+
+    # Find current message index by matching source_message_id to ts
+    current_ts = signal.source_message_id
+    position: int | None = None
+    for idx, msg in enumerate(thread_messages):
+        if msg.get("ts") == current_ts:
+            position = idx
+            break
+
+    if position is None:
+        return signal
+
+    # Build prior context from messages before the current one
+    prior_messages = thread_messages[:position]
+    prior_context: str | None = None
+    if prior_messages:
+        prior_context = "\n".join(
+            f"[{m.get('user', '')}]: {m.get('text', '')}" for m in prior_messages
+        )
+
+    signal.thread_position = position
+    signal.prior_context_text = prior_context
+    return signal
+
+
 def _build_slack_url(channel: str, ts: str) -> str | None:
     """Build a Slack message URL from channel and timestamp."""
     if not channel or not ts:
