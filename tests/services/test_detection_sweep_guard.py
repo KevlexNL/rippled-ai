@@ -214,3 +214,97 @@ class TestDetectionSweepGuard:
             f"Sweep result must include 'skipped' key. Got: {result}"
         )
         assert result["skipped"] == 42
+
+
+# ---------------------------------------------------------------------------
+# Test: detect_commitments task sets seed_processed_at (inline detection guard)
+# ---------------------------------------------------------------------------
+
+class TestDetectCommitmentsStampsSeedProcessedAt:
+    """The per-item detect_commitments Celery task must stamp seed_processed_at
+    after running detection, so the sweep never re-scans that item.
+
+    This prevents the runaway rescan loop documented in WO-RIPPLED-DETECTION-RESCAN-LOOP:
+    items processed inline at ingest time that produce no candidates would otherwise
+    keep seed_processed_at=NULL and be re-scanned by the sweep every 5 minutes.
+    """
+
+    @patch("app.tasks.get_sync_session")
+    @patch("app.tasks.run_detection")
+    def test_detect_commitments_stamps_seed_processed_at(
+        self, mock_run_detection, mock_get_sync
+    ):
+        """detect_commitments must execute an UPDATE setting seed_processed_at."""
+        from app.tasks import detect_commitments
+
+        item_id = str(uuid.uuid4())
+        mock_run_detection.return_value = []  # No candidates found
+
+        session = MagicMock()
+        session.__enter__ = MagicMock(return_value=session)
+        session.__exit__ = MagicMock(return_value=False)
+        mock_get_sync.return_value = session
+
+        # Call the underlying function directly (bypass Celery retry machinery)
+        # by calling the task function without .delay() / .apply()
+        result = detect_commitments.run(item_id)
+
+        assert result["status"] == "complete"
+        assert result["candidates_created"] == 0
+
+        # Verify an UPDATE was issued to set seed_processed_at
+        execute_calls = session.execute.call_args_list
+        assert execute_calls, "Expected session.execute to be called for seed_processed_at UPDATE"
+
+        def _has_seed_processed_at(call):
+            try:
+                obj = call[0][0]
+                return "seed_processed_at" in str(obj.compile(compile_kwargs={"literal_binds": True}))
+            except Exception:
+                return "seed_processed_at" in str(call)
+
+        found_update = any(_has_seed_processed_at(c) for c in execute_calls)
+        assert found_update, (
+            "detect_commitments must issue an UPDATE setting seed_processed_at. "
+            f"Execute calls: {execute_calls}"
+        )
+
+        # Verify commit was called to persist the stamp
+        session.commit.assert_called_once()
+
+    @patch("app.tasks.get_sync_session")
+    @patch("app.tasks.run_detection")
+    def test_detect_commitments_stamps_seed_processed_at_even_with_candidates(
+        self, mock_run_detection, mock_get_sync
+    ):
+        """seed_processed_at should be stamped regardless of whether candidates were found."""
+        from app.tasks import detect_commitments
+
+        item_id = str(uuid.uuid4())
+        # Simulate 2 candidates found
+        mock_candidate = MagicMock()
+        mock_run_detection.return_value = [mock_candidate, mock_candidate]
+
+        session = MagicMock()
+        session.__enter__ = MagicMock(return_value=session)
+        session.__exit__ = MagicMock(return_value=False)
+        mock_get_sync.return_value = session
+
+        result = detect_commitments.run(item_id)
+
+        assert result["candidates_created"] == 2
+
+        execute_calls = session.execute.call_args_list
+
+        def _has_seed_processed_at(call):
+            try:
+                obj = call[0][0]
+                return "seed_processed_at" in str(obj.compile(compile_kwargs={"literal_binds": True}))
+            except Exception:
+                return "seed_processed_at" in str(call)
+
+        found_update = any(_has_seed_processed_at(c) for c in execute_calls)
+        assert found_update, (
+            "detect_commitments must stamp seed_processed_at even when candidates were found. "
+            f"Execute calls: {execute_calls}"
+        )

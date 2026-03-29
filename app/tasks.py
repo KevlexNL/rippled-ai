@@ -142,10 +142,20 @@ def detect_commitments(self, source_item_id: str) -> dict:
         source_item_id,
     )
     try:
+        from sqlalchemy import update, func
+        from app.models.orm import SourceItem
         with get_sync_session() as session:
             result = run_detection(source_item_id, session)
+            # Stamp seed_processed_at so the detection sweep never re-scans
+            # this item (prevents the runaway rescan loop — WO-RIPPLED-DETECTION-RESCAN-LOOP)
+            session.execute(
+                update(SourceItem)
+                .where(SourceItem.id == source_item_id)
+                .values(seed_processed_at=func.now())
+            )
+            session.commit()
         logger.info(
-            "Pipeline: detection complete for source_item %s — %d candidate(s) created",
+            "Pipeline: detection complete for source_item %s — %d candidate(s) created, seed_processed_at stamped",
             source_item_id, len(result),
         )
         return {
