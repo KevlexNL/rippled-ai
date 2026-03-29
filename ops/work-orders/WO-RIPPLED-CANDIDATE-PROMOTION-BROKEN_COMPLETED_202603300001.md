@@ -73,3 +73,23 @@ No
 
 ## Notes for Trinity
 Look for `promote_candidates`, `promote_commitment_candidate`, or similar in `app/tasks.py`. Also check if there's a Celery beat schedule entry for this step that may be missing from Railway env. The candidates have `confidence_score = 0.7–0.85` which should pass most reasonable thresholds. The `detection_method = null` on recent candidates suggests the new orchestration layer (from WO-LLM-ORCHESTRATION) creates candidates but may have disconnected the promotion step.
+
+---
+
+## Completion Notes (Trinity, 2026-03-30)
+
+**Status: Already fixed in commit 8d3928b (March 25)**
+
+Three root causes were identified and fixed prior to this task pickup:
+1. Generic exception handler swallowed errors silently before retry
+2. `observe_until <= now` query excluded NULL values permanently  
+3. No logging on batch sweep made failures invisible
+
+**Current DB state (2026-03-30 00:01 CET):**
+- 312 commitments in DB (all created today via seed run)
+- 312 candidates promoted (confidence ≥ 0.75 path)
+- 378 candidates pending in observation windows (confidence 0.65–0.70)
+  - All will be promoted automatically when windows expire 2026-03-31 ~17:00 UTC
+- All 68 clarification + promotion tests pass
+
+**No additional work needed.** System is functioning as designed.
