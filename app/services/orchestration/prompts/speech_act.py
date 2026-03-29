@@ -1,5 +1,10 @@
 """Prompt template for Stage 2 — Speech-act classification."""
 
+from app.services.orchestration.prompts.slack_overlay import (
+    SPEECH_ACT_HINTS,
+    SYSTEM_ADDENDUM,
+)
+
 TEMPLATE_ID = "speech_act_classifier"
 TEMPLATE_VERSION = "v1.0.0"
 
@@ -33,6 +38,13 @@ RULES:
 """
 
 
+def build_system_prompt(source_type: str) -> str:
+    """Return the system prompt, with Slack addendum when applicable."""
+    if source_type == "slack":
+        return SYSTEM_PROMPT + SYSTEM_ADDENDUM
+    return SYSTEM_PROMPT
+
+
 def build_user_prompt(
     latest_authored_text: str,
     prior_context_text: str | None,
@@ -56,4 +68,6 @@ def build_user_prompt(
     parts.append(f"\n--- Latest authored text ---\n{latest_authored_text}")
     if prior_context_text:
         parts.append(f"\n--- Prior context (quoted/thread) ---\n{prior_context_text[:500]}")
+    if source_type == "slack":
+        parts.append(f"\n{SPEECH_ACT_HINTS}")
     return "\n".join(parts)

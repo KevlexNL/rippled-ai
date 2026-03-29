@@ -58,8 +58,10 @@ def execute_extraction(
         candidate_type=gate_result.candidate_type.value,
     )
 
+    system_prompt = prompt.build_system_prompt(signal.source_type)
+
     return call_llm_structured(
-        system_prompt=prompt.SYSTEM_PROMPT,
+        system_prompt=system_prompt,
         user_prompt=user_prompt,
         output_type=CommitmentExtractionResult,
         model_name=model_cfg.primary,

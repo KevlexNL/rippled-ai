@@ -1,0 +1,938 @@
+{
+  "id": "01KKVBAD682S5ZQHQWEMN5AKJB",
+  "start_time_ms": 1773665596616,
+  "end_time_ms": 1773669293505,
+  "scheduled_start_time_ms": 1773666000000,
+  "scheduled_end_time_ms": 1773669600000,
+  "participants": [
+    {
+      "name": "Kevin Beeftink",
+      "invited": false,
+      "attended": true
+    },
+    {
+      "name": "Stephen Polich",
+      "email": "spolich@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "email": "kevin@kevlex.digital",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "admin@kevlex-academy.com",
+      "invited": false,
+      "attended": false
+    }
+  ],
+  "owner": {
+    "name": "Kevin Beeftink",
+    "email": "admin@kevlex-academy.com"
+  },
+  "title": "Stephen <> Kevin",
+  "report_url": "https://app.read.ai/analytics/meetings/01KKVBAD682S5ZQHQWEMN5AKJB",
+  "platform": "meet",
+  "platform_id": "jzt-hkcr-xza",
+  "folders": [
+    "One-on-One"
+  ],
+  "live_enabled": false,
+  "summary": "The meeting reviewed operational updates for a new lead and sales workflow, assessed current personnel capacity, and set short-term priorities for closing initial deals. Stephen Polich reported heavy travel and tax-season workload that is limiting capacity, and the team agreed to revisit workload limits midweek; a conference room participant warned about sleep-related cognitive decline and recommended reducing Stephen\u2019s active tasks.\n\nDiscussion shifted to vendor lead progress and Sam\u2019s closing performance. Stephen shared a promising vendor conversation and confirmed a go-live plan for two new smart lists pending a Mitch check; the group prioritized helping Sam close a first deal within about 14 days to build momentum and identified objection handling as the main bottleneck. The team proposed an AI-driven objection-practice tool, focused rep support for Sam, and a prototype training/test for objection handling.\n\nOperational topics included lead filtering, discrepancies in Hatch report counts for several sources, and tagging practices for refunded or ineligible leads. Attendees confirmed most of Sam\u2019s leads have been touched, agreed to audit Smart Financial inbound records for missing fields, and committed to documenting a single source of truth for tags and integrations so Stephen can move toward agency oversight rather than hands-on execution.",
+  "action_items": [
+    "Conference room participant and Stephen will revisit Stephen\u2019s workload and potential task reductions on Wednesday",
+    "Stephen Polich will research the next company on the vendor list this week",
+    "Stephen Polich will take a deeper dive into lead scripting to identify disconnects",
+    "Mitch will perform a programming/scripting double-check for the two new smart lists within about two hours",
+    "Stephen Polich will sit with Samantha and listen to her calls to support closing a deal by the end of the month",
+    "Conference room participant will prototype and test an AI-driven objection handling training for Samantha",
+    "Conference room participant will ask Sam to review and clean the FE Kaboom filter tags (remove redundant entries and ensure Smart Financial/Enzone are included).",
+    "Conference room participant will consult Mitch about tag configurations and advise whether leads should be dropped or retagged to avoid start/end-of-day cycles.",
+    "Stephen Polich will audit inbound Smart Financial leads and add missing DOB and address information where needed.",
+    "Mitch will investigate the Smart Financial-to-Hatch integration (\"hook\") and report back on why DOB and address fields are not reliably transferring.",
+    "Conference room participant will check Sam's tag usage and decide whether to manually fix records or return them to Stephen if not resolvable.",
+    "Stephen Polich will require Sam to produce a weekly schedule/report (e.g., Notion screenshot) every Friday and make her responsible for that closing report",
+    "Conference room participant will send Stephen a short recap email and quick principles for delegation and leveling up from hustler to executive",
+    "Conference room participant will document the current tags and explain their purpose and usage for Stephen",
+    "Conference room participant will check with Mitch to ensure the related workflows are turned on today",
+    "Conference room participant will send instructions on how to think about delegation and present a recommended cadence for system reviews",
+    "Conference room participant will continue work on the Medicare workflows discussed during the meeting",
+    "Conference room participant will investigate an AI sales trainer focused on handling objections",
+    "Stephen Polich will take the recap email and outline workflows he can delegate and workflows he cannot delegate"
+  ],
+  "key_questions": [
+    "Should the team have a conversation about saying no to some tasks given Stephen\u2019s workload?",
+    "Are we going live today with the two new smart lists and is scripting ready?",
+    "Is Samantha still practicing and improving objection handling?",
+    "On a scale of 1\u201310, how confident is Stephen that Samantha is doing what she\u2019s supposed to throughout the day?",
+    "How should refunded or credited inbound Smart Financial leads be handled so they don't appear in start/end-of-day cycles?",
+    "If Smart Financial contains DOB and address, should that data come into Hatch automatically through the integration (\"hook\")?",
+    "Can someone help clarify the purpose of specific tags?",
+    "Anything else to go over before closing?"
+  ],
+  "transcript": {
+    "speakers": [
+      {
+        "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+      },
+      {
+        "name": "Conference Room (Kevin Beeftink) - Speaker 2"
+      },
+      {
+        "name": "Stephen Polich"
+      },
+      {
+        "name": "UNKNOWN_SPEAKER"
+      }
+    ],
+    "turns": [
+      {
+        "start_time_ms": 1773669287629,
+        "end_time_ms": 1773669288549,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Yes, sir. We'll see you then."
+      },
+      {
+        "start_time_ms": 1773669279901,
+        "end_time_ms": 1773669286707,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "Well, mind your health. I'll leave it at that. All right, sir. I'll talk to you later. I'll see you on Wednesday."
+      },
+      {
+        "start_time_ms": 1773669278278,
+        "end_time_ms": 1773669279520,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "All right."
+      },
+      {
+        "start_time_ms": 1773669275776,
+        "end_time_ms": 1773669278258,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Actually, I'm done with coffee. I'm on to something stronger."
+      },
+      {
+        "start_time_ms": 1773669271111,
+        "end_time_ms": 1773669273634,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "Well, then I'm taking a cup of coffee and I'll talk to you later."
+      },
+      {
+        "start_time_ms": 1773669267243,
+        "end_time_ms": 1773669268824,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "I planned on doing that this week."
+      },
+      {
+        "start_time_ms": 1773669248692,
+        "end_time_ms": 1773669264841,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "On that note, let me close out with what I just talked about. So I'll make sure to recap that in the email later. Check in with Mitch. That call's actually happening in two minutes. That's awesome. Keep me posted on your vendors. It's good that people had success with Smart Financial. Just make sure you have at least one more vendor lined up."
+      },
+      {
+        "start_time_ms": 1773669248212,
+        "end_time_ms": 1773669248492,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "All right."
+      },
+      {
+        "start_time_ms": 1773669246611,
+        "end_time_ms": 1773669247051,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "No, sir."
+      },
+      {
+        "start_time_ms": 1773669142175,
+        "end_time_ms": 1773669245430,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "So that means the trust issues will stay there, but we can try and work on them. And the way we build trust is by repeatedly getting the expected outcome. That means that you need to set yourself up for success and you need proactive reporting. So you don't want to ask. You need to tell Sam, hey, Sam, every Friday, I need this list completed and I need you to tell me that it's all done. And that list can be short, it can be long, it doesn't matter. But it means that every Friday of the week is not over until she sends you the closing report. Because if she does that, and you see on paper, that she did the job here's what happened before it means that she had to get that list she had to check that she did she had to then send it to you knowing that she did it yeah that's how we close out the entire week otherwise shit is going to be forgotten always so instead of you trying to engineer everything now because that's probably where your head's going fuck I gotta write up everything just and I'll tell you this in the emails off get me a shortlist what would you like to see done by the end of the week every week we're gonna put that down somewhere and we're gonna make Sam responsible for it and she'll get it done yeah I know I'm sure she will let's figure that out yeah yeah all Good start of the week. Anything else you wanted to go over?"
+      },
+      {
+        "start_time_ms": 1773669139233,
+        "end_time_ms": 1773669140574,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "And what more can we ask for?"
+      },
+      {
+        "start_time_ms": 1773669101692,
+        "end_time_ms": 1773669137031,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "I'll give you one more tip on that. So you said I need to work on my trust issues. Every entrepreneur has trust issues. Stephen That goes for every fucking one of us. So That's not new. I'm also gonna tell you a front. You're gonna be disappointed for the rest of your entrepreneurial fucking life forever Well, great Well, the fact that you know makes it a little easier to bear I'm just saying It's never gonna work out ever right It'll just get a little better tomorrow."
+      },
+      {
+        "start_time_ms": 1773669065148,
+        "end_time_ms": 1773669095567,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "To take your email and start outlining workflows, what I can delegate, what I cannot delegate. I have to get better about the trust and make sure things happening, make sure from a high level that I keep Sam on the right path, but give her the freedom to work her way through that path."
+      },
+      {
+        "start_time_ms": 1773669058863,
+        "end_time_ms": 1773669059484,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "How about yourself?"
+      },
+      {
+        "start_time_ms": 1773669057262,
+        "end_time_ms": 1773669058583,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "All right."
+      },
+      {
+        "start_time_ms": 1773669056922,
+        "end_time_ms": 1773669057242,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "No, sir."
+      },
+      {
+        "start_time_ms": 1773668775505,
+        "end_time_ms": 1773669055881,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "You've got too much on your plate, dude. And don't get me wrong. I'm working on probably eight different things at the same time always. It's also how I work, right? I also don't like doing one thing at a time. That's why I have this job. That's why I work with multiple clients on multiple projects, right? It's awesome. I really like doing that. But I'll be fucking nuts by the end of the week if I don't have systems, if I don't have a team, if I don't have structure, if I do not delegate. My job is to jump on these calls, get them recorded, send the recording to my assistant, This needs to get done. And then she knows to write stuff up, to delegate, to get it over to the right people. I know you don't have an assistant yet, so that job we still need to fill on yourself, but the steps are the same. You see what I mean? I do. And that's where I think we need to get you in the next few weeks, because otherwise you're going to be pulling So Here's my one Hesitation I can teach you how to do it But I don't want to tell you how to do it Okay, because if I tell you how to do it You didn't come up with it yourself and it's harder for you to remember it. So I'd rather give you principles and then you build your system and you can put it wherever you want and use it however you want. But otherwise it's not going to stick because you need to build the habit. You don't want me to hold you accountable. You need to hold yourself accountable. What I want to do is send you a list of quick principles. What to delegate, no, how to identify what to delegate, how to delegate, what that means, and then a cadence at which you can present back to me what your systems look like, because then you present it to me because you own it. And then you're building a system that is yours, not mine. Make sense? All right. Otherwise, dude, I see where it's headed. And when you say it's almost over, which is what we started this conversation with, then it's going to be four weeks from now. We're having the same conversation, just on a different topic. I see where this is headed. Let's try to figure it out. Just sort it. So here's what I'll do. I'll send you a quick recap by email. It's gonna be very short And then I need you to think of how to make that work for you You could choose your system. You can do it in I can go a level notion On a fucking notepad if you think that's smart. I don't think it is. I'm just gonna point that out And then you tell me how you would do it and then I'll coach you through it. But I think it's the only way to get you out of where you are now, to get more clarity on what needs to happen. Because that's why I'm asking you the bigger questions, right? What are the three things that are going to move the needle the most? How do I make sure I'm aligned on what needs to happen this week? What is the biggest bottleneck we need to address? These are all questions that feel vague, but help us stay moving in the right direction. I need you to get to the same type of thinking so you can move from hustler to executive. Otherwise, you can't keep that up to you. All right. So I'll make sure that gets sent over. Let's just do a quick recap then. So on my end, I'll look into those tags and make sure it's all documented as needed. So you know what it is and how it's used. I'll check in with Mitch to make sure those workflows are turned on today. I'll send you the instruction on how to think about delegation and leveling up from host or executive. I'll keep working on the Medicare side for the workflows that we talked about. And I'll look into the AI sales trainer specifically for objections. Anything else?"
+      },
+      {
+        "start_time_ms": 1773668768863,
+        "end_time_ms": 1773668774024,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Managing the expectations versus managing the individual. Yes, please."
+      },
+      {
+        "start_time_ms": 1773668630880,
+        "end_time_ms": 1773668764602,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "But I know how to do that. I just need you to also start doing it. So if Sam needs to do something for you, you need to decide every time you think of her to have to do something, is she going to do this once or is she going to do it at least three times? If it is three times, that is a system, not a request. And the system needs to live somewhere. Needs to be reported on. Otherwise, we can't use it. So the verbal instruction is useless because it doesn't live anywhere. Highly explicit, she's not gonna report on it. Now we have an awesome notion page that covers a bunch of stuff. So why not have Sam build her own schedule in notion or and send me a fucking screenshot. I don't care. That tells me this is my week and this is the stuff I think I need to do on this week so that you see what you remembered and so that you can point and say, hey, I'm missing this. I'd like to see that done every Friday. And then the next Sam comes in and you say, hey, you see this calendar? I want you to copy it. That is your job. You see what I'm getting at?"
+      },
+      {
+        "start_time_ms": 1773668628558,
+        "end_time_ms": 1773668629019,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Yes, sir."
+      },
+      {
+        "start_time_ms": 1773668616244,
+        "end_time_ms": 1773668627438,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "Which is I'm trying to make Stephen is I know we are, but with we, I'll take some credit. I know I am building systems. Because that's what you hired me to do."
+      },
+      {
+        "start_time_ms": 1773668563862,
+        "end_time_ms": 1773668613763,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "My answer is I've got to get the individuals trained and up to So I can let go So the right question is how do I do that? And no, no, that's not the right question because we're already doing it Dude with with what you've built in the system You're are we're already in that process Um, I can already see where I'm going to be able to get to the point where I can be hands off and just let it go and go back to the phrase trust, but verify."
+      },
+      {
+        "start_time_ms": 1773668526746,
+        "end_time_ms": 1773668561640,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "Then I'll ask you the tough question, you know, what's coming, right? I'll ask you, why not now? Now your head is going to tell you a bunch of shit. It's going to tell you, well, I don't know how to do that yet, or I'm fucking busy right now. Now, if I need to also do that, isn't that just going to add shit to my plate? Who's going to actually do that? If I trust them to do it, isn't that just going to be thrown back in my face a week from now because someone didn't do it? And it's yes to all of the above, and we still got to do it."
+      },
+      {
+        "start_time_ms": 1773668506325,
+        "end_time_ms": 1773668522683,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "And I will tell you, I am looking forward to the day where I am not the hustler as much, I'm more of the agency oversight."
+      },
+      {
+        "start_time_ms": 1773668459198,
+        "end_time_ms": 1773668499059,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "But it's on my list. Because I told my assistant that it needs to be on my list. Because I figured that I had a problem remembering shit. So I thought, let me fix this forever. I want to be able to drop a note to someone that then writes it down for me on my list and then tells me, hey, dude, you told me to remind you of this on Monday. But the reason I do that That is, I got done fixing shit in the moment, because I knew I was going to have to fix it 16 times over, unless I did something a little bigger than that."
+      },
+      {
+        "start_time_ms": 1773668455455,
+        "end_time_ms": 1773668456016,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Copy that."
+      },
+      {
+        "start_time_ms": 1773668449111,
+        "end_time_ms": 1773668454335,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "Correct, because I haven't tapped Adam with it yet. I had another priority on Friday. It is on my list for today."
+      },
+      {
+        "start_time_ms": 1773668438526,
+        "end_time_ms": 1773668448091,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Speaking, yes, I agree. And speaking of that, I didn't get the invoice that you told me I was going to on reporting."
+      },
+      {
+        "start_time_ms": 1773668405352,
+        "end_time_ms": 1773668433583,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "So I'm trying to get you from Which means when you are trying to get Sam to do something, what I'm hearing is I have a team and one of my team members needs to, on a recurring basis, do certain things so that I get X outcome and I need a report that It tells me that she did it."
+      },
+      {
+        "start_time_ms": 1773668402630,
+        "end_time_ms": 1773668402970,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Got it."
+      },
+      {
+        "start_time_ms": 1773668399007,
+        "end_time_ms": 1773668401809,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "You don't just solve it now, you solve it forever."
+      },
+      {
+        "start_time_ms": 1773668395244,
+        "end_time_ms": 1773668398006,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "I don't solve it now, but I solve it forever."
+      },
+      {
+        "start_time_ms": 1773668335071,
+        "end_time_ms": 1773668393682,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "Let me let me restate what I'm trying to say. So these kinds of questions will keep coming up in the future, especially as we add more vendors. Would you agree? All right. So the bigger issue is not the particular tag. The bigger issue is I'm seeing tags. It is likely that in the near future, I won't be able to keep track of all of them. I'd like to have a place where I can point and say, all right, this is the truth when it comes to my tags. So I can stop thinking about it, and I can just reference a resource for myself and for my people in the future. Would that be fair? So I'm trying to explain to you how to take a step back and ask the bigger of question. So you don't solve it now, you solve it forever. Does that make sense?"
+      },
+      {
+        "start_time_ms": 1773668329569,
+        "end_time_ms": 1773668334071,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "I'm assuming one of them was because it's identifying the region."
+      },
+      {
+        "start_time_ms": 1773668293995,
+        "end_time_ms": 1773668327568,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "So for example, something you just brought up, is you told me about very specific tags right yeah the bigger question is hey Kevin I'm having a hard time understanding the purpose of each tag can you help me clear that up that's the that's the bigger question correct no I understand the tags I just don't know who I and my comment was I don't know if it was that this was automatic by Mitch and the system."
+      },
+      {
+        "start_time_ms": 1773668288590,
+        "end_time_ms": 1773668292954,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "I need to identify the problem and put it on the plate of who it belongs to."
+      },
+      {
+        "start_time_ms": 1773668273497,
+        "end_time_ms": 1773668285627,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "Well, no, it's fair that you have trust issues because you've probably either been disappointed by other people in the past or someone hasn't earned your trust yet or a bit above. So it's very human, but it doesn't fix it."
+      },
+      {
+        "start_time_ms": 1773668265752,
+        "end_time_ms": 1773668272256,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Yes, because I'm having trust issues at the moment and I need to get over that."
+      },
+      {
+        "start_time_ms": 1773668230267,
+        "end_time_ms": 1773668259908,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "So all your observations are fair and Of value, right But you are fucking busy right now I'm always busy. All right. That has to do with two things. One, you're doing too many things that we've already established. On two, you also have the inclination of holding on stuff and wanting to fix it yourself."
+      },
+      {
+        "start_time_ms": 1773668150738,
+        "end_time_ms": 1773668229847,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Well, I mean, I guess. You're asking her to remember. I just think, I don't know, and this is just something that I got to remember I'm 14 years into the business and she's one that when she pulls up this record. For me, I'm doing a self audit of the Added date of birth have we added the address now city state and zip loaded. No problem Somehow I got marital status in there. No problem. I Got how much coverage she's looking for? The type of lead I've got three tags in here Two of them One of them I know is coming from Mitch because it's it says region one east So I don't know if the three tags are coming from Mitch or if she's adding those manually Does this let me pause you for a second, right?"
+      },
+      {
+        "start_time_ms": 1773668134588,
+        "end_time_ms": 1773668148677,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "And if she is, assuming that she is, how does she know to do it? From memory? Well, that's a terrible uncertainty. Because you're going to ask way more of her."
+      },
+      {
+        "start_time_ms": 1773668129703,
+        "end_time_ms": 1773668132625,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "She's still doing it, and it's not automatic."
+      },
+      {
+        "start_time_ms": 1773668110128,
+        "end_time_ms": 1773668125917,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "All right. So that's good. But then what happens? So let's say you have that conversation with her to do that. And you show her what to do. What's going to happen not this week, not next week, but four weeks from now?"
+      },
+      {
+        "start_time_ms": 1773668108507,
+        "end_time_ms": 1773668108967,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Not a lot."
+      },
+      {
+        "start_time_ms": 1773668062374,
+        "end_time_ms": 1773668106245,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "So, so let's clear this up, right? Let's assume here's what I'm going to coach you on, Stephen. So for one, it's a good call. I could probably fix it for you, but you're now asking me to take And then we can move on. So don't give me the, we could probably fix it manually. No, no. You're asking me to fix it. I could probably fix it. So let me look into it. And if not, I'll give it back to you and then you move on. Which I think in general is what I'd like to coach you on is if you just told me I'll need to have a conversation with Sam for her to do this and this and this. This, right? How many of those conversations have you had with her over the last four weeks?"
+      },
+      {
+        "start_time_ms": 1773668054649,
+        "end_time_ms": 1773668061153,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "And if not, it only takes a few minutes to pull the information out of"
+      },
+      {
+        "start_time_ms": 1773668042635,
+        "end_time_ms": 1773668053669,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "It should, but it doesn't mean it automatically will. That's a good thing that we can look into for sure. Let me ask Mitch to see what she can do and figure it out."
+      },
+      {
+        "start_time_ms": 1773667972448,
+        "end_time_ms": 1773668041595,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Well, it's like I just pulled up this first lead for, uh, Christabel Spalding. It looks like the only piece of information that's two pieces that are missing is date of birth and address. So I just gotta make sure that Sam is adding all of that information because it's not in here. And so I'll have a conversation with her about that going, oh shit, didn't mean to close that. Going through the live leads, making sure that all the information that we have coming through the Smart Financial system, and I guess then that's a question for you and Mitch, is if the information is in smart financial, like date of birth and address and email, isn't that information supposed to be coming over through the, what do you guys call it, the hook?"
+      },
+      {
+        "start_time_ms": 1773667969427,
+        "end_time_ms": 1773667970767,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "If so, what does that mean?"
+      },
+      {
+        "start_time_ms": 1773667966285,
+        "end_time_ms": 1773667967286,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Yes, but verify."
+      },
+      {
+        "start_time_ms": 1773667940782,
+        "end_time_ms": 1773667964585,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "So let me try and coach you on this Stephen. So I'm hearing you say I need to go back and check the old the other calls and then do X right? You have an employee right? So what are you saying, man?"
+      },
+      {
+        "start_time_ms": 1773667879185,
+        "end_time_ms": 1773667940762,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "So I failed to go back and fix this guy and add the information. So I got to get that done today. He's too young for AEP. He's like away, 10 but I need to get his information. I failed to do that. Get his information out of Smart Financial and get it over to And I guess I should go back and audit the other inbound calls. And make sure."
+      },
+      {
+        "start_time_ms": 1773667869096,
+        "end_time_ms": 1773667872439,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "I just asked Mitch for input. So I'm going to reply back in a bit."
+      },
+      {
+        "start_time_ms": 1773667754080,
+        "end_time_ms": 1773667838801,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "A perfect example of a lead that does not need to be worked is this Jason Macias And I know we've talked about him before He was the first inbound call from Smart financial Guy was talking there number one. There was no live handoff number two he was looking for some $200,000 policy for month, $10 which I don't know where some of these people get this shit, but It's in it's amazing Some of the things that these people come up with But he's definitely something that is It doesn't need to be worked. I don't have a date of birth I don't have any, and I might, I gotta go back and look into the platform for Damn, where is it? There it goes."
+      },
+      {
+        "start_time_ms": 1773667747218,
+        "end_time_ms": 1773667748858,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "I'm in the office."
+      },
+      {
+        "start_time_ms": 1773667745157,
+        "end_time_ms": 1773667747198,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Are you in the office or are you out and about?"
+      },
+      {
+        "start_time_ms": 1773667729582,
+        "end_time_ms": 1773667741596,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "So then we need to drop a lead. Um, we checked her tags, see if it's in there and other Otherwise, I'll need to ask Mitch."
+      },
+      {
+        "start_time_ms": 1773667716276,
+        "end_time_ms": 1773667728321,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "No, or how do we tag it so that it doesn't go through the start of day and end of day cycles."
+      },
+      {
+        "start_time_ms": 1773667706977,
+        "end_time_ms": 1773667715095,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "smart financial Um, I don't see why you can still follow up with them in the future."
+      },
+      {
+        "start_time_ms": 1773667654351,
+        "end_time_ms": 1773667706077,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "And now that I've deleted those 181 leads, okay Just under the filter of Samantha So that's perfect so I bought 181 leads now for the start of day Are we adding? The inbound calls that came in and how do I tag them if they are Going away if we're getting a refund and a credit for them Do I just delete the lead in hatch as I get a refund from"
+      },
+      {
+        "start_time_ms": 1773667620818,
+        "end_time_ms": 1773667635666,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "I need to switch this up. So FLE kaboom. So let's do a nested and tag is FLE. Let's just do kaboom."
+      },
+      {
+        "start_time_ms": 1773667506367,
+        "end_time_ms": 1773667587693,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "I want to see all of the leads. So if I just do what's owned by Sam, there's 181. Have 181 come in between Enzone, Kaboom, and Smart Financial. The good news is even though the Fe kaboom list is and if I there's like seven or eight tests in there plus Samantha did one on her own almost everything has been touched so that's that's the good news there's only two oh no those are inbound so those have been touched as well so that's good it it's not showing up in hatch as an activity but it I call so I know that it's been touched everything's been touched at least once which is good so occurred a quick news a smart list for you just to see."
+      },
+      {
+        "start_time_ms": 1773667453639,
+        "end_time_ms": 1773667505226,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "I think it's safe to say because we've got there. Let's see. These are all OR statements. There's no and So if you lead Kaboom in there multiple times, this is not assigned particularly to Sam. I'll check with her, but I think we can clean this up because you just life leads kaboom and fdly kaboom to be in that list and nothing else so I'll ask her to look into it no we also need um smart financial and end zone so I think this is specific to kaboom this list that's how it's named as well do you have a need for the this list, or do you want to see all of your leads?"
+      },
+      {
+        "start_time_ms": 1773667099172,
+        "end_time_ms": 1773667453619,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "No, she's not studying for Medicare stuff yet. That doesn't start until If we start doing it now, we've got to completely redo it again in July. And I don't see the value of wasting the time to do it now just to do it again in July. Especially since we're already in March. And the whole reason we diverted from Medicare was because of the blackouts with companies like Humana. So let's take Medicare off the table for now. Right now, Medicare is a side piece if we find it, which is great. She is, I was just sitting here, I just pulled up, just kaboom. That belongs to Sam and so I've asked her as she's instead of taking an hour and Going in and tagging all of these folks As she's calling them I want her to add the additional tags that we've asked for and so There's two leads that haven't been touched that came in on Friday the 13th And I'm not quite sure why they didn't get touched because they both came in in the morning So I got to talk to her about that But it looks like everything else has been touched, um, and is getting taxed. So that's now she's, she's doing, and she's soaking in everything that we're trying to teach her. So that gives me, gives me hope, but I'll have to do a deep dive just to make sure that the move this. Okay, so this is weird. When I do a filter of just Sam and just kaboom, I come up with a 181 And when I look at the fe kaboom list, it's only a hundred and twenty-five But that include okay There's there's the issue I need to get rid of All of these tests But that's only Five So I'm gonna have to do some digging into hatch today to find out Why When I click on FE Leeds Kaboom, there's only 125. And then when I do just a separate filter for Kaboom, and I wonder if some of Mike's stuff has started. It shouldn't, because I filtered it for Sam only. Oh, let me go back. And check my filters. Because I did an or, not an and That's why. So kaboom. And So I was pulling in stuff from Mike Thomas 123 Okay, so I'm confident with the filter. The FE leads Kaboom. That's a closer number than, but FE also includes, that's 125, but that should also include Smart Financial. And maybe it doesn't because I have to add it every time What's the last tag nope that tag stayed Oh, there's 13 active lines in that filter right now. It seems like a bit excessive 15 Yeah, and that's the way mitch built it so I didn't want want to screw it up, so I just left it alone."
+      },
+      {
+        "start_time_ms": 1773667086867,
+        "end_time_ms": 1773667097751,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "So that means she's consistently using the sales, the AI sales trainer. She's consistently following up with their leads. She's consistently studying for Medicare stuff. Is that correct?"
+      },
+      {
+        "start_time_ms": 1773667081664,
+        "end_time_ms": 1773667085607,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "A scale of 1 to 10? Right now I'd give her a 10."
+      },
+      {
+        "start_time_ms": 1773667033742,
+        "end_time_ms": 1773667077042,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "I'll try and look into it and see if I can put something together that I'll just, um, put it to a test a bit more. It makes her feel like whenever someone does bring up an ejection, she can at least feel like, Oh, I practice for this rather than fuck. What do I say now? You see what I mean? All right. See if I can work something out. Okay, so objection handling. Let's talk about the process for a bit. So one of the bigger challenges with you being busy is it's hard for you to just sit there and make sure she does her job. On a scale of one to 10, how confident do you feel that she's doing what she's supposed to? Throughout the day."
+      },
+      {
+        "start_time_ms": 1773667030041,
+        "end_time_ms": 1773667032362,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Yeah, absolutely. All right."
+      },
+      {
+        "start_time_ms": 1773666878692,
+        "end_time_ms": 1773667029081,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "I mean, it's a good initiative. So I applaud it. Yeah, for sure. The reason I bring it up is it's not too complicated to now to copy, to specifically do objection handling. So the reason I bring it up, Stephen, is I'm trying to find across our process, what the biggest bottlenecks are. And obviously having the right leads, being able to connect with them, or bigger issues, but we're addressing those. If connectivity is not perfect, then having her train, through this AI opportunity is obviously the next best thing. And if she's already training on the calls from a make an offer perspective, that's great. But if she's not going to get to the offer because she's not able to handle the objections, then we're still going to miss out on so many opportunities. So that is a ball neck in our process. I'm just thinking of this as a, you know, a schedule that you have full control over, you just need to decide what to put on her calendar, right? And if she has eight hours a day, in which she's taken at least four to six hours to just continuously follow up, then how do you make use of the other hours to get the most out of her, which is, you know, the Medicare training, training with the sales AI agent to do the full call flow. But objection handling in itself, I don't have time right right now. I didn't fill out this form up until the point where she's going to make an offer and they're going to say, well, I'm going to talk to my husband about this is stuff that she can train on specifically diving straight into it. Meaning that we can get our work the entire call, which will take her 15 to 20 minutes, or we just have her do reps and objections that she can do 20 in a row for like 15 minutes. You see what I mean? So, again, what I'm trying to do is, what are your biggest bottlenecks for now that we can try and address to get you unstuck as fast as possible? That is within my scope and my area of influence. And I think this is one of them. I still want to do the Medicare piece, obviously, because that's my next priority, aside from getting this new workflow live. But if I can squeeze something in, Would you use it, I guess is my question."
+      },
+      {
+        "start_time_ms": 1773666817228,
+        "end_time_ms": 1773666878672,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "No, which, which is good because now she's at least getting through the process of quoting where before she wasn't even getting to that. So, you know, I am seeing, um, progression. Which is good. I just want her to feel the wind of that first close and get the excitement from it because she's feeling it. She's saying all the right things. As a matter of fact, she's gonna take Wednesday off and work on Saturday so hit all of these leads two to three times on a Saturday, which is fabulous because if they're not answering the phone during the week, maybe we can give them the answer of the phone on a Saturday, which is, and that was her drive, not mine."
+      },
+      {
+        "start_time_ms": 1773666807164,
+        "end_time_ms": 1773666815988,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "It does it, but it does it as part of a bigger loop. So what I had to do now, go ahead."
+      },
+      {
+        "start_time_ms": 1773666785788,
+        "end_time_ms": 1773666807144,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Okay, I've been working with her on that. But that might not be a bad, a bad idea. But I thought the there was things in the AI bot that was going to address some of that, Maybe I misunderstood."
+      },
+      {
+        "start_time_ms": 1773666773029,
+        "end_time_ms": 1773666782667,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "Is she practicing still? Because I'm thinking if objection handling is our main challenge right now, we could just set up a bot that just does that. Teach her how to do objectionary."
+      },
+      {
+        "start_time_ms": 1773666656550,
+        "end_time_ms": 1773666768626,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Oh, um. Well, with with what you're working on, um. Are we going live today with the, um. To new smart list and all the scripting is that all programmed and ready to go That's the plan. Yeah, I've got a follow-up call with Mitch in about two hours to double-check everything and then we should be good to go Okay so from your end That is probably top of the list on my end I want to help Sam close a case by end of month So we got 14 days to get it done Okay, what do we need to do to make that happen I'm gonna start sitting with her and listening to beside her Her and I are gonna have it I think now that her technology is up to speed and she's more comfortable with it, things are going to start progressing better. Um, she didn't quite like the way I had her set up. So she went and spent her own money to set herself up the way that she wants to be set up. And I'm not going to fight it. I'm not going to argue with it when it don't work. There's the door. And I go find the next person to to learn this shit. But that's a whole nother side conversation. Not top of importance, but if she's comfortable with it, okay, fine, let's go."
+      },
+      {
+        "start_time_ms": 1773666648443,
+        "end_time_ms": 1773666655229,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "Aspect as long as it has to do with what we're trying to build, just so I know that we're working on the right things and we're both focused on the right stuff."
+      },
+      {
+        "start_time_ms": 1773666636344,
+        "end_time_ms": 1773666642698,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "I said from yours and my aspect or from... Um, and overall aspect."
+      },
+      {
+        "start_time_ms": 1773666633841,
+        "end_time_ms": 1773666634962,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "You broke up a memo, is that?"
+      },
+      {
+        "start_time_ms": 1773666627574,
+        "end_time_ms": 1773666629696,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Your aspect or from my own aspect?"
+      },
+      {
+        "start_time_ms": 1773666610124,
+        "end_time_ms": 1773666627554,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 2"
+        },
+        "text": "So tell me, if this week was going to be a big success, what are the three things that are going to move the needle most for what we're working on."
+      },
+      {
+        "start_time_ms": 1773666580966,
+        "end_time_ms": 1773666607183,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Yeah, no, absolutely. Um, but you know, I knew, you know, anytime you start a new business or new business line, there's always the opportunity that things are going to go pear-shaped to start. It's a learning curve, but that's okay. We'll get through it."
+      },
+      {
+        "start_time_ms": 1773666577845,
+        "end_time_ms": 1773666579806,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 2"
+        },
+        "text": "I mean, let's try and break even. That'd be nice."
+      },
+      {
+        "start_time_ms": 1773666297990,
+        "end_time_ms": 1773666575104,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Had a good conversation with a firm that is looking to join us. And somehow they got into. Um, smart financial on the Medicare side and on the life side. Um, and they've had, they're telling me that they've got success on both sides of that aisle. So that's. That's a positive. I'm going to be researching this week the next person or the next company on your list. But the fact that somebody else is having success with a bunch of college kids up in Utah in an inbound call center scenario is giving me hope. Sam had There's a deal on the table that I want to say is gonna close April 3rd or 4th That first Never mind. I'll go to that later. So I think it's just a matter of us fine-tuning what we're doing and I'm gonna take a deeper dive into into Some of their scripting and see if there's a disconnect somewhere on our end I do know I've got to get I Think once Samantha closes her first deal She's gonna start to develop that. Oh, it's it's important that we do this now and not wait tight mentality Um, which I think she's, she's starting to develop. Um, she's lost three cases by the, Oh, I need to talk to my family or I don't get paid until, um, which was coming a lot with a lot of that was coming from Kaboom. It was way down on the lower income. Scale yeah and so that's I'm hoping a lot more of that starts to go away and a lot more of this is uh more serious buyers um some of the smart financial leads are hanging up within 30 seconds of the live transfer And so they've been really good about refunding that lead, even though they're talking to them first. And when it comes down to that life, that live handoff, which is now happening, um, there's nobody there. So, um, yeah, we're still sitting there. We're still waiting for the call to come in. In the meantime, she is. Still working these 140, 125 that are out there. Adding the T65 program to her schedule I think is going to fit in. Plus that'll also give me something to give Emma when she finally passes her exam and gets on board. So I just think the more resources we throw at this, the more opportunities that we're going to be able to generate. And again, this is something brand new. I know I'm gonna lose money in the first year. That's expected. But I do want to see a deal get closed sooner rather than later, just to give me some hope and fire and drive to keep pushing."
+      },
+      {
+        "start_time_ms": 1773666276680,
+        "end_time_ms": 1773666297030,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 2"
+        },
+        "text": "On that note, just to get stuff going and started. Last we spoke was Friday. Some things went live. We made a few adjustments here and there. Where are we with your lead vendors?"
+      },
+      {
+        "start_time_ms": 1773666273378,
+        "end_time_ms": 1773666274499,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "We'll revisit it later this week."
+      },
+      {
+        "start_time_ms": 1773666271857,
+        "end_time_ms": 1773666273118,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 2"
+        },
+        "text": "Let's put a pin in that."
+      },
+      {
+        "start_time_ms": 1773666265432,
+        "end_time_ms": 1773666266393,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Yeah, we're almost there."
+      },
+      {
+        "start_time_ms": 1773666234091,
+        "end_time_ms": 1773666263190,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 2"
+        },
+        "text": "I think the challenge though, Stephen, is the fact that you can put up with it doesn't mean you have to, and doesn't mean it's the smartest idea, because I think the general principle is when shit hits the fan, be able to deal with it, but then don't throw your own shit at the fan. So not something maybe to get into today, right after your weekend, but maybe something to revisit on Wednesday to make sure you clear your plate a bit."
+      },
+      {
+        "start_time_ms": 1773666190141,
+        "end_time_ms": 1773666226885,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Say you broke up. Say that again. When you start lacking sleep consistently your brain thinks it's drunk you know that you know that is the fact right yes yeah so I'm just saying your cognitive output may not be what you want it to be you know that's also why my ceo um when I was in the marine corps I thought it would be to join the Navy SEALs for Bud's Week."
+      },
+      {
+        "start_time_ms": 1773666176814,
+        "end_time_ms": 1773666188860,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 2"
+        },
+        "text": "You know, when you, uh, don't sleep enough, it's like you had, like, nine or 12 drinks at some point, right? It doesn't really keep you sane."
+      },
+      {
+        "start_time_ms": 1773666171751,
+        "end_time_ms": 1773666176794,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "That's what I see. Yeah, my sleep. I'll sleep when I'm dead."
+      },
+      {
+        "start_time_ms": 1773666164930,
+        "end_time_ms": 1773666168169,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 2"
+        },
+        "text": "Then the challenge is, between the hustle and the business."
+      },
+      {
+        "start_time_ms": 1773666143517,
+        "end_time_ms": 1773666157906,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Just, this is, it's funny. With my tax background, how many doors this opens. For what else? Everything else that I do."
+      },
+      {
+        "start_time_ms": 1773666127130,
+        "end_time_ms": 1773666141016,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 2"
+        },
+        "text": "Yeah, but it'll come up again what? Is that annual or quarterly? So it'll come up again next year. And then what else is gonna come up, Stephen?"
+      },
+      {
+        "start_time_ms": 1773666126230,
+        "end_time_ms": 1773666127110,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "It's almost over."
+      },
+      {
+        "start_time_ms": 1773666115946,
+        "end_time_ms": 1773666123269,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 2"
+        },
+        "text": "So should we, now may not be the best time, but should we have a conversation about saying no to a couple things here and there or what?"
+      },
+      {
+        "start_time_ms": 1773666082706,
+        "end_time_ms": 1773666110604,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Um, on top of everything else that I do at KRS, I'm also an enrolled tax agent and we're within 30 days of the tax deadline. So clients are, Hey, I finally have my shit together. Can you come see me? I'm on it."
+      },
+      {
+        "start_time_ms": 1773666079024,
+        "end_time_ms": 1773666080585,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 2"
+        },
+        "text": "What did you drive 600 for?"
+      },
+      {
+        "start_time_ms": 1773666072872,
+        "end_time_ms": 1773666075715,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "No, not yet. They're back in Ohio."
+      },
+      {
+        "start_time_ms": 1773666060579,
+        "end_time_ms": 1773666070910,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 2"
+        },
+        "text": "Okay, for that, for the client to move those assets?"
+      },
+      {
+        "start_time_ms": 1773666052811,
+        "end_time_ms": 1773666060559,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "long six 600 miles driven this weekend."
+      },
+      {
+        "start_time_ms": 1773666050514,
+        "end_time_ms": 1773666051094,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "How's your weekend?"
+      },
+      {
+        "start_time_ms": 1773666047853,
+        "end_time_ms": 1773666048754,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "That's me."
+      },
+      {
+        "start_time_ms": 1773666040711,
+        "end_time_ms": 1773666041151,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "How you doing?"
+      },
+      {
+        "start_time_ms": 1773666032189,
+        "end_time_ms": 1773666037110,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 2"
+        },
+        "text": "Can you hear me all right, Stephen?"
+      },
+      {
+        "start_time_ms": 1773666026007,
+        "end_time_ms": 1773666026527,
+        "speaker": {
+          "name": "Conference Room (Kevin Beeftink) - Speaker 1"
+        },
+        "text": "We can start."
+      }
+    ],
+    "text": "[Conference Room (Kevin Beeftink) - Speaker 1]: We can start.\n[Conference Room (Kevin Beeftink) - Speaker 2]: Can you hear me all right, Stephen?\n[Conference Room (Kevin Beeftink) - Speaker 1]: How you doing?\n[Stephen Polich]: That's me.\n[UNKNOWN_SPEAKER]: How's your weekend?\n[Stephen Polich]: long six 600 miles driven this weekend.\n[Conference Room (Kevin Beeftink) - Speaker 2]: Okay, for that, for the client to move those assets?\n[Stephen Polich]: No, not yet. They're back in Ohio.\n[Conference Room (Kevin Beeftink) - Speaker 2]: What did you drive 600 for?\n[Stephen Polich]: Um, on top of everything else that I do at KRS, I'm also an enrolled tax agent and we're within 30 days of the tax deadline. So clients are, Hey, I finally have my shit together. Can you come see me? I'm on it.\n[Conference Room (Kevin Beeftink) - Speaker 2]: So should we, now may not be the best time, but should we have a conversation about saying no to a couple things here and there or what?\n[Stephen Polich]: It's almost over.\n[Conference Room (Kevin Beeftink) - Speaker 2]: Yeah, but it'll come up again what? Is that annual or quarterly? So it'll come up again next year. And then what else is gonna come up, Stephen?\n[Stephen Polich]: Just, this is, it's funny. With my tax background, how many doors this opens. For what else? Everything else that I do.\n[Conference Room (Kevin Beeftink) - Speaker 2]: Then the challenge is, between the hustle and the business.\n[Stephen Polich]: That's what I see. Yeah, my sleep. I'll sleep when I'm dead.\n[Conference Room (Kevin Beeftink) - Speaker 2]: You know, when you, uh, don't sleep enough, it's like you had, like, nine or 12 drinks at some point, right? It doesn't really keep you sane.\n[Stephen Polich]: Say you broke up. Say that again. When you start lacking sleep consistently your brain thinks it's drunk you know that you know that is the fact right yes yeah so I'm just saying your cognitive output may not be what you want it to be you know that's also why my ceo um when I was in the marine corps I thought it would be to join the Navy SEALs for Bud's Week.\n[Conference Room (Kevin Beeftink) - Speaker 2]: I think the challenge though, Stephen, is the fact that you can put up with it doesn't mean you have to, and doesn't mean it's the smartest idea, because I think the general principle is when shit hits the fan, be able to deal with it, but then don't throw your own shit at the fan. So not something maybe to get into today, right after your weekend, but maybe something to revisit on Wednesday to make sure you clear your plate a bit.\n[Stephen Polich]: Yeah, we're almost there.\n[Conference Room (Kevin Beeftink) - Speaker 2]: Let's put a pin in that.\n[Conference Room (Kevin Beeftink) - Speaker 1]: We'll revisit it later this week.\n[Conference Room (Kevin Beeftink) - Speaker 2]: On that note, just to get stuff going and started. Last we spoke was Friday. Some things went live. We made a few adjustments here and there. Where are we with your lead vendors?\n[Stephen Polich]: Had a good conversation with a firm that is looking to join us. And somehow they got into. Um, smart financial on the Medicare side and on the life side. Um, and they've had, they're telling me that they've got success on both sides of that aisle. So that's. That's a positive. I'm going to be researching this week the next person or the next company on your list. But the fact that somebody else is having success with a bunch of college kids up in Utah in an inbound call center scenario is giving me hope. Sam had There's a deal on the table that I want to say is gonna close April 3rd or 4th That first Never mind. I'll go to that later. So I think it's just a matter of us fine-tuning what we're doing and I'm gonna take a deeper dive into into Some of their scripting and see if there's a disconnect somewhere on our end I do know I've got to get I Think once Samantha closes her first deal She's gonna start to develop that. Oh, it's it's important that we do this now and not wait tight mentality Um, which I think she's, she's starting to develop. Um, she's lost three cases by the, Oh, I need to talk to my family or I don't get paid until, um, which was coming a lot with a lot of that was coming from Kaboom. It was way down on the lower income. Scale yeah and so that's I'm hoping a lot more of that starts to go away and a lot more of this is uh more serious buyers um some of the smart financial leads are hanging up within 30 seconds of the live transfer And so they've been really good about refunding that lead, even though they're talking to them first. And when it comes down to that life, that live handoff, which is now happening, um, there's nobody there. So, um, yeah, we're still sitting there. We're still waiting for the call to come in. In the meantime, she is. Still working these 140, 125 that are out there. Adding the T65 program to her schedule I think is going to fit in. Plus that'll also give me something to give Emma when she finally passes her exam and gets on board. So I just think the more resources we throw at this, the more opportunities that we're going to be able to generate. And again, this is something brand new. I know I'm gonna lose money in the first year. That's expected. But I do want to see a deal get closed sooner rather than later, just to give me some hope and fire and drive to keep pushing.\n[Conference Room (Kevin Beeftink) - Speaker 2]: I mean, let's try and break even. That'd be nice.\n[Stephen Polich]: Yeah, no, absolutely. Um, but you know, I knew, you know, anytime you start a new business or new business line, there's always the opportunity that things are going to go pear-shaped to start. It's a learning curve, but that's okay. We'll get through it.\n[Conference Room (Kevin Beeftink) - Speaker 2]: So tell me, if this week was going to be a big success, what are the three things that are going to move the needle most for what we're working on.\n[Stephen Polich]: Your aspect or from my own aspect?\n[UNKNOWN_SPEAKER]: You broke up a memo, is that?\n[Stephen Polich]: I said from yours and my aspect or from... Um, and overall aspect.\n[Conference Room (Kevin Beeftink) - Speaker 1]: Aspect as long as it has to do with what we're trying to build, just so I know that we're working on the right things and we're both focused on the right stuff.\n[Stephen Polich]: Oh, um. Well, with with what you're working on, um. Are we going live today with the, um. To new smart list and all the scripting is that all programmed and ready to go That's the plan. Yeah, I've got a follow-up call with Mitch in about two hours to double-check everything and then we should be good to go Okay so from your end That is probably top of the list on my end I want to help Sam close a case by end of month So we got 14 days to get it done Okay, what do we need to do to make that happen I'm gonna start sitting with her and listening to beside her Her and I are gonna have it I think now that her technology is up to speed and she's more comfortable with it, things are going to start progressing better. Um, she didn't quite like the way I had her set up. So she went and spent her own money to set herself up the way that she wants to be set up. And I'm not going to fight it. I'm not going to argue with it when it don't work. There's the door. And I go find the next person to to learn this shit. But that's a whole nother side conversation. Not top of importance, but if she's comfortable with it, okay, fine, let's go.\n[Conference Room (Kevin Beeftink) - Speaker 1]: Is she practicing still? Because I'm thinking if objection handling is our main challenge right now, we could just set up a bot that just does that. Teach her how to do objectionary.\n[Stephen Polich]: Okay, I've been working with her on that. But that might not be a bad, a bad idea. But I thought the there was things in the AI bot that was going to address some of that, Maybe I misunderstood.\n[Conference Room (Kevin Beeftink) - Speaker 1]: It does it, but it does it as part of a bigger loop. So what I had to do now, go ahead.\n[Stephen Polich]: No, which, which is good because now she's at least getting through the process of quoting where before she wasn't even getting to that. So, you know, I am seeing, um, progression. Which is good. I just want her to feel the wind of that first close and get the excitement from it because she's feeling it. She's saying all the right things. As a matter of fact, she's gonna take Wednesday off and work on Saturday so hit all of these leads two to three times on a Saturday, which is fabulous because if they're not answering the phone during the week, maybe we can give them the answer of the phone on a Saturday, which is, and that was her drive, not mine.\n[Conference Room (Kevin Beeftink) - Speaker 1]: I mean, it's a good initiative. So I applaud it. Yeah, for sure. The reason I bring it up is it's not too complicated to now to copy, to specifically do objection handling. So the reason I bring it up, Stephen, is I'm trying to find across our process, what the biggest bottlenecks are. And obviously having the right leads, being able to connect with them, or bigger issues, but we're addressing those. If connectivity is not perfect, then having her train, through this AI opportunity is obviously the next best thing. And if she's already training on the calls from a make an offer perspective, that's great. But if she's not going to get to the offer because she's not able to handle the objections, then we're still going to miss out on so many opportunities. So that is a ball neck in our process. I'm just thinking of this as a, you know, a schedule that you have full control over, you just need to decide what to put on her calendar, right? And if she has eight hours a day, in which she's taken at least four to six hours to just continuously follow up, then how do you make use of the other hours to get the most out of her, which is, you know, the Medicare training, training with the sales AI agent to do the full call flow. But objection handling in itself, I don't have time right right now. I didn't fill out this form up until the point where she's going to make an offer and they're going to say, well, I'm going to talk to my husband about this is stuff that she can train on specifically diving straight into it. Meaning that we can get our work the entire call, which will take her 15 to 20 minutes, or we just have her do reps and objections that she can do 20 in a row for like 15 minutes. You see what I mean? So, again, what I'm trying to do is, what are your biggest bottlenecks for now that we can try and address to get you unstuck as fast as possible? That is within my scope and my area of influence. And I think this is one of them. I still want to do the Medicare piece, obviously, because that's my next priority, aside from getting this new workflow live. But if I can squeeze something in, Would you use it, I guess is my question.\n[Stephen Polich]: Yeah, absolutely. All right.\n[Conference Room (Kevin Beeftink) - Speaker 1]: I'll try and look into it and see if I can put something together that I'll just, um, put it to a test a bit more. It makes her feel like whenever someone does bring up an ejection, she can at least feel like, Oh, I practice for this rather than fuck. What do I say now? You see what I mean? All right. See if I can work something out. Okay, so objection handling. Let's talk about the process for a bit. So one of the bigger challenges with you being busy is it's hard for you to just sit there and make sure she does her job. On a scale of one to 10, how confident do you feel that she's doing what she's supposed to? Throughout the day.\n[Stephen Polich]: A scale of 1 to 10? Right now I'd give her a 10.\n[Conference Room (Kevin Beeftink) - Speaker 1]: So that means she's consistently using the sales, the AI sales trainer. She's consistently following up with their leads. She's consistently studying for Medicare stuff. Is that correct?\n[Stephen Polich]: No, she's not studying for Medicare stuff yet. That doesn't start until If we start doing it now, we've got to completely redo it again in July. And I don't see the value of wasting the time to do it now just to do it again in July. Especially since we're already in March. And the whole reason we diverted from Medicare was because of the blackouts with companies like Humana. So let's take Medicare off the table for now. Right now, Medicare is a side piece if we find it, which is great. She is, I was just sitting here, I just pulled up, just kaboom. That belongs to Sam and so I've asked her as she's instead of taking an hour and Going in and tagging all of these folks As she's calling them I want her to add the additional tags that we've asked for and so There's two leads that haven't been touched that came in on Friday the 13th And I'm not quite sure why they didn't get touched because they both came in in the morning So I got to talk to her about that But it looks like everything else has been touched, um, and is getting taxed. So that's now she's, she's doing, and she's soaking in everything that we're trying to teach her. So that gives me, gives me hope, but I'll have to do a deep dive just to make sure that the move this. Okay, so this is weird. When I do a filter of just Sam and just kaboom, I come up with a 181 And when I look at the fe kaboom list, it's only a hundred and twenty-five But that include okay There's there's the issue I need to get rid of All of these tests But that's only Five So I'm gonna have to do some digging into hatch today to find out Why When I click on FE Leeds Kaboom, there's only 125. And then when I do just a separate filter for Kaboom, and I wonder if some of Mike's stuff has started. It shouldn't, because I filtered it for Sam only. Oh, let me go back. And check my filters. Because I did an or, not an and That's why. So kaboom. And So I was pulling in stuff from Mike Thomas 123 Okay, so I'm confident with the filter. The FE leads Kaboom. That's a closer number than, but FE also includes, that's 125, but that should also include Smart Financial. And maybe it doesn't because I have to add it every time What's the last tag nope that tag stayed Oh, there's 13 active lines in that filter right now. It seems like a bit excessive 15 Yeah, and that's the way mitch built it so I didn't want want to screw it up, so I just left it alone.\n[Conference Room (Kevin Beeftink) - Speaker 1]: I think it's safe to say because we've got there. Let's see. These are all OR statements. There's no and So if you lead Kaboom in there multiple times, this is not assigned particularly to Sam. I'll check with her, but I think we can clean this up because you just life leads kaboom and fdly kaboom to be in that list and nothing else so I'll ask her to look into it no we also need um smart financial and end zone so I think this is specific to kaboom this list that's how it's named as well do you have a need for the this list, or do you want to see all of your leads?\n[Stephen Polich]: I want to see all of the leads. So if I just do what's owned by Sam, there's 181. Have 181 come in between Enzone, Kaboom, and Smart Financial. The good news is even though the Fe kaboom list is and if I there's like seven or eight tests in there plus Samantha did one on her own almost everything has been touched so that's that's the good news there's only two oh no those are inbound so those have been touched as well so that's good it it's not showing up in hatch as an activity but it I call so I know that it's been touched everything's been touched at least once which is good so occurred a quick news a smart list for you just to see.\n[Conference Room (Kevin Beeftink) - Speaker 1]: I need to switch this up. So FLE kaboom. So let's do a nested and tag is FLE. Let's just do kaboom.\n[Stephen Polich]: And now that I've deleted those 181 leads, okay Just under the filter of Samantha So that's perfect so I bought 181 leads now for the start of day Are we adding? The inbound calls that came in and how do I tag them if they are Going away if we're getting a refund and a credit for them Do I just delete the lead in hatch as I get a refund from\n[Conference Room (Kevin Beeftink) - Speaker 1]: smart financial Um, I don't see why you can still follow up with them in the future.\n[Stephen Polich]: No, or how do we tag it so that it doesn't go through the start of day and end of day cycles.\n[Conference Room (Kevin Beeftink) - Speaker 1]: So then we need to drop a lead. Um, we checked her tags, see if it's in there and other Otherwise, I'll need to ask Mitch.\n[Stephen Polich]: Are you in the office or are you out and about?\n[Conference Room (Kevin Beeftink) - Speaker 1]: I'm in the office.\n[Stephen Polich]: A perfect example of a lead that does not need to be worked is this Jason Macias And I know we've talked about him before He was the first inbound call from Smart financial Guy was talking there number one. There was no live handoff number two he was looking for some $200,000 policy for month, $10 which I don't know where some of these people get this shit, but It's in it's amazing Some of the things that these people come up with But he's definitely something that is It doesn't need to be worked. I don't have a date of birth I don't have any, and I might, I gotta go back and look into the platform for Damn, where is it? There it goes.\n[Conference Room (Kevin Beeftink) - Speaker 1]: I just asked Mitch for input. So I'm going to reply back in a bit.\n[Stephen Polich]: So I failed to go back and fix this guy and add the information. So I got to get that done today. He's too young for AEP. He's like away, 10 but I need to get his information. I failed to do that. Get his information out of Smart Financial and get it over to And I guess I should go back and audit the other inbound calls. And make sure.\n[Conference Room (Kevin Beeftink) - Speaker 1]: So let me try and coach you on this Stephen. So I'm hearing you say I need to go back and check the old the other calls and then do X right? You have an employee right? So what are you saying, man?\n[UNKNOWN_SPEAKER]: Yes, but verify.\n[Conference Room (Kevin Beeftink) - Speaker 1]: If so, what does that mean?\n[Stephen Polich]: Well, it's like I just pulled up this first lead for, uh, Christabel Spalding. It looks like the only piece of information that's two pieces that are missing is date of birth and address. So I just gotta make sure that Sam is adding all of that information because it's not in here. And so I'll have a conversation with her about that going, oh shit, didn't mean to close that. Going through the live leads, making sure that all the information that we have coming through the Smart Financial system, and I guess then that's a question for you and Mitch, is if the information is in smart financial, like date of birth and address and email, isn't that information supposed to be coming over through the, what do you guys call it, the hook?\n[Conference Room (Kevin Beeftink) - Speaker 1]: It should, but it doesn't mean it automatically will. That's a good thing that we can look into for sure. Let me ask Mitch to see what she can do and figure it out.\n[Stephen Polich]: And if not, it only takes a few minutes to pull the information out of\n[Conference Room (Kevin Beeftink) - Speaker 1]: So, so let's clear this up, right? Let's assume here's what I'm going to coach you on, Stephen. So for one, it's a good call. I could probably fix it for you, but you're now asking me to take And then we can move on. So don't give me the, we could probably fix it manually. No, no. You're asking me to fix it. I could probably fix it. So let me look into it. And if not, I'll give it back to you and then you move on. Which I think in general is what I'd like to coach you on is if you just told me I'll need to have a conversation with Sam for her to do this and this and this. This, right? How many of those conversations have you had with her over the last four weeks?\n[Stephen Polich]: Not a lot.\n[Conference Room (Kevin Beeftink) - Speaker 1]: All right. So that's good. But then what happens? So let's say you have that conversation with her to do that. And you show her what to do. What's going to happen not this week, not next week, but four weeks from now?\n[UNKNOWN_SPEAKER]: She's still doing it, and it's not automatic.\n[Conference Room (Kevin Beeftink) - Speaker 1]: And if she is, assuming that she is, how does she know to do it? From memory? Well, that's a terrible uncertainty. Because you're going to ask way more of her.\n[Stephen Polich]: Well, I mean, I guess. You're asking her to remember. I just think, I don't know, and this is just something that I got to remember I'm 14 years into the business and she's one that when she pulls up this record. For me, I'm doing a self audit of the Added date of birth have we added the address now city state and zip loaded. No problem Somehow I got marital status in there. No problem. I Got how much coverage she's looking for? The type of lead I've got three tags in here Two of them One of them I know is coming from Mitch because it's it says region one east So I don't know if the three tags are coming from Mitch or if she's adding those manually Does this let me pause you for a second, right?\n[Conference Room (Kevin Beeftink) - Speaker 1]: So all your observations are fair and Of value, right But you are fucking busy right now I'm always busy. All right. That has to do with two things. One, you're doing too many things that we've already established. On two, you also have the inclination of holding on stuff and wanting to fix it yourself.\n[Stephen Polich]: Yes, because I'm having trust issues at the moment and I need to get over that.\n[Conference Room (Kevin Beeftink) - Speaker 1]: Well, no, it's fair that you have trust issues because you've probably either been disappointed by other people in the past or someone hasn't earned your trust yet or a bit above. So it's very human, but it doesn't fix it.\n[Stephen Polich]: I need to identify the problem and put it on the plate of who it belongs to.\n[Conference Room (Kevin Beeftink) - Speaker 1]: So for example, something you just brought up, is you told me about very specific tags right yeah the bigger question is hey Kevin I'm having a hard time understanding the purpose of each tag can you help me clear that up that's the that's the bigger question correct no I understand the tags I just don't know who I and my comment was I don't know if it was that this was automatic by Mitch and the system.\n[Stephen Polich]: I'm assuming one of them was because it's identifying the region.\n[Conference Room (Kevin Beeftink) - Speaker 1]: Let me let me restate what I'm trying to say. So these kinds of questions will keep coming up in the future, especially as we add more vendors. Would you agree? All right. So the bigger issue is not the particular tag. The bigger issue is I'm seeing tags. It is likely that in the near future, I won't be able to keep track of all of them. I'd like to have a place where I can point and say, all right, this is the truth when it comes to my tags. So I can stop thinking about it, and I can just reference a resource for myself and for my people in the future. Would that be fair? So I'm trying to explain to you how to take a step back and ask the bigger of question. So you don't solve it now, you solve it forever. Does that make sense?\n[Stephen Polich]: I don't solve it now, but I solve it forever.\n[Conference Room (Kevin Beeftink) - Speaker 1]: You don't just solve it now, you solve it forever.\n[UNKNOWN_SPEAKER]: Got it.\n[Conference Room (Kevin Beeftink) - Speaker 1]: So I'm trying to get you from Which means when you are trying to get Sam to do something, what I'm hearing is I have a team and one of my team members needs to, on a recurring basis, do certain things so that I get X outcome and I need a report that It tells me that she did it.\n[Stephen Polich]: Speaking, yes, I agree. And speaking of that, I didn't get the invoice that you told me I was going to on reporting.\n[Conference Room (Kevin Beeftink) - Speaker 1]: Correct, because I haven't tapped Adam with it yet. I had another priority on Friday. It is on my list for today.\n[Stephen Polich]: Copy that.\n[Conference Room (Kevin Beeftink) - Speaker 1]: But it's on my list. Because I told my assistant that it needs to be on my list. Because I figured that I had a problem remembering shit. So I thought, let me fix this forever. I want to be able to drop a note to someone that then writes it down for me on my list and then tells me, hey, dude, you told me to remind you of this on Monday. But the reason I do that That is, I got done fixing shit in the moment, because I knew I was going to have to fix it 16 times over, unless I did something a little bigger than that.\n[Stephen Polich]: And I will tell you, I am looking forward to the day where I am not the hustler as much, I'm more of the agency oversight.\n[Conference Room (Kevin Beeftink) - Speaker 1]: Then I'll ask you the tough question, you know, what's coming, right? I'll ask you, why not now? Now your head is going to tell you a bunch of shit. It's going to tell you, well, I don't know how to do that yet, or I'm fucking busy right now. Now, if I need to also do that, isn't that just going to add shit to my plate? Who's going to actually do that? If I trust them to do it, isn't that just going to be thrown back in my face a week from now because someone didn't do it? And it's yes to all of the above, and we still got to do it.\n[Stephen Polich]: My answer is I've got to get the individuals trained and up to So I can let go So the right question is how do I do that? And no, no, that's not the right question because we're already doing it Dude with with what you've built in the system You're are we're already in that process Um, I can already see where I'm going to be able to get to the point where I can be hands off and just let it go and go back to the phrase trust, but verify.\n[Conference Room (Kevin Beeftink) - Speaker 1]: Which is I'm trying to make Stephen is I know we are, but with we, I'll take some credit. I know I am building systems. Because that's what you hired me to do.\n[UNKNOWN_SPEAKER]: Yes, sir.\n[Conference Room (Kevin Beeftink) - Speaker 1]: But I know how to do that. I just need you to also start doing it. So if Sam needs to do something for you, you need to decide every time you think of her to have to do something, is she going to do this once or is she going to do it at least three times? If it is three times, that is a system, not a request. And the system needs to live somewhere. Needs to be reported on. Otherwise, we can't use it. So the verbal instruction is useless because it doesn't live anywhere. Highly explicit, she's not gonna report on it. Now we have an awesome notion page that covers a bunch of stuff. So why not have Sam build her own schedule in notion or and send me a fucking screenshot. I don't care. That tells me this is my week and this is the stuff I think I need to do on this week so that you see what you remembered and so that you can point and say, hey, I'm missing this. I'd like to see that done every Friday. And then the next Sam comes in and you say, hey, you see this calendar? I want you to copy it. That is your job. You see what I'm getting at?\n[Stephen Polich]: Managing the expectations versus managing the individual. Yes, please.\n[Conference Room (Kevin Beeftink) - Speaker 1]: You've got too much on your plate, dude. And don't get me wrong. I'm working on probably eight different things at the same time always. It's also how I work, right? I also don't like doing one thing at a time. That's why I have this job. That's why I work with multiple clients on multiple projects, right? It's awesome. I really like doing that. But I'll be fucking nuts by the end of the week if I don't have systems, if I don't have a team, if I don't have structure, if I do not delegate. My job is to jump on these calls, get them recorded, send the recording to my assistant, This needs to get done. And then she knows to write stuff up, to delegate, to get it over to the right people. I know you don't have an assistant yet, so that job we still need to fill on yourself, but the steps are the same. You see what I mean? I do. And that's where I think we need to get you in the next few weeks, because otherwise you're going to be pulling So Here's my one Hesitation I can teach you how to do it But I don't want to tell you how to do it Okay, because if I tell you how to do it You didn't come up with it yourself and it's harder for you to remember it. So I'd rather give you principles and then you build your system and you can put it wherever you want and use it however you want. But otherwise it's not going to stick because you need to build the habit. You don't want me to hold you accountable. You need to hold yourself accountable. What I want to do is send you a list of quick principles. What to delegate, no, how to identify what to delegate, how to delegate, what that means, and then a cadence at which you can present back to me what your systems look like, because then you present it to me because you own it. And then you're building a system that is yours, not mine. Make sense? All right. Otherwise, dude, I see where it's headed. And when you say it's almost over, which is what we started this conversation with, then it's going to be four weeks from now. We're having the same conversation, just on a different topic. I see where this is headed. Let's try to figure it out. Just sort it. So here's what I'll do. I'll send you a quick recap by email. It's gonna be very short And then I need you to think of how to make that work for you You could choose your system. You can do it in I can go a level notion On a fucking notepad if you think that's smart. I don't think it is. I'm just gonna point that out And then you tell me how you would do it and then I'll coach you through it. But I think it's the only way to get you out of where you are now, to get more clarity on what needs to happen. Because that's why I'm asking you the bigger questions, right? What are the three things that are going to move the needle the most? How do I make sure I'm aligned on what needs to happen this week? What is the biggest bottleneck we need to address? These are all questions that feel vague, but help us stay moving in the right direction. I need you to get to the same type of thinking so you can move from hustler to executive. Otherwise, you can't keep that up to you. All right. So I'll make sure that gets sent over. Let's just do a quick recap then. So on my end, I'll look into those tags and make sure it's all documented as needed. So you know what it is and how it's used. I'll check in with Mitch to make sure those workflows are turned on today. I'll send you the instruction on how to think about delegation and leveling up from host or executive. I'll keep working on the Medicare side for the workflows that we talked about. And I'll look into the AI sales trainer specifically for objections. Anything else?\n[Stephen Polich]: No, sir.\n[Stephen Polich]: All right.\n[UNKNOWN_SPEAKER]: How about yourself?\n[Stephen Polich]: To take your email and start outlining workflows, what I can delegate, what I cannot delegate. I have to get better about the trust and make sure things happening, make sure from a high level that I keep Sam on the right path, but give her the freedom to work her way through that path.\n[Conference Room (Kevin Beeftink) - Speaker 1]: I'll give you one more tip on that. So you said I need to work on my trust issues. Every entrepreneur has trust issues. Stephen That goes for every fucking one of us. So That's not new. I'm also gonna tell you a front. You're gonna be disappointed for the rest of your entrepreneurial fucking life forever Well, great Well, the fact that you know makes it a little easier to bear I'm just saying It's never gonna work out ever right It'll just get a little better tomorrow.\n[Stephen Polich]: And what more can we ask for?\n[Conference Room (Kevin Beeftink) - Speaker 1]: So that means the trust issues will stay there, but we can try and work on them. And the way we build trust is by repeatedly getting the expected outcome. That means that you need to set yourself up for success and you need proactive reporting. So you don't want to ask. You need to tell Sam, hey, Sam, every Friday, I need this list completed and I need you to tell me that it's all done. And that list can be short, it can be long, it doesn't matter. But it means that every Friday of the week is not over until she sends you the closing report. Because if she does that, and you see on paper, that she did the job here's what happened before it means that she had to get that list she had to check that she did she had to then send it to you knowing that she did it yeah that's how we close out the entire week otherwise shit is going to be forgotten always so instead of you trying to engineer everything now because that's probably where your head's going fuck I gotta write up everything just and I'll tell you this in the emails off get me a shortlist what would you like to see done by the end of the week every week we're gonna put that down somewhere and we're gonna make Sam responsible for it and she'll get it done yeah I know I'm sure she will let's figure that out yeah yeah all Good start of the week. Anything else you wanted to go over?\n[UNKNOWN_SPEAKER]: No, sir.\n[UNKNOWN_SPEAKER]: All right.\n[Conference Room (Kevin Beeftink) - Speaker 1]: On that note, let me close out with what I just talked about. So I'll make sure to recap that in the email later. Check in with Mitch. That call's actually happening in two minutes. That's awesome. Keep me posted on your vendors. It's good that people had success with Smart Financial. Just make sure you have at least one more vendor lined up.\n[Stephen Polich]: I planned on doing that this week.\n[Conference Room (Kevin Beeftink) - Speaker 1]: Well, then I'm taking a cup of coffee and I'll talk to you later.\n[Stephen Polich]: Actually, I'm done with coffee. I'm on to something stronger.\n[Conference Room (Kevin Beeftink) - Speaker 1]: All right.\n[Conference Room (Kevin Beeftink) - Speaker 1]: Well, mind your health. I'll leave it at that. All right, sir. I'll talk to you later. I'll see you on Wednesday.\n[Stephen Polich]: Yes, sir. We'll see you then."
+  },
+  "metrics": {
+    "read_score": 84.49153711857349,
+    "sentiment": 76.14382182025531,
+    "engagement": 92.83925241689168
+  }
+}

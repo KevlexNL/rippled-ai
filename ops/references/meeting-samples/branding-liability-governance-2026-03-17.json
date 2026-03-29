@@ -1,0 +1,1086 @@
+{
+  "id": "01KKY5GCF3Y3AMRF9PJPR0TWZ8",
+  "start_time_ms": 1773760164323,
+  "end_time_ms": 1773763932734,
+  "participants": [
+    {
+      "name": "Allyson Rose Powers",
+      "invited": false,
+      "attended": true
+    },
+    {
+      "name": "Kevin Beeftink",
+      "email": "admin@kevlex-academy.com",
+      "invited": false,
+      "attended": true
+    },
+    {
+      "name": "Matt Ruddick",
+      "invited": false,
+      "attended": true
+    },
+    {
+      "name": "Mitch Santos",
+      "invited": false,
+      "attended": true
+    },
+    {
+      "name": "Samantha Katchen",
+      "invited": false,
+      "attended": true
+    }
+  ],
+  "owner": {
+    "name": "Kevin Beeftink",
+    "email": "admin@kevlex-academy.com"
+  },
+  "title": "Branding Liability and Governance",
+  "report_url": "https://app.read.ai/analytics/meetings/01KKY5GCF3Y3AMRF9PJPR0TWZ8",
+  "platform": "meet",
+  "platform_id": "eeh-ziwt-txm",
+  "folders": [
+    "Planning Meeting"
+  ],
+  "live_enabled": false,
+  "summary": "The meeting addressed how to control distribution of branding materials while separating legal liability from an updatable brand rulebook. Participants agreed to divide the current draft into two documents: a signed legal agreement that assigns liability and accountability to agents, and a living branding guideline with a one-page summary that can be updated without re-signature.\n\nOperational rollout and enforcement were discussed in detail, including adding image/video authorization language, embedding the signed legal document into onboarding, using a Loom walkthrough and email trail for distribution, and recording a marketing call to create an audit trail. The group settled on a practical audit cadence\u2014monthly checks for external accounts and ongoing monitoring for proprietary sub-accounts\u2014and a 7\u201310 day target for approval turnaround. For approvals, Kevin proposed using a custom GPT to perform legal-content reviews and produce consistent, storable compliance reports, while Allie will manually approve non-digital items.\n\nOn campaign inclusion and logo use, the team avoided formalizing client additions in the legal doc to limit liability; operations will handle inclusion pragmatically. Social-media rules require logo posts be factual, up-to-date, industry-related, and non-political, with agents responsible for fact-checking and able to consult marketing. Kevin committed to finalize drafts for Allie and legal review, with the group continuing coordination by email.",
+  "action_items": [
+    "Kevin Beeftink will split the current draft into two documents: the branding guidelines and the legal sign-off document.",
+    "Kevin Beeftink will implement monthly monitoring/audits for external accounts and set up regular check-ins for proprietary sub-accounts to track compliance.",
+    "Allyson Rose Powers will rephrase and present the branding guideline language in a more positive, simplified format for agents.",
+    "Matt Ruddick will produce a brief Loom walkthrough and email the signed legal document and summary to the organization to create a distribution record.",
+    "Matt Ruddick will have legal reviewers perform a formal legal review of the finalized legal document when the draft is ready.",
+    "Kevin Beeftink will create a one-page summary (and potential infographic) that recaps key guidelines for agents after the two documents are finalized.",
+    "Allyson Rose Powers will prepare to manually approve non-digital materials and presentations per the agreed scope",
+    "Kevin Beeftink will investigate logistics and storage options for the custom GPT compliance workflow and report back",
+    "Kevin Beeftink will update the document to set the compliance audit cadence to monthly",
+    "Samantha Katchen will configure operational inclusion of the team as a client on campaigns without adding it to the legal rulebook",
+    "Mitch will revisit campaign client-inclusion logistics with the team next week to define a practical approach",
+    "Kevin Beeftink will split the current document into two parts and produce an initial draft by early next week",
+    "Allyson Rose Powers will apply design and formatting to the summary/branding guideline once she receives the final draft content",
+    "Matt Ruddick will provide Allie the final draft content needed for formatting (responsibility to supply content)",
+    "Kevin Beeftink will perform a final review and finalize a readable draft after the split and AI pass",
+    "Matt Ruddick will send the legal document to his lawyer once he receives a near-final version",
+    "Kevin Beeftink will send the draft to Allie for design and copy polishing and continue the email chain for follow-up"
+  ],
+  "key_questions": [
+    "Do you want the legal sign-off to be part of the onboarding process so new hires must sign it?",
+    "Should Allyson rephrase the entire document to make it more engaging and easier to read?",
+    "What will the legal document contain and whom will it hold accountable?",
+    "Which materials will be on Allyson's plate for approval and what is her role?",
+    "Can the team specify a turnaround time for approvals and will a GPT be required?",
+    "Do we want to be added as a client on every campaign, and should that be in the legal document?",
+    "How should political or religious content be handled when an agent uses the KRS logo?",
+    "What will Allie\u2019s role be in making documents look presentable versus legal wording?"
+  ],
+  "transcript": {
+    "speakers": [
+      {
+        "name": "Allyson Rose Powers"
+      },
+      {
+        "name": "Kevin Beeftink"
+      },
+      {
+        "name": "Matt Ruddick"
+      },
+      {
+        "name": "Samantha Katchen"
+      },
+      {
+        "name": "UNKNOWN_SPEAKER"
+      }
+    ],
+    "turns": [
+      {
+        "start_time_ms": 1773763885767,
+        "end_time_ms": 1773763896613,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "There was something we said at one point I was like looking to see if there was an alien reaction emoji because it's exactly what I thought of I couldn't find You too, bye"
+      },
+      {
+        "start_time_ms": 1773763873302,
+        "end_time_ms": 1773763885747,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "I just I do have to say I loved that we went through all the scenarios of the aliens coming because that I did like talking through aliens coming so It's right up your alley That's funny."
+      },
+      {
+        "start_time_ms": 1773763871302,
+        "end_time_ms": 1773763871882,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "It's helpful."
+      },
+      {
+        "start_time_ms": 1773763857468,
+        "end_time_ms": 1773763870961,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Well, still, I am honestly saying like the fact that you have to go over this stuff means you're maturing as a company, right? I think that the process itself is really cool. The fact you have to do this shit, yeah, it's a headache. We have AI so it's much easier."
+      },
+      {
+        "start_time_ms": 1773763854747,
+        "end_time_ms": 1773763857428,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I don't have anything to do with it."
+      },
+      {
+        "start_time_ms": 1773763849725,
+        "end_time_ms": 1773763854707,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "He nerds out on this stuff for sure. That's good though. I don't have a problem with it."
+      },
+      {
+        "start_time_ms": 1773763844063,
+        "end_time_ms": 1773763849185,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Milestones and shit. He's having fun. I'm getting fun energy."
+      },
+      {
+        "start_time_ms": 1773763840073,
+        "end_time_ms": 1773763843563,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Good, it means we're together. As a company, it's good stuff."
+      },
+      {
+        "start_time_ms": 1773763834571,
+        "end_time_ms": 1773763836852,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "The location of fun's a little different than mine, I guess."
+      },
+      {
+        "start_time_ms": 1773763819245,
+        "end_time_ms": 1773763833671,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Let's get to a decent draft by early next week. And then you can send it out. I think that's fine. Cool, cool. All good. Other questions, suggestions, feedback? This is fun, guys. OK, good stuff."
+      },
+      {
+        "start_time_ms": 1773763806210,
+        "end_time_ms": 1773763818425,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "If you think it's good enough for me to send to legal, then just let me know what that point is. Again, it doesn't have to be final, but close to it, I guess, is what I'll need."
+      },
+      {
+        "start_time_ms": 1773763790746,
+        "end_time_ms": 1773763805430,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Yeah, we have direction now, right? I think we're clear on how we want to do it. Brat's got it and how we write it up. It's 80% going to be AI anyway, so may as well just run that exercise. I'll review it, finalize it after the split, and then I'll send it over to you, Allie, and we'll just keep the email chain going."
+      },
+      {
+        "start_time_ms": 1773763781034,
+        "end_time_ms": 1773763790606,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Sounds like a plan. So do we need a follow-up meeting for this or can things be right now, communication via email and notions?"
+      },
+      {
+        "start_time_ms": 1773763717025,
+        "end_time_ms": 1773763777512,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "We want to make that look nice and appealing The the branding guideline. I don't know that we necessarily just want to make it a straight word document We can do a couple of things to make it at least visually appealing I don't Yeah, I don't need Allie to spend hours and hours on making it look cool, but maybe putting a border around the outside of it, putting the logo on there, you know, stuff and little stuff like that. Yeah, maybe watermarks or, you know, whatever you do. I think it's just simple stuff like that, that make it more appealing to actually flip through. The one pager is obviously the most important thing to make it read easily and look nice. The legal document should not have anything on it. For the words and the signature line. So yeah, not a lot of time involved in any of that, but I think putting a little bit of time in there will go a long way towards hopefully getting people to flip through it. At the very most, they're definitely not gonna read it, but maybe they'll flip through it if there's more than just words on a paper."
+      },
+      {
+        "start_time_ms": 1773763707921,
+        "end_time_ms": 1773763716985,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So if we don't try and sell that That one page cover page the like That's the summary that he was talking about."
+      },
+      {
+        "start_time_ms": 1773763699317,
+        "end_time_ms": 1773763707721,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So if we still, It depends on where you want to draw the line the one pager will help sell it The guidelines are still going to get some level of attention from people."
+      },
+      {
+        "start_time_ms": 1773763675912,
+        "end_time_ms": 1773763698437,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "I was just gonna ask him, what does Allie making like look pretty and nice? Cause not the legal document, right? Like, is it just the summary page that she's gonna make sound better and then have it look nice and that's gonna be the agent facing thing. But the thing they're signing and then the legal document and then the thing that goes more into depth of everything, that's just words on a paper, right? Like we're not trying to make that look good or we are."
+      },
+      {
+        "start_time_ms": 1773763673371,
+        "end_time_ms": 1773763675411,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "All right, so let's say, go ahead."
+      },
+      {
+        "start_time_ms": 1773763669778,
+        "end_time_ms": 1773763672240,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Once I have that, then at least I can get that over to her."
+      },
+      {
+        "start_time_ms": 1773763666776,
+        "end_time_ms": 1773763669098,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Which is updated based on what we talked about today, right?"
+      },
+      {
+        "start_time_ms": 1773763645220,
+        "end_time_ms": 1773763665896,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Well, and I don't need the final draft of the branding guideline. This draft that you'll spit out this week will be enough to get her going so she has something to reference. If we're going to change some verbiage so it reads nicer, that's not going to make a difference. I just need\u2026 I guess what I'm saying is I just need a version of it. I don't need the final version."
+      },
+      {
+        "start_time_ms": 1773763630267,
+        "end_time_ms": 1773763639296,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I'm happy to send that over to you first. I'm just going to imagine that if your legal document references this document, your lawyer is going to say, no, I need both before I can start."
+      },
+      {
+        "start_time_ms": 1773763614013,
+        "end_time_ms": 1773763629767,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I just need the legal document. I don't need the branding guideline. I don't need my lawyer to go through the branding guideline. I need the legal document for the legal verbiage. So, the sooner you can get me that, obviously, the better because that's going to take time for me to get that turned around."
+      },
+      {
+        "start_time_ms": 1773763561111,
+        "end_time_ms": 1773763613993,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Then both of my courts have split this into two parts. I'll do a final review, do another loom recap like last time. I'll check your notes, Allie, to see if everything is in there that we need. Once that's done, I'm just trying to think of next steps. So if we're good on the split, we're good on the verbiage, The next step is finalizing the guidelines themselves from a copy perspective to make that sound a little nicer. We can definitely make that first iteration an AI draft. And then Ali, maybe you can touch it up. I think that'll be the best way to go about it. I'm happy to finalize that draft then as well. So basically, I'll take the two documents. Once we're good on this, I feel confident, or I get you guys sign off one of the two, I'll just final draft that actually reads nicely."
+      },
+      {
+        "start_time_ms": 1773763538884,
+        "end_time_ms": 1773763558649,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "That's that's What we're talking about are the rules like it's not like we're making shit up. I'm just putting the rule on a piece of paper. Yeah Okay rules that I'm governing him with are the same rules I have to govern myself with like it's not like I'm coming down on him by any means. I'm just using what the rules are."
+      },
+      {
+        "start_time_ms": 1773763536222,
+        "end_time_ms": 1773763538744,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Because these rules for god level are not going to change."
+      },
+      {
+        "start_time_ms": 1773763483608,
+        "end_time_ms": 1773763536202,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "My lawyer is going to take a week to get it back because no lawyer is in a hurry. And I've got two people that are going to look at it. So it's fine. Let's just try to get it done by the middle of April, if we can, if we're a week or two late on it, it's not going to be the end of the world. We're going to be late because of the lawyers on my side. We're not going to be late because of this group getting done what we need to get done. Because Allie can't make it into a PDF that looks pleasant without me getting her the information, right? I have to get her the final draft before she can Allie it. So it's going to be on me. And that's all right. If it's going to be late by a couple of weeks, it'll be on me. And I'll take care of the ryan situation of that if there is one I'll talk to him about it It's not gonna be I'm not worried about it If he feels like he's stuck again, I would just tell him here's the draft, right?"
+      },
+      {
+        "start_time_ms": 1773763419965,
+        "end_time_ms": 1773763482488,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "We'll still get very specific on the go-high-level rules, because that's very ambiguous if we don't make that very clear. And the risk there is not just legal, it's also practical. So we do want to put those limits in place. I think that's where we want to take it. We split the documents. We need one more session. I'm more concerned now with timeline as well. We said we wanted something by the end of the quarter. Splitting the document into two parts. I can get it done by early next week. You still need to send this out. And technically, practically, Ryan is now not able to do anything until this is signed. I think that's what you told him. Which, for one, I don't think he's actually sticking to the rule because that'd be weird. But second, it does put some pressure on us actually delivering this to some extent. To be fair, if we want to do a reasonable effort of putting something together, this is not going to be done in two weeks."
+      },
+      {
+        "start_time_ms": 1773763394618,
+        "end_time_ms": 1773763415863,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Yeah, I think it's good enough for how he phrases I agree What we don't want to do is say we're going to do it monthly and then we don't do it for two months And then something happens in that month and then they're like, we'll see it's it's your fault. You didn't police it So it's on you. But if I just say I'm going to do it frequently What is frequently? Well, it's very ambiguous and i've read going to be left to be an ambiguous term."
+      },
+      {
+        "start_time_ms": 1773763289009,
+        "end_time_ms": 1773763394598,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Because I also be mindful of time guys. I think what I'm hearing is big picture, set the rules, empower them to stick to them, create plausible deniability saying, hey, them this, they signed up for this, they chose not to, that's their problem. That's like the big picture I'm hearing, which I think makes total sense because, again, it's such a waste of budget for us to police anything like this at that level. I highly discourage anyone to want to do that. I think what it comes down to then is, again, for the sake of time, splitting this document into two parts, putting legal jargon in one, rulebook in the other, adding a front cover saying, here's the recap of it after we're done putting this all together, and then reviewing everything we put in here, saying, all right, this is your responsibility to do so. It also means, I think, for the audits that instead of putting a frequency in there, it makes more sense to say that by signing the document, they submit to only get frequent audits. And leave it at that, right? Because then it's up to us as to whether we want to check things or not. Because again, Chris Paul's with an inability saying, I had access and I did look at this, right? Because we need to say, to some extent, I created enough governance to say, all right, I've been able to check that people are complying with the rules, but frequency and whatnot, like that's subjective, right? I don't think that really matters. So specifically in Ryan's case, Just having a sign off saying yes, I approve the krs team to review my shit And if I'm fucking up to point that out and I need to do better."
+      },
+      {
+        "start_time_ms": 1773763285286,
+        "end_time_ms": 1773763286627,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "I think that's a good middle ground."
+      },
+      {
+        "start_time_ms": 1773763253380,
+        "end_time_ms": 1773763282044,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "So I think- It's been two months and we posted nothing because we have to go back and forth with them about their crap. And it makes me not want to be associated with them because we can't do anything. It's not even like we haven't raised a dollar for them yet. I don't want to go there. And I don't want to police at all because you're right, Kevin, if I'm going to police it in that aspect, they need to be employees. I need to own the whole damn thing. So there has to be a line drawn somewhere but I have to put a layer of protection in there at some point as well."
+      },
+      {
+        "start_time_ms": 1773763227573,
+        "end_time_ms": 1773763253280,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Yeah because I was gonna say all the stuff like um Matt with by the hand they wanted me to like type out every social media post so I had to write all the posts for the like it's and now waiting for them to get back to me like they wanted to see every single thing that was gonna and go out on like, and it's just adds like a whole layer of complication."
+      },
+      {
+        "start_time_ms": 1773763226893,
+        "end_time_ms": 1773763227553,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "I think that's enough."
+      },
+      {
+        "start_time_ms": 1773763178728,
+        "end_time_ms": 1773763226853,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "It comes back to Paul's vulnerability, right? Because even like with Joy's example, I'd love for her to keep doing that, right? I'd love for us to not tell her, hey, let me see every social media post you put out there. It'll 100% discourage people so I think it's fairly it's fair to say I've done my job by facilitating the rules and giving them the options to review themselves in order to do so at the best of my abilities with a reasonable amount of budget but you can't expect me to spend year $250,000 just to police the freaking rule book like that makes no sense for a small business right so um on the possibility side it's important to say I gave them the resources to check that the facts are correct whether they use them or not is up to them and I told them I don't want anything I don't want anything opinion-based with my name on it."
+      },
+      {
+        "start_time_ms": 1773763133834,
+        "end_time_ms": 1773763177368,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Make sure it's accurate and we have again. We haven't had any problems with this. I'm just foreseeing I'm trying to I'm trying to I'm trying to have a process in place for when the problem in the future comes because the future is the problem is absolutely going to come at some point and I'm tying the line here of Agency again, right of control. I don't I I don't want to say I'm controlling what they say I do want to say I want to put some control on what they say with my name on it, which is 100 okay but I don't want to control what they say. If they want to go out and they want to give opinions and have opinionated things that go out, they're just going to do it without my name associated with it. That's all. I'm never going to get away from saying they work at KRS if they put something up on LinkedIn. That's fine. It is what it is, but"
+      },
+      {
+        "start_time_ms": 1773763130083,
+        "end_time_ms": 1773763133725,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "We put the responsibility on them to actually live to make sure it's right."
+      },
+      {
+        "start_time_ms": 1773763094105,
+        "end_time_ms": 1773763129882,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I think that that's fine. And if we, and us saying that we want to, we want, we want posts with my name associated to be centered around factually based things and not political or not just political opinions, opinionated gestures in general. I think that that's, I think that that encompasses what I'm necessarily worried about when I get a bad actor. Listen, I'm going to get a bad actor and I'm just going to crush them and tell them they can't use my name and take it all down. Like you're done. I'm done with you because we'll see it. I got to have something there in the back end that kind of means we put in the verbiage."
+      },
+      {
+        "start_time_ms": 1773763062980,
+        "end_time_ms": 1773763094045,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Why not give them I think to sam's point as well facilitate the option for review, but don't make it a mandatory step You can give them the freaking custom dpt if they want to choose to use it, right? Nobody's going to do it but making it the option to do so So again, puts the responsibility on them saying, Hey, you signed up for these rules. You are then also accountable to live by them. You fuck up. That's your responsibility and make sure you don't fuck up. Here are the tools you can use to check yourself instead of that we, instead that we do it."
+      },
+      {
+        "start_time_ms": 1773763042316,
+        "end_time_ms": 1773763062680,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "That's where my mind is with all of this. What I say is how I back it up if somebody comes and asks questions. That's why Going back to this and saying I don't need to approve any of it But you better make sure that it's factually based and you better make sure that the facts are correct So I don't make this like to keep it extremely practical."
+      },
+      {
+        "start_time_ms": 1773763016029,
+        "end_time_ms": 1773763042216,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So as part of the discussion, I'm just picturing this slider going left to right, saying 30 minutes of alley hour time every month to 15,000 every month. You can always say I've done a reasonable amount of effort to make this happen and then make that your case in court if anything ever happens."
+      },
+      {
+        "start_time_ms": 1773762990987,
+        "end_time_ms": 1773763014928,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "If we said we don't want anything with my logo on it that it's not factually based, that gets rid of political stuff, because the political stuff is opinionated. So maybe we could just use that and just say, if you're going to post anything that has anything to do with my name, it needs to be factually based, non-opinionated. And if you need help or want a reference to making sure that the facts are correct, we're here as a resource."
+      },
+      {
+        "start_time_ms": 1773762957576,
+        "end_time_ms": 1773762990947,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Can we say politics and opinion based? Like, I don't really think anyone, I don't think KRS should be saying original Medicare is better than Medicare Advantage. Make sure you have a Medicare Advantage plan and not original Medicare, right? Like take politics out. I think we shouldn't do any posts that are non-facts, right? Like take out, they cannot reference politics and they can't reference their own opinion if they're using your logo, right? Because you don't want people posting universal life is the worst thing you can get. Only buy a term and invest the difference, right? Like all of those opinions."
+      },
+      {
+        "start_time_ms": 1773762888346,
+        "end_time_ms": 1773762954456,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I'm good with it I think the main problem I have is the political stuff I think if I just said don't post anything political with my name on it and Make sure that what you're posting is factual and if you want us to help you check the facts we're here as a free resource for that and I'm good with leaving it at that I think and not getting into all of the other gray area stuff that we're talking about, right? Because I don't care. I don't necessarily care what they say. As I'm listening to hear you hear you guys play devil's advocate with my with me when 50 different directions, which is good, but I don't care. I don't care about anything that they say. I don't care how joy phrases it. I don't care what joy says. I just don't want it to be like Kevin's example. These mega idiots are wing idiots or blah, you know, I don't, I don't want anything to do with politics in it. They can come back and associate with me. And I want them to know that they're going to put, if they're going to post something that has anything to do with facts, they need the facts need to be correct. I think that's really all I care about."
+      },
+      {
+        "start_time_ms": 1773762835331,
+        "end_time_ms": 1773762888206,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "That's pretty great. I also think you need to say that all facts posted when being associated with or using the KRS logo have to be up to date and accurate. But that onus isn't on our team to audit and check. That's on Joy or that Katie or whoever to sure I'm posting facts that are accurate and up-to-date and if the agent is unsure if the facts they're posting are accurate and up-to-date they have the ability to come to our team to make sure that they're compliant but our team isn't having to pre-approve all posts but that that's on them right like how are you gonna control every especially well I agree with you I think that I think that that verbiage is fine and honestly I'm not even worried about the religion part of it I'm okay with somebody saying Talking about God in their posts, please get more than that than the other shit that's going on."
+      },
+      {
+        "start_time_ms": 1773762816529,
+        "end_time_ms": 1773762832951,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "And I'm not talking about Joy Daly doing something wrong, because Joy Daly's not a moron, and she's not going to post anything that's bad. You know what I'm saying? And to Kevin's point, That's the hard part, right? There's always going to be a gray area there. So what do I say? Don't post anything about just say religion and politics."
+      },
+      {
+        "start_time_ms": 1773762807606,
+        "end_time_ms": 1773762816489,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Even the implication, if she does that, it's probably with a reason, because it's working, and if it's working, then she's making money, and then if it's on her head, then we'll do it."
+      },
+      {
+        "start_time_ms": 1773762803085,
+        "end_time_ms": 1773762807266,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I don't want to. I don't want to do any of it, but I'm trying to stay out of a fucking courtroom."
+      },
+      {
+        "start_time_ms": 1773762787691,
+        "end_time_ms": 1773762803005,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "You want to have somebody approve every single Joy Daily Key Retirement Solutions post that goes out. She posts in groups, private groups on Facebook. She goes and spends time each day posting in different groups, plus her public posts, like, there's no way."
+      },
+      {
+        "start_time_ms": 1773762778447,
+        "end_time_ms": 1773762787651,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "The question is- The gray area goes away if I say, if it's got my name or logo on it, I've got to approve it. It's going to be more work. There's going to be some more work in there."
+      },
+      {
+        "start_time_ms": 1773762766224,
+        "end_time_ms": 1773762778347,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Just having employees now Well, that's even worse. It's worse If you take that to the fullest extent of your statement, it makes it complicated. There is 100% going to be a gray area here. There's always going to be a risk."
+      },
+      {
+        "start_time_ms": 1773762704970,
+        "end_time_ms": 1773762766103,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Yeah All I can say is my name and logo can't be associated in the same post that happens when things like that happen Now, again, I don't know how to quantify that to the point where I say, because if I say, I don't need to approve it if it has anything to do with industry notes or something like that, but then when I say, all right, well, they say something about the industry that's not true, am I allowing them to put untrue facts up in the industry with My name on it. You know what I'm saying? So I keep coming back to the point of your Kevin. You're right. It may dissuade some people from doing it But maybe that's safer for me Because it doesn't dissuade them from doing it it just dissuades them from using my name when they do it I'll make it more black and white then it's not safe to have 10.99s, man."
+      },
+      {
+        "start_time_ms": 1773762699207,
+        "end_time_ms": 1773762704450,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Workplace says they work at KRS. How are we going to sit here and say that?"
+      },
+      {
+        "start_time_ms": 1773762682967,
+        "end_time_ms": 1773762697946,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So- How does that fit Allyson? Cause now I'll come back to what Matt said initially, Right, So what does that mean? Or is it our responsibility to? Instill morals on people like where does that like that's not our job?"
+      },
+      {
+        "start_time_ms": 1773762644220,
+        "end_time_ms": 1773762682526,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Well, I guess my thought is more like this is kind of separate from the statement of like no politics, no religion with our logo, like getting them to understand how you present yourself online is important. And these are gray areas, even when they're sitting in the home, like we've always been taught, you don't bring up politics, religion, like they need to be empowered to also understand like how you represent yourself online is important. And getting into these gray areas, you may please some, but you're also gonna piss off other people."
+      },
+      {
+        "start_time_ms": 1773762624964,
+        "end_time_ms": 1773762642999,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "And then give them legal implications that if they did, then here's what happened. Of course we can. Because they're using the brand. Like the fact that they position themselves as a KRS agent because they're eligible to use the KRS brand to position themselves as such comes with some responsibilities and rules. So we can definitely tell them you can't do this if we want to."
+      },
+      {
+        "start_time_ms": 1773762619820,
+        "end_time_ms": 1773762624644,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "I mean, we can't do anything about that, right? Like that's all the stuff even then."
+      },
+      {
+        "start_time_ms": 1773762601404,
+        "end_time_ms": 1773762618619,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "complicated, right? So let's say your tagline says, insurance specialist at KRS. I still make a political rant. I share my opinion with my network, but I'm positioning myself as an insurance agent with KRS that has an opinion."
+      },
+      {
+        "start_time_ms": 1773762572519,
+        "end_time_ms": 1773762601030,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "I guess we have no choice but to be, right? And that's, I guess, on an individual basis, like Matt, how you handled the Mike Seidler thing, right? Like, we'll have to, I mean, we'll hear about it, we'll see it, we'll have to address those situations one-off. I think the biggest, most important thing is anything that references a post that we've shared, materials we've created, our website. You cannot post opinions or anything about politics while also including anything about key retirement solutions in the same thing."
+      },
+      {
+        "start_time_ms": 1773762568038,
+        "end_time_ms": 1773762571458,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So same scenario now, but they don't reference the blog post. Are we OK with that?"
+      },
+      {
+        "start_time_ms": 1773762550553,
+        "end_time_ms": 1773762567798,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "But they are still by sharing that post, they're using KRS logo and KRS material in the post. You know what I mean? If they just did a generic post that didn't reshare a blog or point to our article. And just said, my opinion on Medicare, black and white."
+      },
+      {
+        "start_time_ms": 1773762517636,
+        "end_time_ms": 1773762548573,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Let's say I'm an agent and I'm going to go to LinkedIn and said, these left-wing idiots are absolutely destroying Medicare for everyone. And I make a big round post about it. We wrote an amazing blog article on life insurance. It's the best thing you can consider. ClickGUARD here. And then the link refers to the website. The website has a little KRS logo on it, which will pop up on LinkedIn. And that association of that post is left-wing people are idiots. Look at KRS as the right company to make your choice, but that is not something we want to see happen."
+      },
+      {
+        "start_time_ms": 1773762481527,
+        "end_time_ms": 1773762514486,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "And the other being outline like the bare minimum things Matt for sure doesn't want talked about with his logo. There's no and why they would need to make a post about politics and include the KRS logo. If they make a post about politics, just don't include the KRS logo, right? So like anything using the logo has to be industry related and cannot factor in any personal preferences, opinions, facts about politics. You know what I mean? Like just outlining that social media posts that use KRS as a logo."
+      },
+      {
+        "start_time_ms": 1773762467539,
+        "end_time_ms": 1773762479846,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So one is, can we put the responsibility of reviewing their content on them and then tell them you are accountable. So if you're in doubt, check with the team rather than having the team approve everything."
+      },
+      {
+        "start_time_ms": 1773762411108,
+        "end_time_ms": 1773762467499,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "So can we outline what's expected without policing it? So like when using the KRS logo in any social media posts or in any way that's being broadcasted externally, there can be no reference to politics, there can be no reference to a religion, and it is on the responsibility of the agent to make sure that the facts they are presenting as it relates to the industry are accurate and up to date and go through our marketing team to get approval if they are unsure. So then it puts it back on the agent to say if I'm going to make a post with these facts, I have to make sure they're right or I will go to the marketing team to find out if they're right or not. So let's say that Sam, right?"
+      },
+      {
+        "start_time_ms": 1773762391274,
+        "end_time_ms": 1773762410507,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I can't really police that. I'm talking about I don't want to put my logo on a political post. You know what I mean? Something like that. I can't police Mike Seidler being an idiot and posting something, right? Like, I don't care. Not me, but I don't want Mike Seiler to put that post up with my name on it."
+      },
+      {
+        "start_time_ms": 1773762367743,
+        "end_time_ms": 1773762389793,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "And I guess that's what I'm looking at when I say when I or with this question you say Do I Well, Matt, are you talking about somebody like just on social media posting something political in one post and then the next sentence they post something about Karras?"
+      },
+      {
+        "start_time_ms": 1773762291515,
+        "end_time_ms": 1773762367723,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I agree. To a degree because there's also I don't know I guess my mind goes to the worst case scenario with all of it and I can't necessarily solve the worst case scenario or plan for the worst case scenario every time but I'm just looking at it like okay so some some one of my agents some politically up, putting some political post up with my, my logo on it. Where had it been obviously asked for approval prior, I would have said no, but there's not necessarily anything factual that they're putting out there. So that would be okay. So it comes into the whole religion politics. Do I want to start naming down all of these categories either? Cause I don't know that I know Necessarily want to do that. So I don't know how to handle all that But there's definitely things that agents could post That could detri that could be detrimental to my brand So, I don't know. How do I handle that?"
+      },
+      {
+        "start_time_ms": 1773762141980,
+        "end_time_ms": 1773762285332,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I'm just trying to be smart with plausible deniability, right? So whatever we write comes with consequences and it has to have a purpose when it is this kind of document. So yes, but not in this doc. And then we'll just need to figure out a way to make that logistically possible. So we'll look into that. Mitch, I want to make sure we revisit that next week. So we can tell Allie how we can make that a standard rule for every campaign that we run. I do want to circle back on that a little later, Allie, because there is both. Most of the campaigns we've run are evergreen, right? So only a portion of the campaigns we run are one-offs. But for example, Stephen's running something that will run forever. So does that mean you want to be part of the first run that is deployed for every time it's deployed to a new sub-account? That doesn't need to be answered now. I'm just saying it comes with some intricacies I want to make sure we hash out for logistics, yeah? So we'll figure that out later. Seeing as you're legal, so yeah. Legal aspect to be added, input required no matter how. So we just talked about this. I think we're good there. Marketing authorization, make that part of the legal document. So I think we talked about that as well. So this is phrasing. Matt, I need your perspective here because this comes back to what you said last time versus where I think it should end up. Last time, you were very explicit. You said, anything that has my logo on it, I want to sign off on. Which to some extent makes sense, also creates a ton of overhead, because it means that every social media post, every, like, it will discourage people from doing stuff as well. So I would say the way we phrase it was anything with factual or industry related content needs approval, basically means when you're trying to present facts, they better be good. And they better be right. And that means we want to double check them. If it's not necessarily factual, testimonials or whatever from your clients, I don't think it makes sense to put that on Ali to review that in detail. I don't think it's smart from a workload perspective, nor that adds a ton of value for us to review it at that level of detail."
+      },
+      {
+        "start_time_ms": 1773762131073,
+        "end_time_ms": 1773762141040,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "I see. Because that's something I still would like to be in on, but if that's not specified in this document, that's totally, I understand."
+      },
+      {
+        "start_time_ms": 1773762081441,
+        "end_time_ms": 1773762130352,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Because it's a legally charged document, whatever we write, it comes with, you know, responsibilities. So if we write this up, it immediately creates something people can point at and say, look. And then whatever implications come out of that, we also own because we wrote it. So worst case, that means something went on a campaign, we were on there as a client. They said, yeah, but you guys check everything, right? Because you're part of every campaign. So why are you holding me accountable? And then where do we point? Then who's accountable? Then it's up to a judge. Whereas if we don't make it explicit, the only explicit rule we set is you are accountable to being compliant, and we'll just help you do that by checking up on your stuff from time to time. Then it's much more veered towards the person running the campaign than it is on us to make sure they're compliant."
+      },
+      {
+        "start_time_ms": 1773762070266,
+        "end_time_ms": 1773762080061,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "You're saying it can be done And we will, on our end, set that up so that that's done. We're just not going to tell them in the rulebook that we're necessarily doing that."
+      },
+      {
+        "start_time_ms": 1773762063462,
+        "end_time_ms": 1773762070226,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I think it's a smart thing to do I just wouldn't make it a rule in the rulebook that's all."
+      },
+      {
+        "start_time_ms": 1773762045652,
+        "end_time_ms": 1773762063442,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "I was just gonna say my thought in wanting to be added as a client on campaigns is because for me that does help like see what's happening more frequently so I don't know if you're saying the opposite of that or the same thing as that."
+      },
+      {
+        "start_time_ms": 1773761888254,
+        "end_time_ms": 1773762044072,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Cool, cool. All right, so we said monthly audit document, so this is on purpose as needed and not scheduled. I guess monthly does make sense, but it has to be then the legal stuff. So I'll make this a specific cadence as well. That's a beat. That's not necessarily a big problem, right? So we could still review. Not saying that we would, I'm just saying for compliance, are we good? I think we're good. All right, so I'll change this to monthly. So Ali, I think you brought this up. You said, do we want to be added as a client to every campaign? I think it's a smart thing to do. I just don't think it should live in the document for two reasons. So one, it adds an extra level of responsibility, too, because it means that whatever they send out, we then also need to check in detail. I would rather do the money. Monthly audit the way we set it up now as our main level of responsibility. The fact that we want to be included in this, I would not make it a formal agreement. I would make it a practical agreement with anyone running a campaign because it also puts responsibility down on you to have a full review of every bit of messaging in detail. I think we want to end up in a place where we can say, all right, these are the rules. We'll help you stick to them. That on a frequent basis and not make that specific to every campaign. Does that make sense? My phrase is a little simple, right? The more explicit we make the rules, the more we need to police them. The more involved we get into the details, the more we got to stay on top of them. So we make part of the rule book that we want to be part of every campaign as a client, it has an extra layer of complexity for every campaign that we may or may not want to enforce. It also means that it has to have a purpose to be part of that for these guidelines. And if the purpose is just to know what's happening, then it shouldn't necessarily live on this document. And then the other end is if the purpose is to actually check on their compliance, then it also puts more responsibility on us to check every dot, letter in that message."
+      },
+      {
+        "start_time_ms": 1773761876237,
+        "end_time_ms": 1773761882730,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "So to answer your question, about turnaround time, you could say 7 to 10 if we want to specify."
+      },
+      {
+        "start_time_ms": 1773761801936,
+        "end_time_ms": 1773761874456,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "And sounds like a helpful tool. Basically, what it means is you have a custom chat GPT chat, you drag your file into it, you say analyze this for compliance, and it just spits out a report based on what we defined as the rules, right? And it'll just give you the same result every time. And then yeah, logistics, you need to figure out. I don't think it's smart to keep that report in JetDBG. So literally creating a print of the screen you see, saving it as PDF, and dragging that into a dry folder is already enough for compliance. Because then at least you can store the review somewhere. But I don't want to create a ton of overhead for any of us here. So as much as we can make this simple and straightforward, the better. Because this is just going to burn time to stay compliant. This is just a money dump for Maddie. Like we're just burning cost on something we just have to do from a legal perspective here. So long story short, yeah, basically your logistics should be fairly simple. You do what you always do. We just add one more check, which is some custom AI layer that you drag your file into. That's it."
+      },
+      {
+        "start_time_ms": 1773761772134,
+        "end_time_ms": 1773761801475,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Yeah, if we could set, I think you spoke some terms that I'm not 100% sure on, but if that, yeah, like I know chat GPT, but I don't like know setting up a GPT or any of that. So if that could be something that's set up and then what you were talking about, about it spitting out a report or I don't know what that would look like if that lived in Hatch, if that lived in chat GPT. Like, I don't know any logistics of that, but that sounds great."
+      },
+      {
+        "start_time_ms": 1773761736197,
+        "end_time_ms": 1773761772114,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "And then our manual process. Recommendation would be like from a content perspective to be compliant run it through that standard GPT we could put one together so that's not the problem but then just send your file to the GPT say review this document for compliance have it spit out a report so we have that on file somewhere in Mac and say to court hey we did our jobs and here's how we do it which is ten levels up from everyone else that's supposed to be doing it but it's very little effort right so you basically take the document send it out with the file content, review it, you get a sign off saying this looks good, and you send it back to whoever sent it to you."
+      },
+      {
+        "start_time_ms": 1773761719443,
+        "end_time_ms": 1773761733155,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Okay, so just I understand what you're saying. You're saying everything that is online digital running through that, but anything like print presentations would manually be approved by me?"
+      },
+      {
+        "start_time_ms": 1773761606101,
+        "end_time_ms": 1773761717481,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I was thinking to also keep this practical. We want to have a standard custom GPT that does the legal review of the contents of whatever they want to share out. I think that covers us better than any other scenario, Matt. So basically, we're just having an AI it for legalities and making sure we were compliant. We run that as a standard mode of operating, which Allie can do for anything on paper. We basically, we could do anything that goes through Hatch. We both run the same stuff. We both can send our sign-offs on whatever gets sent out. So we don't need to be critical of what it says. We can just delegate that to the AI. And if it looks like shit, Allie, you can still have an opinion. Same for us. And basically, we split the responsibility of legalities. We delegate that to AI. Number one, I don't know how to feel confident doing that with my team at all. Because I don't want to take on the legal responsibility of saying this is good. And this is compliant, right? I think that needs not lay with either Allie or myself or the team. I think that needs to be something that can actually say something about it, which should be AI more than anything else. And then anything to do with brand usage. We're using standard templates for everything that is digital, so I'm not too concerned If it does require a second perspectivality, we would probably escalate it up to you in case you need to review it from a visual perspective. But then I guess what that means is anything digital will run through that compliance TPT and make sure everything is up to par and we check it for some of the check boxes we care about. And then anything that is not digital ends up with you. You do the same thing for content just to make sure it gets reviewed through a standard process. Because again, that covers Matt's ass in terms of, you know, making sure we did our diligence. And if it doesn't look great, you can still give them your feedback."
+      },
+      {
+        "start_time_ms": 1773761601238,
+        "end_time_ms": 1773761603920,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Is that going to be something for me to approve?"
+      },
+      {
+        "start_time_ms": 1773761570853,
+        "end_time_ms": 1773761600158,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "basically if they want to have if they want to build a flyer that they build a flyer themselves or if they Put my logo on a banner that they had built, you know stuff like that They've got to send you copies of it so we can approve it and then turn it around presentations to even Anything that's got my logo on it that Ali doesn't make But it was like if it's email like let's say somebody wants to run a campaign in hat and to leads with like emails and stuff."
+      },
+      {
+        "start_time_ms": 1773761560890,
+        "end_time_ms": 1773761564411,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Outside of the stuff in hatch."
+      },
+      {
+        "start_time_ms": 1773761553587,
+        "end_time_ms": 1773761557188,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Anything that we need to review that has the KRS logo on it."
+      },
+      {
+        "start_time_ms": 1773761550226,
+        "end_time_ms": 1773761552047,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "So what part is going to be on my plate."
+      },
+      {
+        "start_time_ms": 1773761514032,
+        "end_time_ms": 1773761547065,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So after we split it, we need two documents first. So one guidelines, the other one is going to be legal stuff. And then once we're done with the final version of both, we add the one pager just to recap. So we're not going to do that three times over. So we're very clear on what that needs to contain. Let's see, brand, visual standard, we're discussing important details, but they're not actually filled in. So that's what you already added to the document, I think, Ali. Did you include anything specific on your approval workflow I think we said we're going to review it. You want to be specific on the turnaround time."
+      },
+      {
+        "start_time_ms": 1773761505714,
+        "end_time_ms": 1773761512798,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "No, no, when we get to the point where we think it's a good document, then I already have people waiting to review this. They know it's coming."
+      },
+      {
+        "start_time_ms": 1773761465550,
+        "end_time_ms": 1773761504873,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Sounds good. On that note, let me contextualize a few things in detail. So we're all clear. So we just covered this. I don't know yet what that'll look like, but I think by splitting up like a one pager the guidelines and the legal stuff, it'll be much easier to at least get to that. Let's wrap up the document itself first, or documents, because I'll go ahead and split this into two parts then after we're done. Again, Matt, have someone that knows legal stuff actually review it, but I'll give them a baseline to review instead of having them write it up."
+      },
+      {
+        "start_time_ms": 1773761276624,
+        "end_time_ms": 1773761458488,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Basically, it's just a bunch of disclaimers is what it needs to be, right? You understand that you received the branding guidelines. You understand that you read and agreed to the branding guidelines. You understand that the branding guidelines can change and when those changes They will be dispersed to you and you agree to abide by those changes when they happen, you know Like just shit like that and then they sign it and then that way we're able to make changes to the the branding guideline Like the living document whenever we want without having to get all of those changes signed every time And then it's more of a one pager that they're signing it's not overwhelming as much that they're signing a 20 page document either Another reason why I like it now I will say say on the distribution of this, if you're going to make a summary page, that's great. But I think the best way for us to do this, because, you know, Ryan's organization is different than everything else and blah, blah, blah. I think, you know, because Ali, you had mentioned, we go through this on a marketing call. I don't know that I necessarily disagree with that, but the problem with that is Geneva is not on our marketing calls. I think we should probably, if you're going to make a summary page. I think we have a loom five minutes, whatever it may be to hit the highlights of the summary page and of the document. And then we send the document out in the email with the loom. So that way I've got a paper trail to show everyone in the organization. Was given it was given everything. It was explained what they needed to do and told them if they did, if they need to, if, if they review it and have any issues, then they can get back to us. Blah blah blah blah, right? So that that way I can show that it because this is thing that this is something that came up in court. I Gotta be able to show I Put everyone on notice. I Explained to them to the best of my ability what it was why they had to sign it and why it was there Because we can't have people coming back and playing ignorant Right. So I think it's just as simple as I don't care what the loom is. I don't care if it's three minutes Going over the summary page saying here. Here's the document ClickGUARD it's it's a doc you sign you're going to sign it Because we're requiring you to sign it of acknowledgement that you're going to have it If you have any questions on it, let us know. Otherwise, this is your document for your reference. You can keep it And I think we can leave it at that as far as distribution goes now Outside of that if we want to and it's probably a good idea for us to take 10 minutes at a marketing call To go through it again with the other side of the organization. I'm 100 okay with that or just say you guys all received this anybody got any questions let's run through the summary page real quick and then move on like that that's all fine and then I want to make sure that we record that phone call or that that zoom and we have it because that'll be important for us for me to have as well and I think that that's enough and then when we have new iterations or things updated in the future we just need to make sure that we have it emailed to everyone and we have a trail that it was emailed to everyone."
+      },
+      {
+        "start_time_ms": 1773761209410,
+        "end_time_ms": 1773761274483,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So legal document would cover, um, their level of accountability imparting their response. So if shit happens, they are accountable to whatever happened because we made them sign the document. So Matt's ass is covered. Um, they as leadership will also be responsible for imparting everything that is on this document on our behalf to their people. So that some of the policing also ends up with middle management and not just an alleys plate when it comes to reviewing like that kind of stuff They won't do that internally first and then send it over to us when the final stuff is actually reviewed So the process stuff make sure they do their homework first before it comes back to us Putting them as the accountable party if shit, it's a fan Accepting the fact that this is a living document and it'll change they're gonna accept it by default unless something major changes in the way we phrase things, legal stuff, right? Making sure that we're covered from the legal aspect of you do your job, you take responsibility, you mess this up, this is your problem, and then all the branding stuff lives in the other document."
+      },
+      {
+        "start_time_ms": 1773761205908,
+        "end_time_ms": 1773761208629,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "I guess this is what I'm, I'm confused. What's on the legal document?"
+      },
+      {
+        "start_time_ms": 1773761173948,
+        "end_time_ms": 1773761205888,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Yeah, I think that's the only thing. I think you just said, Sam, you wanted to get the guidelines signed. I would just think we just adjust that to the legal stuff getting signed, and then the guidelines still, like Matt said, being a working document, because we are going to put this out there, and then we may find stuff that'll change over time. But for two practical reasons, I don't think we want the legal document or the branding guidelines to be the one that signs, because that needs a new signature if it changes, but also needs a legal advisor What's on the legal document?"
+      },
+      {
+        "start_time_ms": 1773761144737,
+        "end_time_ms": 1773761170005,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "We're going to sign the legal pager. The legal paper. And in the legal paper, it's going to reference the summary and the branding guideline. And that way, the branding guideline could be a working document that can change without us having to go back and get signatures every time it changes. So the legal side of it is the only thing, the legal part of this, one page, two page, whatever it's going to be, that's what they're going to sign."
+      },
+      {
+        "start_time_ms": 1773761137812,
+        "end_time_ms": 1773761143956,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "We're going to sign something separate, so when we change things, that it still applies to that. You know what I mean, right?"
+      },
+      {
+        "start_time_ms": 1773761115939,
+        "end_time_ms": 1773761137792,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I think the only thing I would do is flip that. So if we're going to have them sign anything, it should still be the legalities and stuff, right? We still need them to sign the stuff that goes most in-depth on this is where you are accountable. And then reference the guidelines and the one pager as this is going to be, these are going to be your guidelines."
+      },
+      {
+        "start_time_ms": 1773761058995,
+        "end_time_ms": 1773761115699,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "And then I think we've got everything covered to extent um policing it doesn't is not going to be hey remember page three article five like yeah we're going to remember this one thing we sent out the other day like let's do that so could it almost be like to your point earlier where you were saying there's going to be like two separate things one is the legal jargon that gets into the specifics and goes into everything the other being the thing they actually sign and the thing they actually sign gives the authorization to the stuff they sign right now to use their pictures and videos and stuff like that and then a simplified version of what then the extended version is that then they can read on their own. Like can that all, do we think that could all fit on the one document they're signing? That way we don't have seven different documents, you know what I mean? There's one page that goes through the simple version of everything and that's what they sign and we say for more specifics and to see that whatever, then you have to reference the full branding guidelines document."
+      },
+      {
+        "start_time_ms": 1773760981032,
+        "end_time_ms": 1773761058355,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I think we'll end up with three parts, right? So legal jargon we take out, that'll already cover like half of the complicated stuff in the document, right? So it'll make it easier to talk about more straightforward concepts. I think we still need to be elaborate enough to cover important aspects. But then adding a summary and like an infographic even, right? Because the basic premise of this is don't fuck around, don't put our logo on anything we haven't seen yet. And if you're trying to educate your audience, I have to see it. Those are the three most important principles we have here, aside from the auditing stuff on the back end. So it's not super complicated. It's also fairly obvious. We just have to get specific on certain topics. And I think two-thirds of this document is all for Ryan. It has nothing to do with the rest of the organization. It still requires us, like we still have to cover our asses to figure this out and make sure we get this put in the right place. But yeah, I think we can create a one pager that just covers all important aspects more generically. Add a little disclaimer saying for specifics, make sure to read the entire document, which obviously 95% will not do. But then at least we pointed it out and made it their responsibility to do so."
+      },
+      {
+        "start_time_ms": 1773760881881,
+        "end_time_ms": 1773760978670,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Well and I wonder if there's a way we could simplify because I guess like again at the end of the day like the legal document in itself covers math but that's the biggest and most important thing. But I also think it's like almost a waste of time to have and to do if we don't have any way to make sure that people can understand it to have some sort of an attempt to follow it, you know. So is there a way we could like really simplify in layman's terms the key things that would affect your average agent and then that document be like a legal document that goes more into depth to every But like, if I'm just a Katie Deamer, could you very simply, plainly spell out the things that are important for an agent to know? Otherwise, yeah, I mean, if they don't know, they're definitely not gonna follow it. And at the end of the day, if the only purpose is to cover Matt's butt with the legal document and have their signature, that's fine. But I do think we have to find a way to communicate it, a dummy version of it, and very much simplify it down. We want any chance of people actually following it. To your point, I think there's different levels of things we're talking about here though, because like Ryan is like, that's on him. He's got to figure that out. I don't think it's our job to simplify it and make sure Ryan knows everything to follow. But I agree, I like glanced at it and I was like, holy cow, this is a lot to have to understand and process and know then what affects me and my day-to-day things that now I have to be more cautious of, so."
+      },
+      {
+        "start_time_ms": 1773760836172,
+        "end_time_ms": 1773760881861,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Yeah, the other part in that is in the section of whoever's job it's gonna be to make sure these guidelines are followed. If it's not communicated clearly to our entire organization, there's going to be more. If people don't know what they're supposed to follow, there's going to be more work on our end to like, keep communicating, hey, this is in the branding guidelines, but they never really Redditor never was communicated so there might be more work there unless we when we get to the point sit everybody down on a marketing call and go through it so it's clearly communicated there may be more auditing work that has to be done."
+      },
+      {
+        "start_time_ms": 1773760804856,
+        "end_time_ms": 1773760833598,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "They're not gonna read it at all. The only person that's ever going to read this is going to be Ryan. The rest of the agents are going to sign this because of the way that I explained it to them and what it's going to be. You know what I mean? And just as the reason why I'm sending it out. And I don't know if that comes through from me directly. That's another thing we've got to talk to about how, how are we presenting this to the entire organization? Obviously I can talk to the managers about it, but that doesn't necessarily mean that the managers are going to relay this to the agents either."
+      },
+      {
+        "start_time_ms": 1773760773156,
+        "end_time_ms": 1773760804836,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Okay, yeah, because that was, that was one comment I was going to make at some point was, even when I was going through this and I know it's a draft and we're gonna refine it and work on it. It was overwhelming and a lot. I had to sit down and spend an hour and a half at least just processing what it said before even adding my two cents to the part. So I do think for agents, they may half read it, not actually read it unless we find a way to..."
+      },
+      {
+        "start_time_ms": 1773760711976,
+        "end_time_ms": 1773760772416,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I don't have a clear instruction yet more like a, I think this is where we want to take it, how we do it. I don't know yet. So for one, like we need to get clarity what it needs to say first, which is what we're doing today. Once we're done, I think it still makes sense to think about how do we present this, right? What is the format? Is it a PDF that sits somewhere? Is it a live Notion doc that we send over to people? If it's a PDF, we have a little bit more of a freedom to make it look nice, put some branding of our own on there, work on formatting. So we take it out of the Notion format and create a proper document out of it. Um, I think, based on what Matt shared last time, trying to sell this as their prerogative rather than positioning this as a stale document is a smart idea, but then we'll need to try and make it look like something exciting more than it does now where it's a very stale notion document. So, that's my direction. How we do it, I don't know yet, but I think we just need to collaborate on that and figure out how to do it."
+      },
+      {
+        "start_time_ms": 1773760682672,
+        "end_time_ms": 1773760710915,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "But yes, we need to put we need to put a positive spin on the verbiage that's in there I was gonna say and I don't know maybe this was like a disconnecting communication I wasn't, I thought you just wanted me to like add the intro. So are you asking me to like rephrase the entire document or what do you, what do you mean by making it exciting? And what part of that is like what you want me to do?"
+      },
+      {
+        "start_time_ms": 1773760681091,
+        "end_time_ms": 1773760682152,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I'm just I'm joking."
+      },
+      {
+        "start_time_ms": 1773760629549,
+        "end_time_ms": 1773760678730,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Let's just go through it. So right now, I just went through a checklist as well, so I compared our numbers. From the meeting to the document we put together and then looked at what the gaps were, trying to address it. For one, it's still a very stale document, right? This is not fun. This is just a rule book. So if we still want to be able to sell this as their prerogative to be able to do all this stuff and they have a ton of freedom, I think we'll still need to try and work on phrasing and try and present this as something exciting. I think it'll make it easier when we split the legal jargon from the branding document itself. To present this as a great opportunity and here's the rules and the guidelines you want to stick to um Make it look nice and fun. Did you just say emojis?"
+      },
+      {
+        "start_time_ms": 1773760628908,
+        "end_time_ms": 1773760629529,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "I don't think so."
+      },
+      {
+        "start_time_ms": 1773760606018,
+        "end_time_ms": 1773760622627,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "And that's very specific, but I think that's the level we're at now. Or ask these questions. Let's just go through this very quick and see if anything still stands out. Anything up front, guys, that you wanted to talk about?"
+      },
+      {
+        "start_time_ms": 1773760601077,
+        "end_time_ms": 1773760603777,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Yeah, I think that that makes sense."
+      },
+      {
+        "start_time_ms": 1773760513454,
+        "end_time_ms": 1773760601056,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Well, to be fair, if it's plausible deniability, right. So let's say we miss a round of audits because I don't know, uh, something came up, right. Then there's nothing to point at if we're just going to say, we're going to do frequent, we're going to do audits at irregular intervals to check up on whether people are sticking to the rules or not, but then not specifying a particular frequency, I think makes it, on the one hand, makes it easier for compliance, on the other, it also sets the right expectation if we do make it specific, right? So I was still, a bit undecided on phrasing, because we're going to do it monthly anyway, right? I want to keep tabs on this as soon as it gets signed to see what's happening in Ryan's account on a monthly basis, because stuff will happen very likely. And I just want to make sure we keep tabs on that. But it also creates a level of commitment, like we talked about in the last call. Everything we say we do, we then need to also do. Otherwise, we're still putting ourselves in a corner, right? So I'm just I think it was the right thing to do. And just thinking this through out loud, I reckon doing a monthly audit still makes sense for external accounts and for proprietary accounts, like the sub-accounts in our system, we'll do regular check-ins. And I think that would be good enough. How do you guys feel about that?"
+      },
+      {
+        "start_time_ms": 1773760511333,
+        "end_time_ms": 1773760512533,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Randomized audits."
+      },
+      {
+        "start_time_ms": 1773760491191,
+        "end_time_ms": 1773760510832,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Yeah, I mean, we have to have a way to check it of some kind. So I don't know if you want to say frequent, use the word frequent, or if you want to say, you know, a quarterly or a biannually or how you want to, what you want to sign yourself up for or what we want to sign ourselves up for, but there has to be something."
+      },
+      {
+        "start_time_ms": 1773760415558,
+        "end_time_ms": 1773760489450,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "All right. Yes, I made that part of your legal doc. So you agree to these rules. And then you also allow us to do this and this. That's what they put their signature on. And then the guidelines are just the guidelines. Then also thinking about distribution. Assuming this document is where we want it to be in a week or two. What fits where? So, for example, we got extremely specific over communication guidelines and rules using glide level, which particularly pertain to Ryan because he has full control over what he's doing there. Still, obviously, pertaining to everyone. That has some level of governance over their sub-account. Is that something, I would say, in your legal doc, we at least want to make a mention of the fact that they are agreeing to frequent audits, and then how we perform the audit, we can make that part of the guideline?"
+      },
+      {
+        "start_time_ms": 1773760411366,
+        "end_time_ms": 1773760415037,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Like authorization for them to be in like pictures and videos that we're going to share."
+      },
+      {
+        "start_time_ms": 1773760406063,
+        "end_time_ms": 1773760410226,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "I think you referenced it, Kevin, in this, if I remember correctly."
+      },
+      {
+        "start_time_ms": 1773760398339,
+        "end_time_ms": 1773760403942,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Yeah, I think we can just add that in as a paragraph in the branding and just merge it all together. I think that's fine."
+      },
+      {
+        "start_time_ms": 1773760384712,
+        "end_time_ms": 1773760398319,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "And Matt, correct me if I'm wrong, but I feel like we can add what we're having them sign now of like the images and that stuff. I feel like that can be in the branding."
+      },
+      {
+        "start_time_ms": 1773760362747,
+        "end_time_ms": 1773760381392,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Just to close a loop on that, but do you want this to be part of the onboarding process as well? So people come in, they have to sign this document as part of that, yeah? So that onboarding page we created that people are being referred to now every time needs to include both documents once we're done?"
+      },
+      {
+        "start_time_ms": 1773760349493,
+        "end_time_ms": 1773760357165,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "And as long as we distribute those via email and I have a, I have a paper, I have a trail showing that it's been distributed. That's all, that's enough."
+      },
+      {
+        "start_time_ms": 1773760327825,
+        "end_time_ms": 1773760344231,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "can still refer to it, but then it's less subject. So then I guess a follow up after this calls also to take the document, identify anything illegal, split it off into a separate thing. So we have something to sign and we have something to distribute just as a general directive."
+      },
+      {
+        "start_time_ms": 1773760296951,
+        "end_time_ms": 1773760322615,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Yeah, that makes sense. Because we don't necessarily, if we do change, if we have changes to the branding guideline in the future, we don't necessarily have to get every, an agent signature on every new iteration of it. But the, the language of the legal review portion of, or the review portion of it for the legality of the liability that needs to, that necessarily won't change in the future. And that would definitely need to have a signature on it when we have it."
+      },
+      {
+        "start_time_ms": 1773760243267,
+        "end_time_ms": 1773760295910,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So we have the guidelines. I'm just thinking over the idea of splitting this into two parts, right? So the one part being, here's your freedom. Here's what you can do. Here's your directives. Here's the stuff that we can be excited about. Oh, and by the way, I need your signature for all the fuck you shit that I don't want to deal with later. I think it makes sense to not try and immerse it all into one piece of paper for, A, the tone of voice. But be also these guidelines will change over time more often than the legal side of things. And if we restrict also your legal review stuff to just monitor your legal stuff and the legal document, then we still have more freedom to just make changes to the branding guidelines as needed without having to go through full legal review every time you make an amendment to that document."
+      },
+      {
+        "start_time_ms": 1773760188476,
+        "end_time_ms": 1773760239057,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "what we talked about before, we don't need, I don't want it, we can't get into the weeds of every situation that very well could come about, right? So that's why I'm saying we just need, if my logo is going to go on anything, there's going to have to be an approval process before it's disseminated. Because in the event that something like this happens that you're talking about, Ryan puts together a document for all of his agents and says, you have to read this script, you have to be here at this time, you have to be here, dah, dah, puts my logo on the top of it. And I've never approved If something comes back to me, I can say, listen, he was obviously in violation of my branding guideline because I never approved it, so the liability falls on him. So we're safe there. So that's why that approval thing's got to be in place for something like that in the future. And I don't even know that, again, because of the way the law works, I'm probably going to get drug into it anyway, but at least it gives me something to stand on."
+      }
+    ],
+    "text": "[Matt Ruddick]: what we talked about before, we don't need, I don't want it, we can't get into the weeds of every situation that very well could come about, right? So that's why I'm saying we just need, if my logo is going to go on anything, there's going to have to be an approval process before it's disseminated. Because in the event that something like this happens that you're talking about, Ryan puts together a document for all of his agents and says, you have to read this script, you have to be here at this time, you have to be here, dah, dah, puts my logo on the top of it. And I've never approved If something comes back to me, I can say, listen, he was obviously in violation of my branding guideline because I never approved it, so the liability falls on him. So we're safe there. So that's why that approval thing's got to be in place for something like that in the future. And I don't even know that, again, because of the way the law works, I'm probably going to get drug into it anyway, but at least it gives me something to stand on.\n[Kevin Beeftink]: So we have the guidelines. I'm just thinking over the idea of splitting this into two parts, right? So the one part being, here's your freedom. Here's what you can do. Here's your directives. Here's the stuff that we can be excited about. Oh, and by the way, I need your signature for all the fuck you shit that I don't want to deal with later. I think it makes sense to not try and immerse it all into one piece of paper for, A, the tone of voice. But be also these guidelines will change over time more often than the legal side of things. And if we restrict also your legal review stuff to just monitor your legal stuff and the legal document, then we still have more freedom to just make changes to the branding guidelines as needed without having to go through full legal review every time you make an amendment to that document.\n[Matt Ruddick]: Yeah, that makes sense. Because we don't necessarily, if we do change, if we have changes to the branding guideline in the future, we don't necessarily have to get every, an agent signature on every new iteration of it. But the, the language of the legal review portion of, or the review portion of it for the legality of the liability that needs to, that necessarily won't change in the future. And that would definitely need to have a signature on it when we have it.\n[Kevin Beeftink]: can still refer to it, but then it's less subject. So then I guess a follow up after this calls also to take the document, identify anything illegal, split it off into a separate thing. So we have something to sign and we have something to distribute just as a general directive.\n[Matt Ruddick]: And as long as we distribute those via email and I have a, I have a paper, I have a trail showing that it's been distributed. That's all, that's enough.\n[Kevin Beeftink]: Just to close a loop on that, but do you want this to be part of the onboarding process as well? So people come in, they have to sign this document as part of that, yeah? So that onboarding page we created that people are being referred to now every time needs to include both documents once we're done?\n[Allyson Rose Powers]: And Matt, correct me if I'm wrong, but I feel like we can add what we're having them sign now of like the images and that stuff. I feel like that can be in the branding.\n[Matt Ruddick]: Yeah, I think we can just add that in as a paragraph in the branding and just merge it all together. I think that's fine.\n[Allyson Rose Powers]: I think you referenced it, Kevin, in this, if I remember correctly.\n[Samantha Katchen]: Like authorization for them to be in like pictures and videos that we're going to share.\n[Kevin Beeftink]: All right. Yes, I made that part of your legal doc. So you agree to these rules. And then you also allow us to do this and this. That's what they put their signature on. And then the guidelines are just the guidelines. Then also thinking about distribution. Assuming this document is where we want it to be in a week or two. What fits where? So, for example, we got extremely specific over communication guidelines and rules using glide level, which particularly pertain to Ryan because he has full control over what he's doing there. Still, obviously, pertaining to everyone. That has some level of governance over their sub-account. Is that something, I would say, in your legal doc, we at least want to make a mention of the fact that they are agreeing to frequent audits, and then how we perform the audit, we can make that part of the guideline?\n[Matt Ruddick]: Yeah, I mean, we have to have a way to check it of some kind. So I don't know if you want to say frequent, use the word frequent, or if you want to say, you know, a quarterly or a biannually or how you want to, what you want to sign yourself up for or what we want to sign ourselves up for, but there has to be something.\n[Kevin Beeftink]: Randomized audits.\n[Kevin Beeftink]: Well, to be fair, if it's plausible deniability, right. So let's say we miss a round of audits because I don't know, uh, something came up, right. Then there's nothing to point at if we're just going to say, we're going to do frequent, we're going to do audits at irregular intervals to check up on whether people are sticking to the rules or not, but then not specifying a particular frequency, I think makes it, on the one hand, makes it easier for compliance, on the other, it also sets the right expectation if we do make it specific, right? So I was still, a bit undecided on phrasing, because we're going to do it monthly anyway, right? I want to keep tabs on this as soon as it gets signed to see what's happening in Ryan's account on a monthly basis, because stuff will happen very likely. And I just want to make sure we keep tabs on that. But it also creates a level of commitment, like we talked about in the last call. Everything we say we do, we then need to also do. Otherwise, we're still putting ourselves in a corner, right? So I'm just I think it was the right thing to do. And just thinking this through out loud, I reckon doing a monthly audit still makes sense for external accounts and for proprietary accounts, like the sub-accounts in our system, we'll do regular check-ins. And I think that would be good enough. How do you guys feel about that?\n[Matt Ruddick]: Yeah, I think that that makes sense.\n[Kevin Beeftink]: And that's very specific, but I think that's the level we're at now. Or ask these questions. Let's just go through this very quick and see if anything still stands out. Anything up front, guys, that you wanted to talk about?\n[UNKNOWN_SPEAKER]: I don't think so.\n[Kevin Beeftink]: Let's just go through it. So right now, I just went through a checklist as well, so I compared our numbers. From the meeting to the document we put together and then looked at what the gaps were, trying to address it. For one, it's still a very stale document, right? This is not fun. This is just a rule book. So if we still want to be able to sell this as their prerogative to be able to do all this stuff and they have a ton of freedom, I think we'll still need to try and work on phrasing and try and present this as something exciting. I think it'll make it easier when we split the legal jargon from the branding document itself. To present this as a great opportunity and here's the rules and the guidelines you want to stick to um Make it look nice and fun. Did you just say emojis?\n[Matt Ruddick]: I'm just I'm joking.\n[Allyson Rose Powers]: But yes, we need to put we need to put a positive spin on the verbiage that's in there I was gonna say and I don't know maybe this was like a disconnecting communication I wasn't, I thought you just wanted me to like add the intro. So are you asking me to like rephrase the entire document or what do you, what do you mean by making it exciting? And what part of that is like what you want me to do?\n[Kevin Beeftink]: I don't have a clear instruction yet more like a, I think this is where we want to take it, how we do it. I don't know yet. So for one, like we need to get clarity what it needs to say first, which is what we're doing today. Once we're done, I think it still makes sense to think about how do we present this, right? What is the format? Is it a PDF that sits somewhere? Is it a live Notion doc that we send over to people? If it's a PDF, we have a little bit more of a freedom to make it look nice, put some branding of our own on there, work on formatting. So we take it out of the Notion format and create a proper document out of it. Um, I think, based on what Matt shared last time, trying to sell this as their prerogative rather than positioning this as a stale document is a smart idea, but then we'll need to try and make it look like something exciting more than it does now where it's a very stale notion document. So, that's my direction. How we do it, I don't know yet, but I think we just need to collaborate on that and figure out how to do it.\n[Allyson Rose Powers]: Okay, yeah, because that was, that was one comment I was going to make at some point was, even when I was going through this and I know it's a draft and we're gonna refine it and work on it. It was overwhelming and a lot. I had to sit down and spend an hour and a half at least just processing what it said before even adding my two cents to the part. So I do think for agents, they may half read it, not actually read it unless we find a way to...\n[Matt Ruddick]: They're not gonna read it at all. The only person that's ever going to read this is going to be Ryan. The rest of the agents are going to sign this because of the way that I explained it to them and what it's going to be. You know what I mean? And just as the reason why I'm sending it out. And I don't know if that comes through from me directly. That's another thing we've got to talk to about how, how are we presenting this to the entire organization? Obviously I can talk to the managers about it, but that doesn't necessarily mean that the managers are going to relay this to the agents either.\n[Allyson Rose Powers]: Yeah, the other part in that is in the section of whoever's job it's gonna be to make sure these guidelines are followed. If it's not communicated clearly to our entire organization, there's going to be more. If people don't know what they're supposed to follow, there's going to be more work on our end to like, keep communicating, hey, this is in the branding guidelines, but they never really Redditor never was communicated so there might be more work there unless we when we get to the point sit everybody down on a marketing call and go through it so it's clearly communicated there may be more auditing work that has to be done.\n[Samantha Katchen]: Well and I wonder if there's a way we could simplify because I guess like again at the end of the day like the legal document in itself covers math but that's the biggest and most important thing. But I also think it's like almost a waste of time to have and to do if we don't have any way to make sure that people can understand it to have some sort of an attempt to follow it, you know. So is there a way we could like really simplify in layman's terms the key things that would affect your average agent and then that document be like a legal document that goes more into depth to every But like, if I'm just a Katie Deamer, could you very simply, plainly spell out the things that are important for an agent to know? Otherwise, yeah, I mean, if they don't know, they're definitely not gonna follow it. And at the end of the day, if the only purpose is to cover Matt's butt with the legal document and have their signature, that's fine. But I do think we have to find a way to communicate it, a dummy version of it, and very much simplify it down. We want any chance of people actually following it. To your point, I think there's different levels of things we're talking about here though, because like Ryan is like, that's on him. He's got to figure that out. I don't think it's our job to simplify it and make sure Ryan knows everything to follow. But I agree, I like glanced at it and I was like, holy cow, this is a lot to have to understand and process and know then what affects me and my day-to-day things that now I have to be more cautious of, so.\n[Kevin Beeftink]: I think we'll end up with three parts, right? So legal jargon we take out, that'll already cover like half of the complicated stuff in the document, right? So it'll make it easier to talk about more straightforward concepts. I think we still need to be elaborate enough to cover important aspects. But then adding a summary and like an infographic even, right? Because the basic premise of this is don't fuck around, don't put our logo on anything we haven't seen yet. And if you're trying to educate your audience, I have to see it. Those are the three most important principles we have here, aside from the auditing stuff on the back end. So it's not super complicated. It's also fairly obvious. We just have to get specific on certain topics. And I think two-thirds of this document is all for Ryan. It has nothing to do with the rest of the organization. It still requires us, like we still have to cover our asses to figure this out and make sure we get this put in the right place. But yeah, I think we can create a one pager that just covers all important aspects more generically. Add a little disclaimer saying for specifics, make sure to read the entire document, which obviously 95% will not do. But then at least we pointed it out and made it their responsibility to do so.\n[Samantha Katchen]: And then I think we've got everything covered to extent um policing it doesn't is not going to be hey remember page three article five like yeah we're going to remember this one thing we sent out the other day like let's do that so could it almost be like to your point earlier where you were saying there's going to be like two separate things one is the legal jargon that gets into the specifics and goes into everything the other being the thing they actually sign and the thing they actually sign gives the authorization to the stuff they sign right now to use their pictures and videos and stuff like that and then a simplified version of what then the extended version is that then they can read on their own. Like can that all, do we think that could all fit on the one document they're signing? That way we don't have seven different documents, you know what I mean? There's one page that goes through the simple version of everything and that's what they sign and we say for more specifics and to see that whatever, then you have to reference the full branding guidelines document.\n[Kevin Beeftink]: I think the only thing I would do is flip that. So if we're going to have them sign anything, it should still be the legalities and stuff, right? We still need them to sign the stuff that goes most in-depth on this is where you are accountable. And then reference the guidelines and the one pager as this is going to be, these are going to be your guidelines.\n[Samantha Katchen]: We're going to sign something separate, so when we change things, that it still applies to that. You know what I mean, right?\n[Matt Ruddick]: We're going to sign the legal pager. The legal paper. And in the legal paper, it's going to reference the summary and the branding guideline. And that way, the branding guideline could be a working document that can change without us having to go back and get signatures every time it changes. So the legal side of it is the only thing, the legal part of this, one page, two page, whatever it's going to be, that's what they're going to sign.\n[Kevin Beeftink]: Yeah, I think that's the only thing. I think you just said, Sam, you wanted to get the guidelines signed. I would just think we just adjust that to the legal stuff getting signed, and then the guidelines still, like Matt said, being a working document, because we are going to put this out there, and then we may find stuff that'll change over time. But for two practical reasons, I don't think we want the legal document or the branding guidelines to be the one that signs, because that needs a new signature if it changes, but also needs a legal advisor What's on the legal document?\n[Samantha Katchen]: I guess this is what I'm, I'm confused. What's on the legal document?\n[Kevin Beeftink]: So legal document would cover, um, their level of accountability imparting their response. So if shit happens, they are accountable to whatever happened because we made them sign the document. So Matt's ass is covered. Um, they as leadership will also be responsible for imparting everything that is on this document on our behalf to their people. So that some of the policing also ends up with middle management and not just an alleys plate when it comes to reviewing like that kind of stuff They won't do that internally first and then send it over to us when the final stuff is actually reviewed So the process stuff make sure they do their homework first before it comes back to us Putting them as the accountable party if shit, it's a fan Accepting the fact that this is a living document and it'll change they're gonna accept it by default unless something major changes in the way we phrase things, legal stuff, right? Making sure that we're covered from the legal aspect of you do your job, you take responsibility, you mess this up, this is your problem, and then all the branding stuff lives in the other document.\n[Matt Ruddick]: Basically, it's just a bunch of disclaimers is what it needs to be, right? You understand that you received the branding guidelines. You understand that you read and agreed to the branding guidelines. You understand that the branding guidelines can change and when those changes They will be dispersed to you and you agree to abide by those changes when they happen, you know Like just shit like that and then they sign it and then that way we're able to make changes to the the branding guideline Like the living document whenever we want without having to get all of those changes signed every time And then it's more of a one pager that they're signing it's not overwhelming as much that they're signing a 20 page document either Another reason why I like it now I will say say on the distribution of this, if you're going to make a summary page, that's great. But I think the best way for us to do this, because, you know, Ryan's organization is different than everything else and blah, blah, blah. I think, you know, because Ali, you had mentioned, we go through this on a marketing call. I don't know that I necessarily disagree with that, but the problem with that is Geneva is not on our marketing calls. I think we should probably, if you're going to make a summary page. I think we have a loom five minutes, whatever it may be to hit the highlights of the summary page and of the document. And then we send the document out in the email with the loom. So that way I've got a paper trail to show everyone in the organization. Was given it was given everything. It was explained what they needed to do and told them if they did, if they need to, if, if they review it and have any issues, then they can get back to us. Blah blah blah blah, right? So that that way I can show that it because this is thing that this is something that came up in court. I Gotta be able to show I Put everyone on notice. I Explained to them to the best of my ability what it was why they had to sign it and why it was there Because we can't have people coming back and playing ignorant Right. So I think it's just as simple as I don't care what the loom is. I don't care if it's three minutes Going over the summary page saying here. Here's the document ClickGUARD it's it's a doc you sign you're going to sign it Because we're requiring you to sign it of acknowledgement that you're going to have it If you have any questions on it, let us know. Otherwise, this is your document for your reference. You can keep it And I think we can leave it at that as far as distribution goes now Outside of that if we want to and it's probably a good idea for us to take 10 minutes at a marketing call To go through it again with the other side of the organization. I'm 100 okay with that or just say you guys all received this anybody got any questions let's run through the summary page real quick and then move on like that that's all fine and then I want to make sure that we record that phone call or that that zoom and we have it because that'll be important for us for me to have as well and I think that that's enough and then when we have new iterations or things updated in the future we just need to make sure that we have it emailed to everyone and we have a trail that it was emailed to everyone.\n[Kevin Beeftink]: Sounds good. On that note, let me contextualize a few things in detail. So we're all clear. So we just covered this. I don't know yet what that'll look like, but I think by splitting up like a one pager the guidelines and the legal stuff, it'll be much easier to at least get to that. Let's wrap up the document itself first, or documents, because I'll go ahead and split this into two parts then after we're done. Again, Matt, have someone that knows legal stuff actually review it, but I'll give them a baseline to review instead of having them write it up.\n[Matt Ruddick]: No, no, when we get to the point where we think it's a good document, then I already have people waiting to review this. They know it's coming.\n[Kevin Beeftink]: So after we split it, we need two documents first. So one guidelines, the other one is going to be legal stuff. And then once we're done with the final version of both, we add the one pager just to recap. So we're not going to do that three times over. So we're very clear on what that needs to contain. Let's see, brand, visual standard, we're discussing important details, but they're not actually filled in. So that's what you already added to the document, I think, Ali. Did you include anything specific on your approval workflow I think we said we're going to review it. You want to be specific on the turnaround time.\n[Allyson Rose Powers]: So what part is going to be on my plate.\n[Kevin Beeftink]: Anything that we need to review that has the KRS logo on it.\n[Allyson Rose Powers]: Outside of the stuff in hatch.\n[Matt Ruddick]: basically if they want to have if they want to build a flyer that they build a flyer themselves or if they Put my logo on a banner that they had built, you know stuff like that They've got to send you copies of it so we can approve it and then turn it around presentations to even Anything that's got my logo on it that Ali doesn't make But it was like if it's email like let's say somebody wants to run a campaign in hat and to leads with like emails and stuff.\n[Allyson Rose Powers]: Is that going to be something for me to approve?\n[Kevin Beeftink]: I was thinking to also keep this practical. We want to have a standard custom GPT that does the legal review of the contents of whatever they want to share out. I think that covers us better than any other scenario, Matt. So basically, we're just having an AI it for legalities and making sure we were compliant. We run that as a standard mode of operating, which Allie can do for anything on paper. We basically, we could do anything that goes through Hatch. We both run the same stuff. We both can send our sign-offs on whatever gets sent out. So we don't need to be critical of what it says. We can just delegate that to the AI. And if it looks like shit, Allie, you can still have an opinion. Same for us. And basically, we split the responsibility of legalities. We delegate that to AI. Number one, I don't know how to feel confident doing that with my team at all. Because I don't want to take on the legal responsibility of saying this is good. And this is compliant, right? I think that needs not lay with either Allie or myself or the team. I think that needs to be something that can actually say something about it, which should be AI more than anything else. And then anything to do with brand usage. We're using standard templates for everything that is digital, so I'm not too concerned If it does require a second perspectivality, we would probably escalate it up to you in case you need to review it from a visual perspective. But then I guess what that means is anything digital will run through that compliance TPT and make sure everything is up to par and we check it for some of the check boxes we care about. And then anything that is not digital ends up with you. You do the same thing for content just to make sure it gets reviewed through a standard process. Because again, that covers Matt's ass in terms of, you know, making sure we did our diligence. And if it doesn't look great, you can still give them your feedback.\n[Allyson Rose Powers]: Okay, so just I understand what you're saying. You're saying everything that is online digital running through that, but anything like print presentations would manually be approved by me?\n[Kevin Beeftink]: And then our manual process. Recommendation would be like from a content perspective to be compliant run it through that standard GPT we could put one together so that's not the problem but then just send your file to the GPT say review this document for compliance have it spit out a report so we have that on file somewhere in Mac and say to court hey we did our jobs and here's how we do it which is ten levels up from everyone else that's supposed to be doing it but it's very little effort right so you basically take the document send it out with the file content, review it, you get a sign off saying this looks good, and you send it back to whoever sent it to you.\n[Allyson Rose Powers]: Yeah, if we could set, I think you spoke some terms that I'm not 100% sure on, but if that, yeah, like I know chat GPT, but I don't like know setting up a GPT or any of that. So if that could be something that's set up and then what you were talking about, about it spitting out a report or I don't know what that would look like if that lived in Hatch, if that lived in chat GPT. Like, I don't know any logistics of that, but that sounds great.\n[Kevin Beeftink]: And sounds like a helpful tool. Basically, what it means is you have a custom chat GPT chat, you drag your file into it, you say analyze this for compliance, and it just spits out a report based on what we defined as the rules, right? And it'll just give you the same result every time. And then yeah, logistics, you need to figure out. I don't think it's smart to keep that report in JetDBG. So literally creating a print of the screen you see, saving it as PDF, and dragging that into a dry folder is already enough for compliance. Because then at least you can store the review somewhere. But I don't want to create a ton of overhead for any of us here. So as much as we can make this simple and straightforward, the better. Because this is just going to burn time to stay compliant. This is just a money dump for Maddie. Like we're just burning cost on something we just have to do from a legal perspective here. So long story short, yeah, basically your logistics should be fairly simple. You do what you always do. We just add one more check, which is some custom AI layer that you drag your file into. That's it.\n[Allyson Rose Powers]: So to answer your question, about turnaround time, you could say 7 to 10 if we want to specify.\n[Kevin Beeftink]: Cool, cool. All right, so we said monthly audit document, so this is on purpose as needed and not scheduled. I guess monthly does make sense, but it has to be then the legal stuff. So I'll make this a specific cadence as well. That's a beat. That's not necessarily a big problem, right? So we could still review. Not saying that we would, I'm just saying for compliance, are we good? I think we're good. All right, so I'll change this to monthly. So Ali, I think you brought this up. You said, do we want to be added as a client to every campaign? I think it's a smart thing to do. I just don't think it should live in the document for two reasons. So one, it adds an extra level of responsibility, too, because it means that whatever they send out, we then also need to check in detail. I would rather do the money. Monthly audit the way we set it up now as our main level of responsibility. The fact that we want to be included in this, I would not make it a formal agreement. I would make it a practical agreement with anyone running a campaign because it also puts responsibility down on you to have a full review of every bit of messaging in detail. I think we want to end up in a place where we can say, all right, these are the rules. We'll help you stick to them. That on a frequent basis and not make that specific to every campaign. Does that make sense? My phrase is a little simple, right? The more explicit we make the rules, the more we need to police them. The more involved we get into the details, the more we got to stay on top of them. So we make part of the rule book that we want to be part of every campaign as a client, it has an extra layer of complexity for every campaign that we may or may not want to enforce. It also means that it has to have a purpose to be part of that for these guidelines. And if the purpose is just to know what's happening, then it shouldn't necessarily live on this document. And then the other end is if the purpose is to actually check on their compliance, then it also puts more responsibility on us to check every dot, letter in that message.\n[Allyson Rose Powers]: I was just gonna say my thought in wanting to be added as a client on campaigns is because for me that does help like see what's happening more frequently so I don't know if you're saying the opposite of that or the same thing as that.\n[Kevin Beeftink]: I think it's a smart thing to do I just wouldn't make it a rule in the rulebook that's all.\n[Samantha Katchen]: You're saying it can be done And we will, on our end, set that up so that that's done. We're just not going to tell them in the rulebook that we're necessarily doing that.\n[Kevin Beeftink]: Because it's a legally charged document, whatever we write, it comes with, you know, responsibilities. So if we write this up, it immediately creates something people can point at and say, look. And then whatever implications come out of that, we also own because we wrote it. So worst case, that means something went on a campaign, we were on there as a client. They said, yeah, but you guys check everything, right? Because you're part of every campaign. So why are you holding me accountable? And then where do we point? Then who's accountable? Then it's up to a judge. Whereas if we don't make it explicit, the only explicit rule we set is you are accountable to being compliant, and we'll just help you do that by checking up on your stuff from time to time. Then it's much more veered towards the person running the campaign than it is on us to make sure they're compliant.\n[Allyson Rose Powers]: I see. Because that's something I still would like to be in on, but if that's not specified in this document, that's totally, I understand.\n[Kevin Beeftink]: I'm just trying to be smart with plausible deniability, right? So whatever we write comes with consequences and it has to have a purpose when it is this kind of document. So yes, but not in this doc. And then we'll just need to figure out a way to make that logistically possible. So we'll look into that. Mitch, I want to make sure we revisit that next week. So we can tell Allie how we can make that a standard rule for every campaign that we run. I do want to circle back on that a little later, Allie, because there is both. Most of the campaigns we've run are evergreen, right? So only a portion of the campaigns we run are one-offs. But for example, Stephen's running something that will run forever. So does that mean you want to be part of the first run that is deployed for every time it's deployed to a new sub-account? That doesn't need to be answered now. I'm just saying it comes with some intricacies I want to make sure we hash out for logistics, yeah? So we'll figure that out later. Seeing as you're legal, so yeah. Legal aspect to be added, input required no matter how. So we just talked about this. I think we're good there. Marketing authorization, make that part of the legal document. So I think we talked about that as well. So this is phrasing. Matt, I need your perspective here because this comes back to what you said last time versus where I think it should end up. Last time, you were very explicit. You said, anything that has my logo on it, I want to sign off on. Which to some extent makes sense, also creates a ton of overhead, because it means that every social media post, every, like, it will discourage people from doing stuff as well. So I would say the way we phrase it was anything with factual or industry related content needs approval, basically means when you're trying to present facts, they better be good. And they better be right. And that means we want to double check them. If it's not necessarily factual, testimonials or whatever from your clients, I don't think it makes sense to put that on Ali to review that in detail. I don't think it's smart from a workload perspective, nor that adds a ton of value for us to review it at that level of detail.\n[Matt Ruddick]: I agree. To a degree because there's also I don't know I guess my mind goes to the worst case scenario with all of it and I can't necessarily solve the worst case scenario or plan for the worst case scenario every time but I'm just looking at it like okay so some some one of my agents some politically up, putting some political post up with my, my logo on it. Where had it been obviously asked for approval prior, I would have said no, but there's not necessarily anything factual that they're putting out there. So that would be okay. So it comes into the whole religion politics. Do I want to start naming down all of these categories either? Cause I don't know that I know Necessarily want to do that. So I don't know how to handle all that But there's definitely things that agents could post That could detri that could be detrimental to my brand So, I don't know. How do I handle that?\n[Allyson Rose Powers]: And I guess that's what I'm looking at when I say when I or with this question you say Do I Well, Matt, are you talking about somebody like just on social media posting something political in one post and then the next sentence they post something about Karras?\n[Matt Ruddick]: I can't really police that. I'm talking about I don't want to put my logo on a political post. You know what I mean? Something like that. I can't police Mike Seidler being an idiot and posting something, right? Like, I don't care. Not me, but I don't want Mike Seiler to put that post up with my name on it.\n[Samantha Katchen]: So can we outline what's expected without policing it? So like when using the KRS logo in any social media posts or in any way that's being broadcasted externally, there can be no reference to politics, there can be no reference to a religion, and it is on the responsibility of the agent to make sure that the facts they are presenting as it relates to the industry are accurate and up to date and go through our marketing team to get approval if they are unsure. So then it puts it back on the agent to say if I'm going to make a post with these facts, I have to make sure they're right or I will go to the marketing team to find out if they're right or not. So let's say that Sam, right?\n[Kevin Beeftink]: So one is, can we put the responsibility of reviewing their content on them and then tell them you are accountable. So if you're in doubt, check with the team rather than having the team approve everything.\n[Samantha Katchen]: And the other being outline like the bare minimum things Matt for sure doesn't want talked about with his logo. There's no and why they would need to make a post about politics and include the KRS logo. If they make a post about politics, just don't include the KRS logo, right? So like anything using the logo has to be industry related and cannot factor in any personal preferences, opinions, facts about politics. You know what I mean? Like just outlining that social media posts that use KRS as a logo.\n[Kevin Beeftink]: Let's say I'm an agent and I'm going to go to LinkedIn and said, these left-wing idiots are absolutely destroying Medicare for everyone. And I make a big round post about it. We wrote an amazing blog article on life insurance. It's the best thing you can consider. ClickGUARD here. And then the link refers to the website. The website has a little KRS logo on it, which will pop up on LinkedIn. And that association of that post is left-wing people are idiots. Look at KRS as the right company to make your choice, but that is not something we want to see happen.\n[Samantha Katchen]: But they are still by sharing that post, they're using KRS logo and KRS material in the post. You know what I mean? If they just did a generic post that didn't reshare a blog or point to our article. And just said, my opinion on Medicare, black and white.\n[Kevin Beeftink]: So same scenario now, but they don't reference the blog post. Are we OK with that?\n[Samantha Katchen]: I guess we have no choice but to be, right? And that's, I guess, on an individual basis, like Matt, how you handled the Mike Seidler thing, right? Like, we'll have to, I mean, we'll hear about it, we'll see it, we'll have to address those situations one-off. I think the biggest, most important thing is anything that references a post that we've shared, materials we've created, our website. You cannot post opinions or anything about politics while also including anything about key retirement solutions in the same thing.\n[Kevin Beeftink]: complicated, right? So let's say your tagline says, insurance specialist at KRS. I still make a political rant. I share my opinion with my network, but I'm positioning myself as an insurance agent with KRS that has an opinion.\n[Samantha Katchen]: I mean, we can't do anything about that, right? Like that's all the stuff even then.\n[Kevin Beeftink]: And then give them legal implications that if they did, then here's what happened. Of course we can. Because they're using the brand. Like the fact that they position themselves as a KRS agent because they're eligible to use the KRS brand to position themselves as such comes with some responsibilities and rules. So we can definitely tell them you can't do this if we want to.\n[Allyson Rose Powers]: Well, I guess my thought is more like this is kind of separate from the statement of like no politics, no religion with our logo, like getting them to understand how you present yourself online is important. And these are gray areas, even when they're sitting in the home, like we've always been taught, you don't bring up politics, religion, like they need to be empowered to also understand like how you represent yourself online is important. And getting into these gray areas, you may please some, but you're also gonna piss off other people.\n[Kevin Beeftink]: So- How does that fit Allyson? Cause now I'll come back to what Matt said initially, Right, So what does that mean? Or is it our responsibility to? Instill morals on people like where does that like that's not our job?\n[Samantha Katchen]: Workplace says they work at KRS. How are we going to sit here and say that?\n[Matt Ruddick]: Yeah All I can say is my name and logo can't be associated in the same post that happens when things like that happen Now, again, I don't know how to quantify that to the point where I say, because if I say, I don't need to approve it if it has anything to do with industry notes or something like that, but then when I say, all right, well, they say something about the industry that's not true, am I allowing them to put untrue facts up in the industry with My name on it. You know what I'm saying? So I keep coming back to the point of your Kevin. You're right. It may dissuade some people from doing it But maybe that's safer for me Because it doesn't dissuade them from doing it it just dissuades them from using my name when they do it I'll make it more black and white then it's not safe to have 10.99s, man.\n[Kevin Beeftink]: Just having employees now Well, that's even worse. It's worse If you take that to the fullest extent of your statement, it makes it complicated. There is 100% going to be a gray area here. There's always going to be a risk.\n[Matt Ruddick]: The question is- The gray area goes away if I say, if it's got my name or logo on it, I've got to approve it. It's going to be more work. There's going to be some more work in there.\n[Samantha Katchen]: You want to have somebody approve every single Joy Daily Key Retirement Solutions post that goes out. She posts in groups, private groups on Facebook. She goes and spends time each day posting in different groups, plus her public posts, like, there's no way.\n[Matt Ruddick]: I don't want to. I don't want to do any of it, but I'm trying to stay out of a fucking courtroom.\n[Kevin Beeftink]: Even the implication, if she does that, it's probably with a reason, because it's working, and if it's working, then she's making money, and then if it's on her head, then we'll do it.\n[Matt Ruddick]: And I'm not talking about Joy Daly doing something wrong, because Joy Daly's not a moron, and she's not going to post anything that's bad. You know what I'm saying? And to Kevin's point, That's the hard part, right? There's always going to be a gray area there. So what do I say? Don't post anything about just say religion and politics.\n[Samantha Katchen]: That's pretty great. I also think you need to say that all facts posted when being associated with or using the KRS logo have to be up to date and accurate. But that onus isn't on our team to audit and check. That's on Joy or that Katie or whoever to sure I'm posting facts that are accurate and up-to-date and if the agent is unsure if the facts they're posting are accurate and up-to-date they have the ability to come to our team to make sure that they're compliant but our team isn't having to pre-approve all posts but that that's on them right like how are you gonna control every especially well I agree with you I think that I think that that verbiage is fine and honestly I'm not even worried about the religion part of it I'm okay with somebody saying Talking about God in their posts, please get more than that than the other shit that's going on.\n[Matt Ruddick]: I'm good with it I think the main problem I have is the political stuff I think if I just said don't post anything political with my name on it and Make sure that what you're posting is factual and if you want us to help you check the facts we're here as a free resource for that and I'm good with leaving it at that I think and not getting into all of the other gray area stuff that we're talking about, right? Because I don't care. I don't necessarily care what they say. As I'm listening to hear you hear you guys play devil's advocate with my with me when 50 different directions, which is good, but I don't care. I don't care about anything that they say. I don't care how joy phrases it. I don't care what joy says. I just don't want it to be like Kevin's example. These mega idiots are wing idiots or blah, you know, I don't, I don't want anything to do with politics in it. They can come back and associate with me. And I want them to know that they're going to put, if they're going to post something that has anything to do with facts, they need the facts need to be correct. I think that's really all I care about.\n[Samantha Katchen]: Can we say politics and opinion based? Like, I don't really think anyone, I don't think KRS should be saying original Medicare is better than Medicare Advantage. Make sure you have a Medicare Advantage plan and not original Medicare, right? Like take politics out. I think we shouldn't do any posts that are non-facts, right? Like take out, they cannot reference politics and they can't reference their own opinion if they're using your logo, right? Because you don't want people posting universal life is the worst thing you can get. Only buy a term and invest the difference, right? Like all of those opinions.\n[Matt Ruddick]: If we said we don't want anything with my logo on it that it's not factually based, that gets rid of political stuff, because the political stuff is opinionated. So maybe we could just use that and just say, if you're going to post anything that has anything to do with my name, it needs to be factually based, non-opinionated. And if you need help or want a reference to making sure that the facts are correct, we're here as a resource.\n[Kevin Beeftink]: So as part of the discussion, I'm just picturing this slider going left to right, saying 30 minutes of alley hour time every month to 15,000 every month. You can always say I've done a reasonable amount of effort to make this happen and then make that your case in court if anything ever happens.\n[Matt Ruddick]: That's where my mind is with all of this. What I say is how I back it up if somebody comes and asks questions. That's why Going back to this and saying I don't need to approve any of it But you better make sure that it's factually based and you better make sure that the facts are correct So I don't make this like to keep it extremely practical.\n[Kevin Beeftink]: Why not give them I think to sam's point as well facilitate the option for review, but don't make it a mandatory step You can give them the freaking custom dpt if they want to choose to use it, right? Nobody's going to do it but making it the option to do so So again, puts the responsibility on them saying, Hey, you signed up for these rules. You are then also accountable to live by them. You fuck up. That's your responsibility and make sure you don't fuck up. Here are the tools you can use to check yourself instead of that we, instead that we do it.\n[Matt Ruddick]: I think that that's fine. And if we, and us saying that we want to, we want, we want posts with my name associated to be centered around factually based things and not political or not just political opinions, opinionated gestures in general. I think that that's, I think that that encompasses what I'm necessarily worried about when I get a bad actor. Listen, I'm going to get a bad actor and I'm just going to crush them and tell them they can't use my name and take it all down. Like you're done. I'm done with you because we'll see it. I got to have something there in the back end that kind of means we put in the verbiage.\n[Kevin Beeftink]: We put the responsibility on them to actually live to make sure it's right.\n[Matt Ruddick]: Make sure it's accurate and we have again. We haven't had any problems with this. I'm just foreseeing I'm trying to I'm trying to I'm trying to have a process in place for when the problem in the future comes because the future is the problem is absolutely going to come at some point and I'm tying the line here of Agency again, right of control. I don't I I don't want to say I'm controlling what they say I do want to say I want to put some control on what they say with my name on it, which is 100 okay but I don't want to control what they say. If they want to go out and they want to give opinions and have opinionated things that go out, they're just going to do it without my name associated with it. That's all. I'm never going to get away from saying they work at KRS if they put something up on LinkedIn. That's fine. It is what it is, but\n[Kevin Beeftink]: It comes back to Paul's vulnerability, right? Because even like with Joy's example, I'd love for her to keep doing that, right? I'd love for us to not tell her, hey, let me see every social media post you put out there. It'll 100% discourage people so I think it's fairly it's fair to say I've done my job by facilitating the rules and giving them the options to review themselves in order to do so at the best of my abilities with a reasonable amount of budget but you can't expect me to spend year $250,000 just to police the freaking rule book like that makes no sense for a small business right so um on the possibility side it's important to say I gave them the resources to check that the facts are correct whether they use them or not is up to them and I told them I don't want anything I don't want anything opinion-based with my name on it.\n[Allyson Rose Powers]: I think that's enough.\n[Allyson Rose Powers]: Yeah because I was gonna say all the stuff like um Matt with by the hand they wanted me to like type out every social media post so I had to write all the posts for the like it's and now waiting for them to get back to me like they wanted to see every single thing that was gonna and go out on like, and it's just adds like a whole layer of complication.\n[Matt Ruddick]: So I think- It's been two months and we posted nothing because we have to go back and forth with them about their crap. And it makes me not want to be associated with them because we can't do anything. It's not even like we haven't raised a dollar for them yet. I don't want to go there. And I don't want to police at all because you're right, Kevin, if I'm going to police it in that aspect, they need to be employees. I need to own the whole damn thing. So there has to be a line drawn somewhere but I have to put a layer of protection in there at some point as well.\n[Allyson Rose Powers]: I think that's a good middle ground.\n[Kevin Beeftink]: Because I also be mindful of time guys. I think what I'm hearing is big picture, set the rules, empower them to stick to them, create plausible deniability saying, hey, them this, they signed up for this, they chose not to, that's their problem. That's like the big picture I'm hearing, which I think makes total sense because, again, it's such a waste of budget for us to police anything like this at that level. I highly discourage anyone to want to do that. I think what it comes down to then is, again, for the sake of time, splitting this document into two parts, putting legal jargon in one, rulebook in the other, adding a front cover saying, here's the recap of it after we're done putting this all together, and then reviewing everything we put in here, saying, all right, this is your responsibility to do so. It also means, I think, for the audits that instead of putting a frequency in there, it makes more sense to say that by signing the document, they submit to only get frequent audits. And leave it at that, right? Because then it's up to us as to whether we want to check things or not. Because again, Chris Paul's with an inability saying, I had access and I did look at this, right? Because we need to say, to some extent, I created enough governance to say, all right, I've been able to check that people are complying with the rules, but frequency and whatnot, like that's subjective, right? I don't think that really matters. So specifically in Ryan's case, Just having a sign off saying yes, I approve the krs team to review my shit And if I'm fucking up to point that out and I need to do better.\n[Matt Ruddick]: Yeah, I think it's good enough for how he phrases I agree What we don't want to do is say we're going to do it monthly and then we don't do it for two months And then something happens in that month and then they're like, we'll see it's it's your fault. You didn't police it So it's on you. But if I just say I'm going to do it frequently What is frequently? Well, it's very ambiguous and i've read going to be left to be an ambiguous term.\n[Kevin Beeftink]: We'll still get very specific on the go-high-level rules, because that's very ambiguous if we don't make that very clear. And the risk there is not just legal, it's also practical. So we do want to put those limits in place. I think that's where we want to take it. We split the documents. We need one more session. I'm more concerned now with timeline as well. We said we wanted something by the end of the quarter. Splitting the document into two parts. I can get it done by early next week. You still need to send this out. And technically, practically, Ryan is now not able to do anything until this is signed. I think that's what you told him. Which, for one, I don't think he's actually sticking to the rule because that'd be weird. But second, it does put some pressure on us actually delivering this to some extent. To be fair, if we want to do a reasonable effort of putting something together, this is not going to be done in two weeks.\n[Matt Ruddick]: My lawyer is going to take a week to get it back because no lawyer is in a hurry. And I've got two people that are going to look at it. So it's fine. Let's just try to get it done by the middle of April, if we can, if we're a week or two late on it, it's not going to be the end of the world. We're going to be late because of the lawyers on my side. We're not going to be late because of this group getting done what we need to get done. Because Allie can't make it into a PDF that looks pleasant without me getting her the information, right? I have to get her the final draft before she can Allie it. So it's going to be on me. And that's all right. If it's going to be late by a couple of weeks, it'll be on me. And I'll take care of the ryan situation of that if there is one I'll talk to him about it It's not gonna be I'm not worried about it If he feels like he's stuck again, I would just tell him here's the draft, right?\n[Kevin Beeftink]: Because these rules for god level are not going to change.\n[Matt Ruddick]: That's that's What we're talking about are the rules like it's not like we're making shit up. I'm just putting the rule on a piece of paper. Yeah Okay rules that I'm governing him with are the same rules I have to govern myself with like it's not like I'm coming down on him by any means. I'm just using what the rules are.\n[Kevin Beeftink]: Then both of my courts have split this into two parts. I'll do a final review, do another loom recap like last time. I'll check your notes, Allie, to see if everything is in there that we need. Once that's done, I'm just trying to think of next steps. So if we're good on the split, we're good on the verbiage, The next step is finalizing the guidelines themselves from a copy perspective to make that sound a little nicer. We can definitely make that first iteration an AI draft. And then Ali, maybe you can touch it up. I think that'll be the best way to go about it. I'm happy to finalize that draft then as well. So basically, I'll take the two documents. Once we're good on this, I feel confident, or I get you guys sign off one of the two, I'll just final draft that actually reads nicely.\n[Matt Ruddick]: I just need the legal document. I don't need the branding guideline. I don't need my lawyer to go through the branding guideline. I need the legal document for the legal verbiage. So, the sooner you can get me that, obviously, the better because that's going to take time for me to get that turned around.\n[Kevin Beeftink]: I'm happy to send that over to you first. I'm just going to imagine that if your legal document references this document, your lawyer is going to say, no, I need both before I can start.\n[Matt Ruddick]: Well, and I don't need the final draft of the branding guideline. This draft that you'll spit out this week will be enough to get her going so she has something to reference. If we're going to change some verbiage so it reads nicer, that's not going to make a difference. I just need\u2026 I guess what I'm saying is I just need a version of it. I don't need the final version.\n[UNKNOWN_SPEAKER]: Which is updated based on what we talked about today, right?\n[Matt Ruddick]: Once I have that, then at least I can get that over to her.\n[Kevin Beeftink]: All right, so let's say, go ahead.\n[Samantha Katchen]: I was just gonna ask him, what does Allie making like look pretty and nice? Cause not the legal document, right? Like, is it just the summary page that she's gonna make sound better and then have it look nice and that's gonna be the agent facing thing. But the thing they're signing and then the legal document and then the thing that goes more into depth of everything, that's just words on a paper, right? Like we're not trying to make that look good or we are.\n[Kevin Beeftink]: So if we still, It depends on where you want to draw the line the one pager will help sell it The guidelines are still going to get some level of attention from people.\n[Kevin Beeftink]: So if we don't try and sell that That one page cover page the like That's the summary that he was talking about.\n[Matt Ruddick]: We want to make that look nice and appealing The the branding guideline. I don't know that we necessarily just want to make it a straight word document We can do a couple of things to make it at least visually appealing I don't Yeah, I don't need Allie to spend hours and hours on making it look cool, but maybe putting a border around the outside of it, putting the logo on there, you know, stuff and little stuff like that. Yeah, maybe watermarks or, you know, whatever you do. I think it's just simple stuff like that, that make it more appealing to actually flip through. The one pager is obviously the most important thing to make it read easily and look nice. The legal document should not have anything on it. For the words and the signature line. So yeah, not a lot of time involved in any of that, but I think putting a little bit of time in there will go a long way towards hopefully getting people to flip through it. At the very most, they're definitely not gonna read it, but maybe they'll flip through it if there's more than just words on a paper.\n[Allyson Rose Powers]: Sounds like a plan. So do we need a follow-up meeting for this or can things be right now, communication via email and notions?\n[Kevin Beeftink]: Yeah, we have direction now, right? I think we're clear on how we want to do it. Brat's got it and how we write it up. It's 80% going to be AI anyway, so may as well just run that exercise. I'll review it, finalize it after the split, and then I'll send it over to you, Allie, and we'll just keep the email chain going.\n[Matt Ruddick]: If you think it's good enough for me to send to legal, then just let me know what that point is. Again, it doesn't have to be final, but close to it, I guess, is what I'll need.\n[Kevin Beeftink]: Let's get to a decent draft by early next week. And then you can send it out. I think that's fine. Cool, cool. All good. Other questions, suggestions, feedback? This is fun, guys. OK, good stuff.\n[Allyson Rose Powers]: The location of fun's a little different than mine, I guess.\n[Kevin Beeftink]: Good, it means we're together. As a company, it's good stuff.\n[Samantha Katchen]: Milestones and shit. He's having fun. I'm getting fun energy.\n[Matt Ruddick]: He nerds out on this stuff for sure. That's good though. I don't have a problem with it.\n[Kevin Beeftink]: I don't have anything to do with it.\n[Kevin Beeftink]: Well, still, I am honestly saying like the fact that you have to go over this stuff means you're maturing as a company, right? I think that the process itself is really cool. The fact you have to do this shit, yeah, it's a headache. We have AI so it's much easier.\n[Allyson Rose Powers]: It's helpful.\n[Allyson Rose Powers]: I just I do have to say I loved that we went through all the scenarios of the aliens coming because that I did like talking through aliens coming so It's right up your alley That's funny.\n[Samantha Katchen]: There was something we said at one point I was like looking to see if there was an alien reaction emoji because it's exactly what I thought of I couldn't find You too, bye"
+  },
+  "metrics": {
+    "read_score": 77.61602213992498,
+    "sentiment": 68.15465389880313,
+    "engagement": 87.07739038104681
+  }
+}

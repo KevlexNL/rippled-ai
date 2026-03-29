@@ -1,0 +1,226 @@
+{
+  "main": {
+    "id": "cbf0962553c53811",
+    "type": "split",
+    "children": [
+      {
+        "id": "4765853542c974e5",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "230619d5e04b4f66",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "ops/signal-and-commitment-processing/Email Processing Update 20260324.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Email Processing Update 20260324"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "a0543db28cb59b7f",
+    "type": "split",
+    "children": [
+      {
+        "id": "4d7e093c345c0ccd",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4fd66429a6b04ceb",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "71f6828f9201f61f",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "f3595d358328b1e9",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "47bf926e3391ce27",
+    "type": "split",
+    "children": [
+      {
+        "id": "22b2246aa711b464",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2a7921046d640ae1",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "ops/signal-and-commitment-processing/Clarification & Missing Information Brief.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Clarification & Missing Information Brief"
+            }
+          },
+          {
+            "id": "d255e21c6241a809",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "ops/signal-and-commitment-processing/Clarification & Missing Information Brief.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Clarification & Missing Information Brief"
+            }
+          },
+          {
+            "id": "01c17575ca093dc0",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "55738bc95df320d5",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "49ac3e16874860da",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "ops/signal-and-commitment-processing/Clarification & Missing Information Brief.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Clarification & Missing Information Brief"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "230619d5e04b4f66",
+  "lastOpenFiles": [
+    "app/services/normalization/__pycache__/normalization_repository.cpython-312.pyc",
+    "tests/__pycache__/test_tasks_process_slack.cpython-312-pytest-9.0.2.pyc",
+    "app/connectors/slack/__pycache__/normalizer.cpython-312.pyc.133842785117232",
+    "app/services/normalization/__pycache__/normalization_repository.cpython-314.pyc",
+    "tests/__pycache__/test_tasks_process_slack.cpython-314-pytest-9.0.2.pyc",
+    "tests/test_tasks_process_slack.py",
+    "tests/__pycache__/test_engine_pgbouncer_compat.cpython-312-pytest-9.0.2.pyc",
+    "tests/services/__pycache__/test_detection_sweep_guard.cpython-312-pytest-9.0.2.pyc",
+    "tests/services/__pycache__/test_candidate_promotion.cpython-312-pytest-9.0.2.pyc",
+    "tests/services/orchestration/__pycache__/test_stage_logger.cpython-312-pytest-9.0.2.pyc",
+    "tests/services/orchestration/__pycache__/test_routing.cpython-312-pytest-9.0.2.pyc",
+    "ops/work-orders/WO-RIPPLED-DETECTION-RESCAN-LOOP_PENDING.md",
+    "ops/work-orders/WO-RIPPLED-CANDIDATE-PROMOTION-BROKEN_PENDING.md",
+    "ops/work-orders/WO-RIPPLED-API-500-RAILWAY_PENDING.md",
+    "ops/signal-and-commitment-processing/full-brief.md",
+    "ops/signal-and-commitment-processing/Clarification & Missing Information Brief.md",
+    "ops/signal-and-commitment-processing/Email Processing Update 20260324.md",
+    "ops/work-orders/WO-RIPPLED-20260320-002-commitment-context-ui-group-by-context_COMPLETED_202603232200.md",
+    "ops/work-orders/WO-RIPPLED-20260320-002-commitment-context-ui-group-by-context_INPROGRESS.md",
+    "ops/work-orders/WO-RIPPLED-20260323-004-email-source-ingestion-fix_COMPLETED_202603232100.md",
+    "ops/work-orders/WO-RIPPLED-20260323-004-email-source-ingestion-fix_INPROGRESS.md",
+    "ops/work-orders/WO-RIPPLED-20260323-003-browser-automation-fix_COMPLETED_202603232054.md",
+    "ops/work-orders/WO-RIPPLED-20260323-003-browser-automation-fix_INPROGRESS.md",
+    "ops/work-orders/WO-RIPPLED-20260323-004-email-source-ingestion-fix_PENDING.md",
+    "ops/work-orders/WO-RIPPLED-20260323-003-browser-automation-fix_PENDING.md",
+    "build/phases/03-detection/completed.md",
+    "build/phases/03-detection/decisions.md",
+    "ops/prompts/detection-prompt-v7.md",
+    "site/assets/images/favicon.png",
+    "docs/prompts/judge.md",
+    "docs/prompts/seed-v3.md",
+    "docs/decisions/index.md",
+    "docs/workorders/backlog.md",
+    "docs/workorders/active.md",
+    "docs/prompts/detection-v4.md",
+    "docs/prompts/index.md",
+    "docs/product/audience.md"
+  ]
+}

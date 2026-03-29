@@ -1,0 +1,1147 @@
+{
+  "id": "01KM0RQ20B0AVTZKGMTCA5Y4GR",
+  "start_time_ms": 1773847414795,
+  "end_time_ms": 1773851705607,
+  "scheduled_start_time_ms": 1773847800000,
+  "scheduled_end_time_ms": 1773851400000,
+  "participants": [
+    {
+      "name": "Kevin Beeftink",
+      "invited": false,
+      "attended": true
+    },
+    {
+      "name": "Matt Ruddick",
+      "email": "mruddick@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "name": "Mitch Santos",
+      "invited": false,
+      "attended": true
+    },
+    {
+      "name": "Samantha Katchen",
+      "email": "skatchen@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "email": "mitch.kevlex.academy@gmail.com",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "admin@kevlex-academy.com",
+      "invited": false,
+      "attended": false
+    },
+    {
+      "email": "mitch@kevlex-academy.com",
+      "invited": false,
+      "attended": false
+    },
+    {
+      "email": "kevin@kevlex.digital",
+      "invited": true,
+      "attended": false
+    }
+  ],
+  "owner": {
+    "name": "Kevin Beeftink",
+    "email": "admin@kevlex-academy.com"
+  },
+  "title": "KRS - Leadership Meeting",
+  "report_url": "https://app.read.ai/analytics/meetings/01KM0RQ20B0AVTZKGMTCA5Y4GR",
+  "platform": "meet",
+  "platform_id": "isc-kdys-xvd",
+  "folders": [
+    "Planning Meeting"
+  ],
+  "live_enabled": false,
+  "summary": "The meeting reviewed operational updates, a potential PNC-affiliated Medicare call-center client, and the KRS portal/app (My Insurance Coach) rollout and campaign plans. Mitch reported about 28 survey submissions and agreed to send one final reminder before the Typeform subscription ends. Matt described a near-final deal with a PNC-related group that has capital and aggressive hiring goals for a Medicare call center; no commitments were made beyond current system capabilities.\n\nThe team reviewed the portal MVP features and timeline \u2014 personalized profiles, localized perks, a dynamic top section, agent linkage, and planned GoiLevel integration for messaging and scheduling \u2014 and noted Kevin\u2019s goal to complete a proof-of-concept before month-end and onboard agent Nadine as the initial pilot. Signup will use a Stripe checkout capturing name, email, and agent ID, but cannot include the proposed product checklist at point of sale. As an interim measure agents will manually enter client coverage data; Matt outlined a \"turn in sheet\" workflow that auto-generates an email and requires about two extra minutes of agent input, acknowledging limited support for frequent post-enrollment edits.\n\nRollout sequencing was set to trial with Nadine, then expand to Arizona if successful, aiming to align portal rollout with an autosync and app release by August 1st. The group agreed to vet 24/7 call-support vendors and clarified Ryan\u2019s subaccount ownership and responsibilities for deleted workflows and lead routing. Finally, the team discussed a paid cross-sale campaign and whether to provide raw data or a managed, fee-based outreach service, favoring small pilots and revenue-share trials while deferring a universal policy and defining a limited set of standard reports.",
+  "action_items": [
+    "Mitch Santos will send another survey reminder before the Typeform subscription expires",
+    "Kevin Beeftink will finalize the portal proof-of-concept and target completion before month-end",
+    "Kevin Beeftink will onboard Nadine as the first pilot and coordinate required setup with her",
+    "Kevin Beeftink will integrate GoiLevel links for \"message my agent\" and scheduling in the portal",
+    "Kevin Beeftink and Matt Ruddick will compile a shortlist of 24/7 call centers to vet and decide on domestic vs. offshore support",
+    "Matt Ruddick will talk to Megan and have her make outreach calls to local partners for the pilot",
+    "Matt Ruddick will raise the deleted workflow and lead-routing responsibility with Ryan on Friday",
+    "Sam Gilberry will run the T65 campaign outreach on behalf of Steven with materials branded in Steven\u2019s name",
+    "Mitch Santos will email Matt Ruddick the mailer math showing quantities of each mailer and stamp counts",
+    "Matt Ruddick will give Kerry the mailer math after receiving Mitch\u2019s email",
+    "Kevin Beeftink will send the two branding guidelines documents early next week",
+    "Kevin Beeftink will meet with Allie next Friday to validate the base setup in GoHighLevel",
+    "Kevin Beeftink will produce churn and gap-analysis reports (operational reports) in about two weeks",
+    "Kevin Beeftink will follow up to schedule a half-hour meeting next Tuesday to discuss the campaign in detail.",
+    "Matt Ruddick will continue discussions with the team to define the paid campaign model and consistent scope across partners.",
+    "Matt Ruddick will hire additional staff to support scaling the campaign and appointment-setting work"
+  ],
+  "key_questions": [
+    "Did Mitch send another export of the survey responses?",
+    "Do we want to send another survey reminder before the Typeform subscription expires?",
+    "What, if anything, did KRS promise the prospect that is not currently built?",
+    "What do the prospect expect KRS to deliver over time that KRS does not yet have?",
+    "How does an agent sign up a client for the portal and can a checklist be included at point of sale?",
+    "Can the point-of-sale process include the required client checklist?",
+    "Will there be a process now for agents to edit client coverage reflected in the portal after initial enrollment?",
+    "For the next few months, is Nadine the only agent who will use the portal or will multiple agencies be involved?",
+    "When churn and gap-analysis reporting is available, who will receive the reports, how often will they run, and what handholding will agents need?",
+    "Do you have time next Tuesday to sit down about this and just talk it through for half an hour?",
+    "Why would we give the data to agents when they already have it?",
+    "Are we going to give the same data access to Geneva as to other partners?"
+  ],
+  "transcript": {
+    "speakers": [
+      {
+        "name": "Kevin Beeftink"
+      },
+      {
+        "name": "Matt Ruddick"
+      },
+      {
+        "name": "Mitch Santos"
+      },
+      {
+        "name": "Samantha Katchen"
+      },
+      {
+        "name": "UNKNOWN_SPEAKER"
+      }
+    ],
+    "turns": [
+      {
+        "start_time_ms": 1773851702141,
+        "end_time_ms": 1773851702544,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Bye guys."
+      },
+      {
+        "start_time_ms": 1773851700472,
+        "end_time_ms": 1773851701417,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Do the same. All right."
+      },
+      {
+        "start_time_ms": 1773851699365,
+        "end_time_ms": 1773851700351,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Sounds good. You too."
+      },
+      {
+        "start_time_ms": 1773851697381,
+        "end_time_ms": 1773851698802,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Then I wish you a great week. We'll talk later."
+      },
+      {
+        "start_time_ms": 1773851695520,
+        "end_time_ms": 1773851696080,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "All right."
+      },
+      {
+        "start_time_ms": 1773851663026,
+        "end_time_ms": 1773851694539,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Okay pushing back on the idea. I think it's a great idea to have this but I think I mean, we're all just learning Even if we just spell it out, that doesn't mean it's going to happen. Exactly like with Steven, like you said, if there's a vested interest, if there is a monetary interest, there's risk involved, then there's motivation. So nothing else you want to go over?"
+      },
+      {
+        "start_time_ms": 1773851660265,
+        "end_time_ms": 1773851662685,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "No, I didn't have anything All right."
+      },
+      {
+        "start_time_ms": 1773851658424,
+        "end_time_ms": 1773851659665,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "So there's anything else you want to do?"
+      },
+      {
+        "start_time_ms": 1773851643622,
+        "end_time_ms": 1773851658064,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Like the best fucking eight years. I know I get it. I know I gotta work through it But I gotta go because I gotta try to hire other people so that I can make more money. So Let's talk on this again Talk to you guys later See you man."
+      },
+      {
+        "start_time_ms": 1773851607603,
+        "end_time_ms": 1773851642836,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "That's correct So then start with a smaller scope make sure you make money immediately with a clear small set of people Where are you going to see, right? Are these campaigns affected? They got nothing to lose yet. They just pay on the back end. We try a few out. We see if it works or not. And if it does, we either increase the scale of these little pilots or we try and get other people to also make use of the analysis. If they make use of the analysis, but they want to run their own campaigns, is that for free? Or that they can buy into a fucking subscription or whatever. I think you got to be more selfish, man."
+      },
+      {
+        "start_time_ms": 1773851595733,
+        "end_time_ms": 1773851607443,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "so then You're basically creating overhead And expenses Without I have to get something out of it."
+      },
+      {
+        "start_time_ms": 1773851570289,
+        "end_time_ms": 1773851595272,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "But then I don't think like you want to have a clear scope of here's what you get as being part of the organization. Here's the add-on you can choose. You'll make more money with our help. And I think when you will split that up very Purposely there is no reason to give them access to the data again. It's an analysis of what they already have We're not there's nothing proprietary about this, right?"
+      },
+      {
+        "start_time_ms": 1773851565748,
+        "end_time_ms": 1773851569669,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Yeah, but that doesn't mean you can do it. I have to do it for him and because I have to do it for him, I'm going to charge him for it."
+      },
+      {
+        "start_time_ms": 1773851555815,
+        "end_time_ms": 1773851564987,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "But that needs to be translated into, hey, Andres, here's for your team, here's an instruction that goes with it for you to actually make a fucking buck out of this."
+      },
+      {
+        "start_time_ms": 1773851526418,
+        "end_time_ms": 1773851555093,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "So yeah, I don't know. We're going to have to talk through it more, exactly how I'd want to set it up. Because I don't, like I told you before, don't want to give anything away for free anymore. It's got to be consistent across the board of how I do it and why I why I'm doing something. Another big thing that we need to figure out how to do is to take every MedSupp client that we have that has had a rate increase over year over year of more than 5% and print out a list. That's a huge opportunity that I know agents, you know, right."
+      },
+      {
+        "start_time_ms": 1773851501513,
+        "end_time_ms": 1773851525797,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "But then there's no vested interest. They may or may not. So I would say, why not flip this? And why not say, don't share it with anyone. Start with small pilots. See who's interested in RevShare. And if it turns out that this is great, then at a larger scale, we make the data. Because as soon as you make the data available, you get questions. You need to provide support. There's overhead. There are discrepancies."
+      },
+      {
+        "start_time_ms": 1773851492909,
+        "end_time_ms": 1773851500533,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Well, hopefully they work the data and work their houses better and write more business because they're making better use of the data. If they write more business, I make more money."
+      },
+      {
+        "start_time_ms": 1773851482925,
+        "end_time_ms": 1773851491809,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So let's collaborate. What's the purpose of what? How do you, and then I'll just be selfish, man. How do you benefit from doing that?"
+      },
+      {
+        "start_time_ms": 1773851474453,
+        "end_time_ms": 1773851481024,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "And the answer to that is, I don't know, I would, I guess, The first thing I would need to do is ask him, what data do you want that you don't currently have?"
+      },
+      {
+        "start_time_ms": 1773851457445,
+        "end_time_ms": 1773851473432,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So again, like my, my pushback there is he already has it. So what are we really giving him is a journal analysis. So it's an extract of the list that of comparison from this the last time. And then here's what churn."
+      },
+      {
+        "start_time_ms": 1773851400279,
+        "end_time_ms": 1773851454503,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "No, we're not. And I don't, I obviously haven't thought through all of these scenarios, but I think what we have to, what we would have to do in that scenario with across the board is just say, here is the list of data that we can get, that we can, that's available, right? We're not manipulating and doing 15 different types of requests to try to get data together. I'm going to give you a turn list, data list, And I'm gonna give you XYZ right whatever it is. It's five reports These are the reports that we can glean and we can give to you That's it. If you want anything outside of that take the data manipulate it yourself Again I haven't thought this through this is just off the top of my head That's what I would think we're how we would solve that problem because you're right Ryan's gonna say I want this variable this variable this variable and this variable from all these different sheets and I want you to put it all together and give me that No, do it yourself. I'll get you the main data. Do it yourself."
+      },
+      {
+        "start_time_ms": 1773851378775,
+        "end_time_ms": 1773851399078,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So then what does that mean? What kind, what do they get? Here's an example. Hey Ryan, here's your return data for the month and here's a gap analysis on has this but does not have that. Hey man, thanks. Can you give me list, I'm looking to get this and this out of the list. Do we do that?"
+      },
+      {
+        "start_time_ms": 1773851360518,
+        "end_time_ms": 1773851369209,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Well, then I feel like then you shouldn't. Why would you give it to Geneva and not have that up just because of their their contract level and their deal and their agreement."
+      },
+      {
+        "start_time_ms": 1773851352715,
+        "end_time_ms": 1773851353815,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Are we going to do it for Geneva?"
+      },
+      {
+        "start_time_ms": 1773851345472,
+        "end_time_ms": 1773851350814,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "And part of running the campaign is getting them the data. There's no scenario that you're giving people the data like you are for Geneva."
+      },
+      {
+        "start_time_ms": 1773851300851,
+        "end_time_ms": 1773851344932,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "They just don't have a system Because yeah, I mean my my response is I'm giving you this system and I built it for you because you obviously didn't build it for yourself And a lot of them will say and like Mike Thomas, for example, he'll say well That's the reason that I partner with you and I have you guys and Kevin because I want you to build these systems for me They don't want to build them. Don't know how to build them, etc. All right, so We cannot run the campaign at all That's fine. If they say no don't run the campaign. What's your clients? I'm not gonna run it if you tell me But if you want me to run the campaign, I'm going to be charging you for it. It's not free."
+      },
+      {
+        "start_time_ms": 1773851294025,
+        "end_time_ms": 1773851300531,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So I would then ask why Let's just ask the basic question. Why would you give it to them? They already have it."
+      },
+      {
+        "start_time_ms": 1773851284376,
+        "end_time_ms": 1773851292764,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "I think that was my initial question. Like are we giving them the option to just like with Geneva get the data versus the option of the handholding in the 20 percent?"
+      },
+      {
+        "start_time_ms": 1773851275882,
+        "end_time_ms": 1773851282565,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "But I think again, they could even do their own analysis, right? They can build this if they want, they could just take the call."
+      },
+      {
+        "start_time_ms": 1773851231694,
+        "end_time_ms": 1773851272061,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I don't know. I don't know. I don And because I agree with what Sam said, I would be the same way. I don't know that we have a lot of agents that would be, I could be surprised, but if we do it that way and just say, Hey, here's the, here's the list that we're going to message this to, and we're going to take 20% cross out any name you don't want that you don't want this information going to."
+      },
+      {
+        "start_time_ms": 1773851173152,
+        "end_time_ms": 1773851231674,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I'll work it It's also often basis, right? So, um, it's not a we're gonna just do this and take a cut It's gonna be hey, here's a campaign that I think is smart to run on your list you want it because then we just need to take the 20 out and then they choose and it's It will always be direct response campaigns, right? It's always gonna run for a very short while with a very clear sales intent saying hey For example, hey, I see you have this, but you don't have this. I think it's definitely something we want to talk about. Do you have time next Tuesday to sit down about this and just talk it through for half an hour? It's going to be that type of campaign, extremely direct, very personal. But it's the type of message you need to sit down, think of, write, and then follow up on twice to make sure you get the response that you want. And they can choose to say yes or no to the exact list that we extract for that Yes, please do. I haven't been in touch with them. I haven't talked to them. So I mean that's one way to get around."
+      },
+      {
+        "start_time_ms": 1773851147486,
+        "end_time_ms": 1773851172832,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Our best agent is Nadine. Nadine does not work a list. If I gave Nadine a list, she's not going to work a list. I asked her if she wanted to work my client list and she said, no, I've got too much going on. I don't want to work your client list. So I don't know that we have that problem because we don't have an agent like you in the organization I'm the same way you are. I would say give me the data."
+      },
+      {
+        "start_time_ms": 1773851043841,
+        "end_time_ms": 1773851147366,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "I think we just give them the data Because I can't set I can't set up workflows and stuff in their account and I will say I don't know I'm just talking a lot I haven't thought this through but I don't know if giving certain people just the data and not doing all of the hand-holding and taking 20% is a scenario we should consider but I can tell you that if I was an agent in this scenario I would work the data and not give you 20% and I would actually do it and if I was being told that you're doing it and taking my 20% client stuff I'd be pissed and I also think again with certain people our top upper echelon agents I think about the fact that like sometimes you know you can't really quantify yes your text message may have made the client finally pull the trigger on an annuity but what if I been presenting that annuity or talking about it with the client for a year. And then that finally just made the timing come in. And then now I have to give you 20% for that. Like, you know, I'm just trying to think devil's advocate and things like that would make me mad if I had a client I've been working with for a couple of years. Again, not to say that text message didn't like find like spark something, but if I had already been presenting a product and they just hadn't pulled the trigger, like, how are we going to know for sure to say when Also don't have an agent like you."
+      },
+      {
+        "start_time_ms": 1773850969967,
+        "end_time_ms": 1773851043121,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "So I guess moral of the story is while it's gonna be great to manipulate the data that way like we've been wanting to and we've been talking about for the last couple years and I think this is the best and most efficient way to do it, building it into the whole system that we've got. I also think it doesn't mean anything until we have a series of two text messages and two emails to send out that's very elementary that an AI could write for us of a campaign that goes along with it that says, all right, Veronica, this is everybody that you have that has a MedSupp that doesn't have an annuity. We're sending messages about an annuity product. And we have a way, like I was Yesterday we got to make sure we have a way to track it so that I know if she writes something on that person That I'm being cut incorrectly, you know, so as long as we can build the back end out to where when you put XYZ Tag on it That tag is specific for that campaign for that specific agent So that when they go in and they do a turn-in sheet on that specific person We can make sure that it matches up But I think that's the that's the second half of building that system with the cross sale campaign that we're talking about Now on the Geneva side of it."
+      },
+      {
+        "start_time_ms": 1773850930478,
+        "end_time_ms": 1773850967466,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Yeah, no, I agree completely. I think we have to, we can't do hand-holding without there being some sort of way that we get more for doing more. So I think that's fair and it makes sense. And I think even with the Steven situation, you know, seeing how much more invested he is and how great your feedback Kevin has been in working with him like 100% has to do with the fact that he's paying for it. He's got his stuff on the line not Matt's stuff on the line and I think that makes people work something in a different way you know so yeah I agree."
+      },
+      {
+        "start_time_ms": 1773850801532,
+        "end_time_ms": 1773850929638,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Well, I think you and I talked a little bit about this yesterday, so you know what I'm about, what I'm going to say. And I talked actually, Sam and I talked about it yesterday too, that I totally agree with you that I could give, I could hand them a list and say, all of these people want to buy something. That doesn't mean that they're going to actually pick up the phone and call someone on that list. So then it becomes a matter of, do we do like what we were talking about yesterday and say, we're going to put together a campaign that's two texts and two emails and I'm going to hit button on this and I'm going to market the annuities for you. And then when that happens, I'm going to take everything 20% that comes out of there because my team is marketing it for you. And then to Sam's At this point, she's like, when I told her that, she's like, I agree. And then she's like, then they won't read the messaging when it comes through and go high level. They won't even know that the client messaged them back because they're not efficient on that. I said, okay, then I'll take an admin and I'll have an admin set the appointments for. And now I'm taking another 20% of the count. So it may have to be a system that's that way that we hand hold it to the point where we just make the appointment for them. But it's like I was telling you yesterday, there's nothing else that's free. The days of giving stuff away for free are over because I we've built out plenty. So I think that's probably what it's going to have to be. And even my best agent, if you if I told Nadine, hey, I'm going to set you an appointment with somebody that wants an But I'm taking 40% and she will say, you can have it. So I don't know if that answers the question. I don't know, Sam, if you disagree with anything I said or if you've got another angle there, but I almost think that it's going to have to be that way because I agree with you. The history has shown us, even if I put it on a plate, that doesn't necessarily mean they're gonna eat it. They would almost rather be hungry in some places, in some instances, I think. I don't know."
+      },
+      {
+        "start_time_ms": 1773850660698,
+        "end_time_ms": 1773850798871,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Um, yeah, so last thing to also operationalize or at least set the expectation of um I'm expecting To be able to do consistent churn reports and gap analysis reports in about two weeks That means that I'm going to pay the opportunity first, then we decide what to do next. So we have the opportunity, we're on a comp sheet, and then compare it to last month's comp sheet and say, all right, here's the difference between this one and that one. These are the likely ones to have churned this month, broken down by age. That's analysis one. The other is, here's a list of people that have X but do not have Y, or people that have A and B but not C, and we can run that every time we run an import. So on a practical basis, if we take a weekly or monthly export of commissions and run that through the system, the report and say, here are the insights gathered. The insights could lead to awesome opportunities, but then we need an agent that understands, hey, I need to now pick up the phone and do something. I think that is the operational side of things that I, the opportunity is massive, right? Having the analysis is great. But then Considering the overwhelm of agents and managers currently, we're just adding another cool thing on their plate to consider, which I think is the biggest opportunity we can grant them. I don't think they can properly assess that, nor know how to handle it right now. So my question for that is, when we're able to run these reports, what do we do? For whom? How often? And what kind of handholding are we going to provide? I have some recommendations, but I'll ask the question first, and then I'd like to see where we take that. So I'll ask it to both of you. How do you see that work out?"
+      },
+      {
+        "start_time_ms": 1773850631025,
+        "end_time_ms": 1773850660018,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "That's the idea creating yourself tasks and reminders in there Is you saw the picture of all her post-it notes? Like just the fact that she can organize herself with tests and reminders on one spot and the system will be huge That's the idea Simple stuff that'll make a huge difference for her Okay All right, um, what else I think that's it."
+      },
+      {
+        "start_time_ms": 1773850614794,
+        "end_time_ms": 1773850630825,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So she'll be able to emphasize they're using DHL more and we're building two pipelines. One is for onboarding and one is for account management. So she can just drag cars from one state to another and we just tell her right if you did this then do that If you did this do that and then you'll know where everyone's at."
+      },
+      {
+        "start_time_ms": 1773850564301,
+        "end_time_ms": 1773850613433,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "It needs to be easy for her. To be bare minimum because it needs to be easy for her to understand. And the bare minimum is going to make her 25% more efficient just from the jump because of what she's doing. So yeah, I want it to be bare minimum. We can always add more in later a little bit at a time, but also she's right in the middle of tax season too. So I can't, we, we need to do something to help, but we all, uh, so that she can use the system more efficiently, but I don't want to re-engineer her entire life right now. It's not, it's not the time to do it and it can't be done all at once anyway. So I agree with you, bare minimum, little steps. Use the system for what's already built. Here's how you can use it better for what's already there. This is what you should do. And then I think we just leave it at that. I don't, I'm not saying we need to build her a system at this point. I want her to just be able to use the system that's there and understand how to be more efficient with it. That's all."
+      },
+      {
+        "start_time_ms": 1773850525239,
+        "end_time_ms": 1773850563781,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So that's ongoing. Branding guidelines, we talked about obviously yesterday, so we're getting that split up, and I'll send out the two documents early next week. Allie's request for an issue we talked about for current meeting her next Friday again, Matt, to just see if the base setup we did and go out level is going to help her out. I'll just flag it again. This is a honestly something I want to do. Don't take this the wrong way, but the bare minimum, because if I start to over-engineer whatever she needs, it's not her bare minimum."
+      },
+      {
+        "start_time_ms": 1773850522898,
+        "end_time_ms": 1773850523899,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Yeah, sounds good."
+      },
+      {
+        "start_time_ms": 1773850517236,
+        "end_time_ms": 1773850522098,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "That's $2,800, okay. Yeah, just send me all that in an email so that I can give it to Kerry, and then we know what we need to do."
+      },
+      {
+        "start_time_ms": 1773850512834,
+        "end_time_ms": 1773850517056,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Okay, and that's for every mailer, so times two."
+      },
+      {
+        "start_time_ms": 1773850505556,
+        "end_time_ms": 1773850510434,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Yeah, so it's like 1400. Yeah, of course, there you go."
+      },
+      {
+        "start_time_ms": 1773850491383,
+        "end_time_ms": 1773850505077,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I think at the end of the day, it's going to be six different mailers to 40 leads across six months. So the math, if you just do the total, it's going to be six times 40 times six. Am I saying that right? So six mailers, 240 times six is 12."
+      },
+      {
+        "start_time_ms": 1773850475121,
+        "end_time_ms": 1773850489982,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Stamps are easy because I can just mail them to her. I can just I can send her 100 at a time. That's not a big deal. It's the it's the copies that I want to make sure I just do it once so that I don't have to deal with it again."
+      },
+      {
+        "start_time_ms": 1773850460589,
+        "end_time_ms": 1773850471698,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So it's going to be a total of 1,800 stamps, something like that at some point. In a year? Nine months. I think we did the math. Nine months, 1,800 stamps."
+      },
+      {
+        "start_time_ms": 1773850425758,
+        "end_time_ms": 1773850455785,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "We did the math after nine months that gets sent out if I'm not mistaken or sorry after six months yep can you send me an email Mitch with that math so that I know how many of each mailer to get printed please cuz I'm never gonna do it one you know what I'm saying if Carrie's gonna do this I'm just gonna say print 4,000 copies and give her and so she's gonna need 40 stamps per month right so we're probably looking at another 400 stamps now now It's 40 cumulative."
+      },
+      {
+        "start_time_ms": 1773850423117,
+        "end_time_ms": 1773850425698,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "There are a total of thirty five hundred and twenty prints."
+      },
+      {
+        "start_time_ms": 1773850410771,
+        "end_time_ms": 1773850422797,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "So she's gonna need like 300 copies of each each mailer is what you're telling me because there's 1800 total that need to go out Figure out how many how many of each mailer do I need to print for her?"
+      },
+      {
+        "start_time_ms": 1773850395635,
+        "end_time_ms": 1773850410311,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Basically, you're adding four Every envelope is what I'm saying No, basically every lead gets six mailers, which means every month they get another one Which is different from the previous one."
+      },
+      {
+        "start_time_ms": 1773850393554,
+        "end_time_ms": 1773850394514,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Multiple different mailers."
+      },
+      {
+        "start_time_ms": 1773850374744,
+        "end_time_ms": 1773850393534,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Yeah, which means I remember we had out here. Um, yeah, so she's doing 40 leads a month, which totals to after six months 1716 mailers sent out after six months. So I'll give you an idea."
+      },
+      {
+        "start_time_ms": 1773850348666,
+        "end_time_ms": 1773850373003,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "So she's live now as well She's got it set up for Check yes now Carrie just told me that Sam got a hold of her yesterday the day before about Because I got to get all the shit stuff printed out for her and get her stamps and envelopes So I think I don't know what it is Carrie's dealing with it and she's gonna have all the stuff there for so she'll have of what she needs to be able to set everything up."
+      },
+      {
+        "start_time_ms": 1773850317437,
+        "end_time_ms": 1773850348247,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "And then from the back of the room. I heard we got podcasting stuff in the house. We're fine It doesn't need to look pretty man, I just need some content not a ton of people are gonna watch it But you're like if you're a market put your fucking brand. Yeah, put your He's gonna do it. Well Jason now make sure it gets done on TCS 5 on the topic Sam Prices t65 campaign got launched. I think it was last Monday Mitch if I'm not mistaken."
+      },
+      {
+        "start_time_ms": 1773850308986,
+        "end_time_ms": 1773850317197,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I'm sure there's a lot of pushback to that. But his wife is in the room and I It doesn't need to look great."
+      },
+      {
+        "start_time_ms": 1773850304865,
+        "end_time_ms": 1773850307806,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "You should have seen his face when I told him to."
+      },
+      {
+        "start_time_ms": 1773850300205,
+        "end_time_ms": 1773850301625,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Is he going to record videos?"
+      },
+      {
+        "start_time_ms": 1773850243729,
+        "end_time_ms": 1773850299284,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So good thing is entries weren't lost. Everything was still stored. We have backup emails always generated as part of this setup. Those are still triggering as well, which is also why we didn't flag it because the backups that come through, it just turns out that Allie wasn't seeing them. So that is done. Let's see. Steven is enrolled in T65. So basically Sam Gilberry is going to run it for him. The communication is done in his name. So it's a slight adjustment, but he wanted to basically do T65 campaigning in his own name, supported by Sam. The difference now being that all materials have his name and face on it. But she's going to do the outreach and the RV ends are going to be by Sam representing Steven. So that's a slight adjustment to the setup. What was that?"
+      },
+      {
+        "start_time_ms": 1773850229162,
+        "end_time_ms": 1773850242089,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "So that happened because of the problems we had when Ryan was trying to come out and the whole thing went down and GHL had to fix it. You're talking about that situation, like whatever it was a couple of weeks ago, that's what messed this up for Allie."
+      },
+      {
+        "start_time_ms": 1773850178390,
+        "end_time_ms": 1773850228476,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "In terms of fixing shit, what a great segue. So after the website was migrated over, it turns out that emails sent in through the website didn't necessarily end up in the right place. So Allie flagged an issue that she wasn't getting the support requests in her inbox anymore. And upon expectation, we found that because the website was migrated by a hash or go high level, things were changed that we didn't know about. So we triaged it, fixed it, it's fixed moving forward, and we sent back any requests since that switchover of the website back to Allie, so she's now perfectly back into the loop. So again, if stuff breaks, that is stuff that we do and fix and take care of As long as it's our domain and our accountability, then we're good. So we took care of that, Allie's up to speed again. We double checked that everything's now in the right place, and that's fixed."
+      },
+      {
+        "start_time_ms": 1773850079595,
+        "end_time_ms": 1773850177390,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Yes, you're exactly right. Mitch, don't do anything. I had to have this same conversation with Carrie last week because turn in sheets were coming in last week with no phone numbers on them. And she was she's like, I'm just going to email the agents. They have a March Madness contest going on. I said, if you email those agents, I'm going to throw your freaking laptop in the backyard. Do not. She's like, I told Ryan about it today. I said, well, that's where it ends. If this shit doesn't get submitted, it's not our problem. We were very clear. The information has to come over and be complete for us to submit it. We're not chasing their people down. This is a them problem, not us. So with a lot of hesitation, she And listen to me and then magically that night it was all fixed Ryan sent her all the phone numbers and I think it hasn't been a problem since then so She's the same way as Mitch. She's like I'd rather just log in and I'd rather just fix it myself and get it done But then you enable them and then every time there's a problem. They're always gonna be just like well They'll fix it or they'll find their way around it or whatever it is And I don't want that it can't be that way so the answer is a whole No, do not fix anything for them. It's broken. Let them lay in it. I don't care If my shits broke, please fix it Of course, I mean I was just a bit That's just a bit worried because you're not a part of my shit that needs to be fixed That's all I'm saying."
+      },
+      {
+        "start_time_ms": 1773850047042,
+        "end_time_ms": 1773850079295,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I would appreciate that. Also, for Mitch, keep knowing we're all good on the alignment and we stop at service. Again, we're very wired to just take accountability and fix shit, right? So, Mitch already asked me for and twice, can I really not log in and just fucking fix in the account? And the answer is still no. So I just want to be super clear. And it creates more issues as well, right? Because if Ryan gets used to us still fixing shit on his end, he doesn't know to actually take accountability over it. So I just got to put a hard moat in there."
+      },
+      {
+        "start_time_ms": 1773850043460,
+        "end_time_ms": 1773850045601,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I agree, and I'm going to say those exact words."
+      },
+      {
+        "start_time_ms": 1773850035736,
+        "end_time_ms": 1773850041699,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "A response to an email is a bare minimum, I feel like, to ask for, but"
+      },
+      {
+        "start_time_ms": 1773850034375,
+        "end_time_ms": 1773850035656,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "I agree."
+      },
+      {
+        "start_time_ms": 1773850023780,
+        "end_time_ms": 1773850033965,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Well, it's supposed to be fair. It would also be just a nice courtesy to get a, okay, thank you, I'll look into it, reply back from him, you know, as a professional courtesy of, I'm on top of my shit, thank you for letting us know. Yes, sir."
+      },
+      {
+        "start_time_ms": 1773850008854,
+        "end_time_ms": 1773850021559,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I'm gonna bring it up. I gotta talk... I'll be there... I gotta talk to him on Friday anyway, so I'm gonna bring it up and make sure he knows that this is something that's on him and he needs to figure out, and I'll clear it up. I'm not gonna babysit it, but I'll bring it up one time, and then from there, it's his problem."
+      },
+      {
+        "start_time_ms": 1773850004952,
+        "end_time_ms": 1773850008834,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Yeah, Matt, I don't know if you... How much you want to follow up on that, but that's what..."
+      },
+      {
+        "start_time_ms": 1773849976089,
+        "end_time_ms": 1773850001721,
+        "speaker": {
+          "name": "Mitch Santos"
+        },
+        "text": "We're sending them. To Geneva, but there's a chance that the owner might get overwritten because Zapier has limitations on the assignment. So that's why we set up the workflow in his subaccount to make sure that it doesn't get overwritten. But right now, since we can't do that, Zapier is sending the information, and there's a chance that it might get overwritten, but it'll go to his account."
+      },
+      {
+        "start_time_ms": 1773849948745,
+        "end_time_ms": 1773849975108,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "And he has not replied, but outside of the George situation, he has not replied back about the situation with him having deleted the workflow you guys made for lead routing into his sub account. You haven't heard anything back from him on a solution for that. So then what are we doing if leads come in and he doesn't have that set up? I don't know that that's a huge problem or that we're having a ton of volume come in."
+      },
+      {
+        "start_time_ms": 1773849941075,
+        "end_time_ms": 1773849946398,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "All right, so that means it's up to Ryan to reply back or not. We are done until he replies back to us."
+      },
+      {
+        "start_time_ms": 1773849938453,
+        "end_time_ms": 1773849939413,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Yeah, no, I'm good with that."
+      },
+      {
+        "start_time_ms": 1773849935010,
+        "end_time_ms": 1773849936411,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "No, I think you're recapping that right."
+      },
+      {
+        "start_time_ms": 1773849815362,
+        "end_time_ms": 1773849933289,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Anything else you want to add to that? Okay, cool. Let's see, a couple other things. So real quick, again this is just make sure we're all in the same page as to how to best handle a situation. One more time and just make sure we all talk this through one more time. Last week, I already brought this up to Matt on Monday, Sam, we talked obviously about managing the gap between now Ryan's accounting hours and how Megan and George's process crossover. Just to paint the picture, initially we just fixed it. I told Mitch and the team that moving forward we because it's no longer our accountability to do anything in Ryan's account, nor are we allowed to, unless we perform the audit. So we ended up emailing Ryan and telling him, hey, man, here's what we did in the past. Here's how we're going to change that moving forward. So here's what you can expect from us that we need to change. That email was sent out late last week. The quick follow up after was, hey, for Megan's process, no, for collecting leads that are being sent into the website now specifically for Geneva. We need you guys to handle that on your end to process it into your system and make sure it gets assigned to the right agent. We got crickets after that. So again, just to make sure we're all on the same page, that to me means we've done our job, we've set and managed expectations, we've delivered on what we're supposed to deliver on from our end, it is now Ryan's responsibility and accountability to handle stuff on his end to make sure things work out, which includes addressing the needs of George after I told George that I can't help him in that account. That is something he needs to ask Ryan about. Am I recapping that right, or do we still, do we see anything different?"
+      },
+      {
+        "start_time_ms": 1773849743083,
+        "end_time_ms": 1773849809379,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I'm not sure yet. I want to see how well it goes with Nadine for the first month or two before we roll it out to somebody else. But the next people we roll it out to will be in Arizona just because it's easiest way to expand it from there. So I would think the next person I would give it to would be Veronica, as long as Nadine goes through and breaks it for a month or two is my thought, and then we'll see from there. I mean, about the time that we can autofill all that product information is about the time that there's an app as well, so we'll be able to roll those two things out at the same time simultaneously. We don't want to have the app until we know we can autofill the data and the data is correct either. So that's why I say I think we can probably do those both at the same time and we should be able to get that both done before AEP happens. That's the timeline that we're looking at. Done by August 1st."
+      },
+      {
+        "start_time_ms": 1773849742263,
+        "end_time_ms": 1773849743063,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "That's a mad question."
+      },
+      {
+        "start_time_ms": 1773849732814,
+        "end_time_ms": 1773849741562,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Okay, yeah, in this, is the idea in these next months, is Nadine the only person working this or are we planning to have more agencies?"
+      },
+      {
+        "start_time_ms": 1773849672826,
+        "end_time_ms": 1773849730452,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "It'll likely be the latter. And that has mostly to do with whether it's worth the expense and the effort, right? So if we build the intermediary solution for the next two to three months, but it's still a written off expense to build that out because it's still going to be replaced with something a couple of months down the line, then it has to offset the risk that this causes a problem if we don't update it frequently enough. And if we look at just the fact that people will probably log into this one twice, maybe three times over, and then that's enough for them. They just want to buy the idea of their agent's availability more than the portal itself, is the assumption. And it doesn't really make sense to add this intermediary process in the meantime, because the chances that they're going to look at not just the portal, they're actually going to try and access it, are so low that, like, even if the odd client does end up logging in and sees a policy change did happen, it's not reflecting the point That's something we can fairly okay manage as long as we set the expectation with the agent."
+      },
+      {
+        "start_time_ms": 1773849647911,
+        "end_time_ms": 1773849672127,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "So like, again, if it's like a turn in sheet for the initial process, but then like, what if me as the agent want to like, make a change to what's reflecting on the clients? Like changes coverage or ads coverage or drops coverage. Like, do we have a process for that? Or should we just, are we just donating that we're just going to wait a few months if she needs changes from on that initial enrollment?"
+      },
+      {
+        "start_time_ms": 1773849643710,
+        "end_time_ms": 1773849645851,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "You mean when changes happen in the next couple of months?"
+      },
+      {
+        "start_time_ms": 1773849634914,
+        "end_time_ms": 1773849641257,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Is there going to be a process for right now for then it's the client has coverage or we just don't care about editing that?"
+      },
+      {
+        "start_time_ms": 1773849605567,
+        "end_time_ms": 1773849632512,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Go ahead. In the beginning, it's basically they just have to do a turn in sheet for the subscription model, just like they do a turn in sheet for when they sell any other product. It's going to auto generate an email that's basically a turn in sheet for the subscription and some of the information will be auto filled, some of it won't be, and they're going to just have to work through it. It's probably going to take an extra two minutes to fill out the turn in sheet for the subscription, but that's the only way that we can necessarily do it now and not have to wait another three months to launch it."
+      },
+      {
+        "start_time_ms": 1773849551049,
+        "end_time_ms": 1773849605087,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Yeah so it is a short-term fix and Matt asked me to build out the six in the process the sheets in parallel, right? So we're actively working not just on getting this portal out, but we're also able to now, well, to soon in full process comp statements, do the math on earnings, analyze churn data, so who actually stopped on this particular policy, gap analysis, and that then also allows us to pull the local normalized data of the simplified version of this into the portal and say, all right, these are the active policies, which we can just update by uploading a spreadsheet to the system. So get in there. We're just not there yet. This is an intermediary solution."
+      },
+      {
+        "start_time_ms": 1773849499006,
+        "end_time_ms": 1773849551029,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Um, yeah, I just feel like it will, it would be tedious to have to then like have another follow up where she's having to put what coverage her client has and what they don't and then ongoing, you know, like updating that, you know, if the client does wind up getting something that they don't have, then what's the process of updating the portal so that it's accurate and up to date. If it's just a two to three month problem, I guess that's no big deal. I think it just will be important that we'll get to the point then that we can automate that and use the statements to do that otherwise it just from the agent's end could be really tedious with making sure not only that initial information is in there but then it's like updated ongoing as things change and clients."
+      },
+      {
+        "start_time_ms": 1773849492782,
+        "end_time_ms": 1773849494963,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "We want to be able to do both."
+      },
+      {
+        "start_time_ms": 1773849484836,
+        "end_time_ms": 1773849492762,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "No, I was saying that it was like the agent registering their client for that time."
+      },
+      {
+        "start_time_ms": 1773849419115,
+        "end_time_ms": 1773849484056,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Name, email address. And the agent ID. So every agent will have a unique ID added to their checkout. So we always know when it gets to what agent is connected to the user account. Eventually, I'd like this to be a KRS checkout. We'll connect it directly to Stripe on the back end. But it's one of the things on the list that we want to add on later, but it's also going to get in the way of us launching this faster. So the way we talked about it was, let's get an MVP version out that is good enough. And the checklist, honestly, also, especially for when they need to sign up themselves, creates friction, because the checklist would have to get filled up by the agent, not the client. So the only way that would work is if the agent sits next to the client and says, all right, let's fill out your details. Whereas if we start doing campaigns around the subscription portal, we can't ask the user to fill out their own qualification."
+      },
+      {
+        "start_time_ms": 1773849411672,
+        "end_time_ms": 1773849418355,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Stripe is still collecting name, phone number, like name and like some sort of unique identifier, right? They've got it."
+      },
+      {
+        "start_time_ms": 1773849398645,
+        "end_time_ms": 1773849411251,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "The checklist that you're talking about can't be done at the point of sale, Sam, because the point of sale is done through Stripe. It's not done through our website. Stripe's not going to allow us to put something else in there like that."
+      },
+      {
+        "start_time_ms": 1773849291497,
+        "end_time_ms": 1773849394563,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Right now, no. So the way it works is when the agent wants to sign them up, they present them with a Stripe checkout, which basically contains the product and it contains whatever additional service want to add on a monthly basis. That basically means there's a base subscription fee to be part of the system, and there's a variable option, which we need to figure out how to best configure that as a second line item. They can basically upsell their value based on what they want to add for that client. So the way that would work is every client will bring in a set amount of revenue, but the agent still has freedom to extend the value of that retainer with whatever value they want to add on a monthly basis, basically incentivize them to say, hey, if you can sell this for more, do it. And then position that as this gives you access to our system, this gets you access to them. That checkout is going to capture the claim details, credit card info, and then will create a ongoing subscription to our system to continuously collect the revenue directly from their credit card. So that triggers there's then every step that comes after. But it does not allow us to add a quick checklist that says, oh, by the way, fill this out for two reasons. One, technically, it gets very complicated. But second, in the future, it is likely that we're not going to sell this in person. We're also going to run campaigns. So this checkout will allow us to send out an email and have people out of their comfort of their own home or on their phone just fill out the checkout and say, yes, I want this. I set up their subscription and then the system runs in the back."
+      },
+      {
+        "start_time_ms": 1773849261558,
+        "end_time_ms": 1773849288456,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Well, how does she sign someone up or how does she register a client for the portal? Because it would almost make sense in my mind, whatever that process is for her to set up her client in the system to just have buttons there that she can click so that it's not like another follow follow-up thing, but could it be something that is a part of, until we get to the point that we use the comm statements, can that be a required thing to set up the portal for a client?"
+      },
+      {
+        "start_time_ms": 1773849175893,
+        "end_time_ms": 1773849260938,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So, two questions, right? One is, yes, eventually it'll be tied to column statements. We're not there yet. Right now, it'll be extremely practical. So, the way I have it in mind now, because we can manage this in this setup. So, whoever has an admin account in the portal is able to adjust these values per user. Assuming that she's not going to sell 150 within the week, this should still be fairly manageable. So if these come in by the dozen at most, then the general idea is she sells this. We generate an email that gets sent to her automatically, like we do with many campaigns, that basically tell our NAD, and congratulations, we have a new subscription client. Here's the list we need filled out for this person to get onboarded. Can you give me a yes or no for each of these policies? She replies back in the table of that email, and the team just processes it manually for now, which is a two-minute job, just logging into the system, pressing yes or no, and then activating the account. So that will be fairly straightforward. Eventually, this will be a lot more dynamic, but I think because the link to getting this straight out of a comp statement is definitely still two, three months out, This step in the meantime is the most straightforward, the least hand-holding, but it also means that we still have a couple of people just chasing her down if we're still waiting for a response in certain stuff."
+      },
+      {
+        "start_time_ms": 1773849092188,
+        "end_time_ms": 1773849174472,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "I was looking on our concierge program on the website and I think most of that stuff is in Illinois. I don't see, I think I see one that's in Arizona and it's in Tucson. Otherwise all of those concierge partners we have listed on our website um aren't Arizona so I thought maybe there'd be some there that we could start with but um looks like those are 90 Illinois based one in Tucson I think a couple in in Las Vegas so um the here on this main page Kevin how you have like covered and explore with your agent I like how that's like getting there? I know we had talked about at one point being able to use the comp statements and stuff to have that updated, but I don't think we're there yet. So is it gonna be every time Nadine registers a client to be a part of this, she's gonna have to put in what their coverage is? And then can we have it just be automatic that we have the list of whatever it is, seven to 10 different product lines of coverage, and then whatever Nadine doesn't select is going to be what is there under explore with your agent."
+      },
+      {
+        "start_time_ms": 1773849062849,
+        "end_time_ms": 1773849090168,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Yeah, I think I can also, I can talk to Megan. My plan was to talk to Megan and have Megan make some phone calls, because I pay her by the hour already anyway, have her make some phone calls to some local coffee shops and things like that, just try to set up a couple of partnerships. I don't think that'll be tough, you know, two or three hours on the phone, she should be able to set up some good stuff. So I will, I got to talk to her at the end of this week anyway, so I plan to bring that up to her when I talk to her then."
+      },
+      {
+        "start_time_ms": 1773849009024,
+        "end_time_ms": 1773849060828,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "For sure. Um, yeah, I want to keep simple. But yeah, I agree. I agree. I agree. Um, I think that's fine. I think the most important thing to choose on to make a decision on is whether that's going to be domestic or not. So is that going to be a US based? Support system, or can it be somewhere else as well? Because that'll determine the cost. Privacy-wise, there are some consequences to that. So something to talk about. So next up is going to be to work through this setup with Nadine. We need to talk about creating the content. I reckon Megan. We'll have to do some outreach to local partnerships and establish those, Matt, if we don't already have a couple of these set up, yeah?"
+      },
+      {
+        "start_time_ms": 1773848991428,
+        "end_time_ms": 1773849007543,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "You're going to have to be able to make sure that it's routed directly and all of those things, because I'm going to need you involved in, in this as far as okay, they take a message, where does it go? You know what I mean? It's gonna obviously go through their hatch and all of those things. So I think it's best you and I just go through and do that."
+      },
+      {
+        "start_time_ms": 1773848989127,
+        "end_time_ms": 1773848991188,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "And there's a question."
+      },
+      {
+        "start_time_ms": 1773848985607,
+        "end_time_ms": 1773848988907,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I have no idea what Ryan was talking about, so we'll need to look into it, but yeah, let's get one."
+      },
+      {
+        "start_time_ms": 1773848982166,
+        "end_time_ms": 1773848984206,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "You and I. Okay."
+      },
+      {
+        "start_time_ms": 1773848973565,
+        "end_time_ms": 1773848979906,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So just because we're at a point now where we've got a guy specifically say we, who do you want to put, have put some research into that?"
+      },
+      {
+        "start_time_ms": 1773848939206,
+        "end_time_ms": 1773848971804,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "We've also got, in the next week or two, obviously, get the 24 seven call support number lined up and figure out where that's going to and all of that. So maybe we need to hook up at some point the beginning of next week and have a short list of call centers we think would be good ones for us to start vetting. Maybe we find three or four or something. Or if you know the one, I know one of the ones that Ryan was talking about that he had talked to was that POSH, I think it was called, but we're going to need to get that figured out, figure what that cost is going to be."
+      },
+      {
+        "start_time_ms": 1773848526016,
+        "end_time_ms": 1773848937125,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So Yeah, AP is around the corner quick now like yeah, I'll be here quick Yeah You still with us Sam? Yeah, all right Well want to move on to a different topic you have any questions Sam stuff you want to know No, I'm good. Thanks I A couple of quick updates. So, app slash portal. I showed Matt a quick demo last Monday. We're finalizing the last few pages, but may as well pull it up here as well. My insurance coach. Let's see the login real quick. I just want to show Sam where things are at as a law man. Let's see, can I make this work? All right, so I'll show what that looks like now. And then basically, turnaround time now looks like we'll get the proof of concept done before the end of the month. So in the next two weeks, everything that's supposed to be in there is going to be in there. And then Matt, you want to bring this in Nadine for the first pilot, yeah? So that means we'll have to talk to her, explain what it does, how it works. Practical side of that is that the content will still need some work. Let me share my screen first. So a couple things. This is built. It means that we're now able to basically take our blog and make it available in the system as well. We can create local perks, which are localized. Every new user in the system we can link them to a location and then based on the location the list of local perks will be filtered down to what's relevant to them because this is obviously going to be a localized offer otherwise the value is going to tank so any new local perk that we want to create in the system we can tag to a certain location or area and then based on that this list will be done based on whoever's logged into the system. So if this is your profile and you're out of Phoenix, then this will just show stuff from Phoenix. And the same for any other area that we want to create. The latest member updates have the same setup. So we can basically create a small little feed here that says, hey, keep in mind, this is something new we added to your subscription value. This top section is now also dynamic, so that means for every user that comes into the system, we're now able to configure this, saying, all right, here's what's covered, here's what's not, and try and incentivize them to keep saying, right, explore this with your agent. I think it would be a good thing for Nadine also to get some feedback on, so what would you prefer this says and does not say, based on the list that we have available, and making some tweaks there. I'm having the team, add a link from here to GoiLevel. So basically, message my agent will basically show a contact form that immediately sends a message to the agent in GoiLevel. So basically, we're going to link GoiLevel straight to the setup. And the schedule appointment would link to the calendar setup in GoiLevel as well. So we'll be able to set this up by agent. I'm able to create agents now as well and connect those to the user. So basically Nadine starts, we add a couple of subscriptions, then next up someone else starts, they'll see their name pop up for their clients based on the information we upload from that agent. So this is always going to be custom to the person that's in the system. What Profile is in now is these two, so making sure the local benefits overview page looks great because I think very big selling point. So Joe and our team has helped me wrap up that page as we speak, which means we'll have a beautiful list of every localized benefit that people can make use of, and we're trying to promote them to actually make use of that. The one thing that's still on my list is finalizing these product detail pages, basically making them like educational slash sales pages to inspire people to talk about these products that they're currently not yet covered in that area. And the ask a question here, the idea was to use this in the same way as we're using it in the resource hub. So, there's a get started, click here button in Notion that pops up like a quick selection tool. I think right now it's too much. So, I'm probably going to take out this particular part from the page at first because I don't think there's enough content for us to really need this type of feature to start with. Um, so what does that put up? Where does that put us? It means that the person concierge serve is going to be done in the next week We're going to merge support requests in my agent and team into one page just to keep things more succinct And then basically the scope of the mvp we had in mind So having a portal making it personalized allowing for user profiles to be created linking them to agents Um, all of that should be done by next week and then we can kick off with nadine the bigger challenge is then right the We need infrastructures there, now we need content. So great, we have a system where we can say, right, you got local perks. So what are we actually going to offer them as a local perk? Because we're only scoping this down to Nadine, it'll be easier to decide what we want to have as content in the system because it's going to be specific to her area. But we just got to keep in mind that for every agent that we onboard into the portal and offer the opportunity to sell this, we need to have content readily available for them to plug into. So we start with Nadine, having other agents in her area is the most straightforward path. Whereas if we add other agents from other regions, we need to decide, right, for this region, we're now going to create another content package with specific benefits in that area. So we can enroll this agent as the pilot, and then add these others on the backend. I'll pause for a sec. Does that make sense? Questions on that?"
+      },
+      {
+        "start_time_ms": 1773848515471,
+        "end_time_ms": 1773848525716,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Let me just make sure that it gets I keep telling them like the more the longer you wait, the longer it's going to take us to get going. Is going to be here before we know I got a transfer contracts. I've got a you know, I got to do a lot of things."
+      },
+      {
+        "start_time_ms": 1773848509889,
+        "end_time_ms": 1773848514930,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I'll have more follow up questions later. Good luck closing this out and then I'll have more questions."
+      },
+      {
+        "start_time_ms": 1773848440908,
+        "end_time_ms": 1773848504367,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I mean obviously they're in Arizona right now and one of the partners lives in Utah and he'd like to he'd like to open up and have Something in Utah as well before a EP happens. They've got they got a ton of capital to build something and to put something in place The money is not going to be the issue. They've got the capital to build it and to get it set up. I mean they're they said You know, we know it's gonna take two to three hundred thousand dollars to get it up and going in the first year to two We've got the money in cash to spend right now They want to have 25 agents lofty goals and I had tried to hamper those goals It's realistic or realistic Expectations, but they want to have 25 agents on the phone for by AEP and they've got eight right now Do they have a quote unquote Steven running the show there or no? Yeah, they have three quote unquote Stevens running the show there."
+      },
+      {
+        "start_time_ms": 1773848428252,
+        "end_time_ms": 1773848439379,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So basically, Stephen's program applied to Medicare. But then, yeah, Stephen needs to get looped into that."
+      },
+      {
+        "start_time_ms": 1773848406154,
+        "end_time_ms": 1773848427471,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Building out a training schedule and a training module that fits their bill of what they which is specific to Medicare. Yeah, centered around Medicare so that they can bring an agent in that's not licensed, get them licensed, get them on boarded, train them on Medicare, train them on phone calls, and get them on the phone and have them start responding to leads that they're purchasing."
+      },
+      {
+        "start_time_ms": 1773848400152,
+        "end_time_ms": 1773848404473,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "What are they expecting to get delivered over time that we currently do not have?"
+      },
+      {
+        "start_time_ms": 1773848393430,
+        "end_time_ms": 1773848395811,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "I didn't promise anything that's not currently already built."
+      },
+      {
+        "start_time_ms": 1773848388449,
+        "end_time_ms": 1773848392890,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "What did you promise that's not currently there that we still need to deliver on very shortly?"
+      },
+      {
+        "start_time_ms": 1773848233516,
+        "end_time_ms": 1773848388229,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Yeah, the life insurance that they write is just cross selling their PNC book. They're not calling leads, so to speak, to try write life insurance. They have a massive PNC book that they're writing life insurance, cross selling mortgage protection insurance and stuff on. So there won't be anything there. This is a Medicare call center that they're they're building. They have seven agents, I think right now they recruit them out of college. So they are unlicensed, they get them licensed, they train them, they put them on the phone and get them to write Medicare business over the So they're going to need probably get in touch with some of the lead Medicare lead vendors we've used like all calls, etc. So I'll probably need to, you know, just tell them what we've talked about, or vendors we've talked to with them. And then they've seen the Resource Center, obviously, they love the Resource Center, because they've never had anything like that before. But then they're probably going to want to build out their training platform for their new agents as and a to build systems for themselves with the team that I have. And they can utilize the product, so to speak, that's already there to do those types of things. So we'll see exactly, I don't know exactly what they want to do with any of that. Really, right now, they don't really have any structure. They're kind of a mess. They wrote business last year. But they need systems is the reason that they're coming aboard. Systems and what we already have built and what's there is light years ahead of where they're at before to the point where They said it was taking them eight weeks to get an agent on board and get a contract with a clock with a carrier Because their upline was that inefficient apparently I don't even remember the name of the IMO that they're at but anyway So if I were to ask you the typical success delivery delivery question, which usually happens when someone sells something."
+      },
+      {
+        "start_time_ms": 1773848198384,
+        "end_time_ms": 1773848232496,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "On that note, well, I still got some follow-up questions on that, Matt, because we may as well ask them now anyway, and then we'll get into the other stuff. So obviously this still needs to hash out, but I'd like to still understand the operational impact of, let's say, does work out. What I understood so far is that the idea is when this deal gets done, they enroll into a similar structure as Steven asked for life, but now for Medicare, correct?"
+      },
+      {
+        "start_time_ms": 1773848151905,
+        "end_time_ms": 1773848197863,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Well, not even just the camera now my mic well now my mic's working but I don't I don't know what's going on I can hear you though so you're good you can hear me yeah I thought you were just hiding your frustration on your face from that that makes sense too frustration because obviously I thought I said something but I didn't but and that's pretty much par for the course for me so she knows Anyways, we'll see what happens. Hopefully it happens today, because I put a lot of, this is like my seventh meeting at this point."
+      },
+      {
+        "start_time_ms": 1773848148964,
+        "end_time_ms": 1773848151865,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Every meeting I'm on with her, I cause camera issues for her."
+      },
+      {
+        "start_time_ms": 1773848121438,
+        "end_time_ms": 1773848143341,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "It's the group that I told you, I'm pretty sure I told you about this. It's the PNC agency that Steven was doing that referral business for. They weren't happy with their upline for their Medicare call center they were trying to build, so he put me in touch but it's been shit. I've been working on it for months, I think. Three months now? And hopefully I'm finally at the end."
+      },
+      {
+        "start_time_ms": 1773848106444,
+        "end_time_ms": 1773848120498,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Well, I love that. I hate that I know nothing about that. It makes me frustrated in your communication, if I'm being honest."
+      },
+      {
+        "start_time_ms": 1773848105504,
+        "end_time_ms": 1773848106224,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "That's awesome, man."
+      },
+      {
+        "start_time_ms": 1773848086801,
+        "end_time_ms": 1773848104305,
+        "speaker": {
+          "name": "Matt Ruddick"
+        },
+        "text": "Just so you guys know, I have a hard stop at 1130. I got another meeting at 1130. I got to get on. It's for that. We're finalizing. I think we're going to be finalizing today that group out in Arizona and Utah that Stephen connected me with. This should be the final meeting, start the onboarding process with that. So that's at 1130."
+      },
+      {
+        "start_time_ms": 1773848077481,
+        "end_time_ms": 1773848086641,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "He carries enough see what's in there now, Sam, at the end of this call? Or do you want to wait for the results, Jim? We'll get into it in a minute."
+      },
+      {
+        "start_time_ms": 1773848074159,
+        "end_time_ms": 1773848074779,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "That sounds good."
+      },
+      {
+        "start_time_ms": 1773848070117,
+        "end_time_ms": 1773848071197,
+        "speaker": {
+          "name": "Mitch Santos"
+        },
+        "text": "I'll send out another one."
+      },
+      {
+        "start_time_ms": 1773848061572,
+        "end_time_ms": 1773848068015,
+        "speaker": {
+          "name": "Samantha Katchen"
+        },
+        "text": "Yeah, I guess it wouldn't hurt to do one more reminder."
+      },
+      {
+        "start_time_ms": 1773848057489,
+        "end_time_ms": 1773848061152,
+        "speaker": {
+          "name": "Mitch Santos"
+        },
+        "text": "I think we have 28, 20 something submissions, less than 30."
+      },
+      {
+        "start_time_ms": 1773848053447,
+        "end_time_ms": 1773848056489,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Do you know how many we got? Did we get more than last time?"
+      },
+      {
+        "start_time_ms": 1773848034686,
+        "end_time_ms": 1773848052846,
+        "speaker": {
+          "name": "Mitch Santos"
+        },
+        "text": "Not yet. I was going to wait until the final one. So by the way, we had the third follow up sent and no one filled out after that. So do you want to do another one before the Typeform subscription expires? Or you wanna keep it as it is?"
+      },
+      {
+        "start_time_ms": 1773847994620,
+        "end_time_ms": 1773848032124,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "know that question who's always late and actually I'm leaving right now because you say that because I gotta go pee I'll be right back all right bye how's it going good how are you good thank you good good um I'm just checking my talking no talking points for today real quick I think it's mostly some quick updates again I don't think there's a lot for us to go over now um Just a quick check in which I hadn't asked you yet. Mitch, did you send Sam another export of the survey responses yet or no?"
+      }
+    ],
+    "text": "[Kevin Beeftink]: know that question who's always late and actually I'm leaving right now because you say that because I gotta go pee I'll be right back all right bye how's it going good how are you good thank you good good um I'm just checking my talking no talking points for today real quick I think it's mostly some quick updates again I don't think there's a lot for us to go over now um Just a quick check in which I hadn't asked you yet. Mitch, did you send Sam another export of the survey responses yet or no?\n[Mitch Santos]: Not yet. I was going to wait until the final one. So by the way, we had the third follow up sent and no one filled out after that. So do you want to do another one before the Typeform subscription expires? Or you wanna keep it as it is?\n[UNKNOWN_SPEAKER]: Do you know how many we got? Did we get more than last time?\n[Mitch Santos]: I think we have 28, 20 something submissions, less than 30.\n[Samantha Katchen]: Yeah, I guess it wouldn't hurt to do one more reminder.\n[Mitch Santos]: I'll send out another one.\n[Samantha Katchen]: That sounds good.\n[Kevin Beeftink]: He carries enough see what's in there now, Sam, at the end of this call? Or do you want to wait for the results, Jim? We'll get into it in a minute.\n[Matt Ruddick]: Just so you guys know, I have a hard stop at 1130. I got another meeting at 1130. I got to get on. It's for that. We're finalizing. I think we're going to be finalizing today that group out in Arizona and Utah that Stephen connected me with. This should be the final meeting, start the onboarding process with that. So that's at 1130.\n[Samantha Katchen]: That's awesome, man.\n[Samantha Katchen]: Well, I love that. I hate that I know nothing about that. It makes me frustrated in your communication, if I'm being honest.\n[Matt Ruddick]: It's the group that I told you, I'm pretty sure I told you about this. It's the PNC agency that Steven was doing that referral business for. They weren't happy with their upline for their Medicare call center they were trying to build, so he put me in touch but it's been shit. I've been working on it for months, I think. Three months now? And hopefully I'm finally at the end.\n[Kevin Beeftink]: Every meeting I'm on with her, I cause camera issues for her.\n[Matt Ruddick]: Well, not even just the camera now my mic well now my mic's working but I don't I don't know what's going on I can hear you though so you're good you can hear me yeah I thought you were just hiding your frustration on your face from that that makes sense too frustration because obviously I thought I said something but I didn't but and that's pretty much par for the course for me so she knows Anyways, we'll see what happens. Hopefully it happens today, because I put a lot of, this is like my seventh meeting at this point.\n[Kevin Beeftink]: On that note, well, I still got some follow-up questions on that, Matt, because we may as well ask them now anyway, and then we'll get into the other stuff. So obviously this still needs to hash out, but I'd like to still understand the operational impact of, let's say, does work out. What I understood so far is that the idea is when this deal gets done, they enroll into a similar structure as Steven asked for life, but now for Medicare, correct?\n[Matt Ruddick]: Yeah, the life insurance that they write is just cross selling their PNC book. They're not calling leads, so to speak, to try write life insurance. They have a massive PNC book that they're writing life insurance, cross selling mortgage protection insurance and stuff on. So there won't be anything there. This is a Medicare call center that they're they're building. They have seven agents, I think right now they recruit them out of college. So they are unlicensed, they get them licensed, they train them, they put them on the phone and get them to write Medicare business over the So they're going to need probably get in touch with some of the lead Medicare lead vendors we've used like all calls, etc. So I'll probably need to, you know, just tell them what we've talked about, or vendors we've talked to with them. And then they've seen the Resource Center, obviously, they love the Resource Center, because they've never had anything like that before. But then they're probably going to want to build out their training platform for their new agents as and a to build systems for themselves with the team that I have. And they can utilize the product, so to speak, that's already there to do those types of things. So we'll see exactly, I don't know exactly what they want to do with any of that. Really, right now, they don't really have any structure. They're kind of a mess. They wrote business last year. But they need systems is the reason that they're coming aboard. Systems and what we already have built and what's there is light years ahead of where they're at before to the point where They said it was taking them eight weeks to get an agent on board and get a contract with a clock with a carrier Because their upline was that inefficient apparently I don't even remember the name of the IMO that they're at but anyway So if I were to ask you the typical success delivery delivery question, which usually happens when someone sells something.\n[Kevin Beeftink]: What did you promise that's not currently there that we still need to deliver on very shortly?\n[Matt Ruddick]: I didn't promise anything that's not currently already built.\n[Kevin Beeftink]: What are they expecting to get delivered over time that we currently do not have?\n[Matt Ruddick]: Building out a training schedule and a training module that fits their bill of what they which is specific to Medicare. Yeah, centered around Medicare so that they can bring an agent in that's not licensed, get them licensed, get them on boarded, train them on Medicare, train them on phone calls, and get them on the phone and have them start responding to leads that they're purchasing.\n[Kevin Beeftink]: So basically, Stephen's program applied to Medicare. But then, yeah, Stephen needs to get looped into that.\n[Matt Ruddick]: I mean obviously they're in Arizona right now and one of the partners lives in Utah and he'd like to he'd like to open up and have Something in Utah as well before a EP happens. They've got they got a ton of capital to build something and to put something in place The money is not going to be the issue. They've got the capital to build it and to get it set up. I mean they're they said You know, we know it's gonna take two to three hundred thousand dollars to get it up and going in the first year to two We've got the money in cash to spend right now They want to have 25 agents lofty goals and I had tried to hamper those goals It's realistic or realistic Expectations, but they want to have 25 agents on the phone for by AEP and they've got eight right now Do they have a quote unquote Steven running the show there or no? Yeah, they have three quote unquote Stevens running the show there.\n[Kevin Beeftink]: I'll have more follow up questions later. Good luck closing this out and then I'll have more questions.\n[Matt Ruddick]: Let me just make sure that it gets I keep telling them like the more the longer you wait, the longer it's going to take us to get going. Is going to be here before we know I got a transfer contracts. I've got a you know, I got to do a lot of things.\n[Kevin Beeftink]: So Yeah, AP is around the corner quick now like yeah, I'll be here quick Yeah You still with us Sam? Yeah, all right Well want to move on to a different topic you have any questions Sam stuff you want to know No, I'm good. Thanks I A couple of quick updates. So, app slash portal. I showed Matt a quick demo last Monday. We're finalizing the last few pages, but may as well pull it up here as well. My insurance coach. Let's see the login real quick. I just want to show Sam where things are at as a law man. Let's see, can I make this work? All right, so I'll show what that looks like now. And then basically, turnaround time now looks like we'll get the proof of concept done before the end of the month. So in the next two weeks, everything that's supposed to be in there is going to be in there. And then Matt, you want to bring this in Nadine for the first pilot, yeah? So that means we'll have to talk to her, explain what it does, how it works. Practical side of that is that the content will still need some work. Let me share my screen first. So a couple things. This is built. It means that we're now able to basically take our blog and make it available in the system as well. We can create local perks, which are localized. Every new user in the system we can link them to a location and then based on the location the list of local perks will be filtered down to what's relevant to them because this is obviously going to be a localized offer otherwise the value is going to tank so any new local perk that we want to create in the system we can tag to a certain location or area and then based on that this list will be done based on whoever's logged into the system. So if this is your profile and you're out of Phoenix, then this will just show stuff from Phoenix. And the same for any other area that we want to create. The latest member updates have the same setup. So we can basically create a small little feed here that says, hey, keep in mind, this is something new we added to your subscription value. This top section is now also dynamic, so that means for every user that comes into the system, we're now able to configure this, saying, all right, here's what's covered, here's what's not, and try and incentivize them to keep saying, right, explore this with your agent. I think it would be a good thing for Nadine also to get some feedback on, so what would you prefer this says and does not say, based on the list that we have available, and making some tweaks there. I'm having the team, add a link from here to GoiLevel. So basically, message my agent will basically show a contact form that immediately sends a message to the agent in GoiLevel. So basically, we're going to link GoiLevel straight to the setup. And the schedule appointment would link to the calendar setup in GoiLevel as well. So we'll be able to set this up by agent. I'm able to create agents now as well and connect those to the user. So basically Nadine starts, we add a couple of subscriptions, then next up someone else starts, they'll see their name pop up for their clients based on the information we upload from that agent. So this is always going to be custom to the person that's in the system. What Profile is in now is these two, so making sure the local benefits overview page looks great because I think very big selling point. So Joe and our team has helped me wrap up that page as we speak, which means we'll have a beautiful list of every localized benefit that people can make use of, and we're trying to promote them to actually make use of that. The one thing that's still on my list is finalizing these product detail pages, basically making them like educational slash sales pages to inspire people to talk about these products that they're currently not yet covered in that area. And the ask a question here, the idea was to use this in the same way as we're using it in the resource hub. So, there's a get started, click here button in Notion that pops up like a quick selection tool. I think right now it's too much. So, I'm probably going to take out this particular part from the page at first because I don't think there's enough content for us to really need this type of feature to start with. Um, so what does that put up? Where does that put us? It means that the person concierge serve is going to be done in the next week We're going to merge support requests in my agent and team into one page just to keep things more succinct And then basically the scope of the mvp we had in mind So having a portal making it personalized allowing for user profiles to be created linking them to agents Um, all of that should be done by next week and then we can kick off with nadine the bigger challenge is then right the We need infrastructures there, now we need content. So great, we have a system where we can say, right, you got local perks. So what are we actually going to offer them as a local perk? Because we're only scoping this down to Nadine, it'll be easier to decide what we want to have as content in the system because it's going to be specific to her area. But we just got to keep in mind that for every agent that we onboard into the portal and offer the opportunity to sell this, we need to have content readily available for them to plug into. So we start with Nadine, having other agents in her area is the most straightforward path. Whereas if we add other agents from other regions, we need to decide, right, for this region, we're now going to create another content package with specific benefits in that area. So we can enroll this agent as the pilot, and then add these others on the backend. I'll pause for a sec. Does that make sense? Questions on that?\n[Matt Ruddick]: We've also got, in the next week or two, obviously, get the 24 seven call support number lined up and figure out where that's going to and all of that. So maybe we need to hook up at some point the beginning of next week and have a short list of call centers we think would be good ones for us to start vetting. Maybe we find three or four or something. Or if you know the one, I know one of the ones that Ryan was talking about that he had talked to was that POSH, I think it was called, but we're going to need to get that figured out, figure what that cost is going to be.\n[Kevin Beeftink]: So just because we're at a point now where we've got a guy specifically say we, who do you want to put, have put some research into that?\n[Matt Ruddick]: You and I. Okay.\n[Kevin Beeftink]: I have no idea what Ryan was talking about, so we'll need to look into it, but yeah, let's get one.\n[Matt Ruddick]: And there's a question.\n[Matt Ruddick]: You're going to have to be able to make sure that it's routed directly and all of those things, because I'm going to need you involved in, in this as far as okay, they take a message, where does it go? You know what I mean? It's gonna obviously go through their hatch and all of those things. So I think it's best you and I just go through and do that.\n[Kevin Beeftink]: For sure. Um, yeah, I want to keep simple. But yeah, I agree. I agree. I agree. Um, I think that's fine. I think the most important thing to choose on to make a decision on is whether that's going to be domestic or not. So is that going to be a US based? Support system, or can it be somewhere else as well? Because that'll determine the cost. Privacy-wise, there are some consequences to that. So something to talk about. So next up is going to be to work through this setup with Nadine. We need to talk about creating the content. I reckon Megan. We'll have to do some outreach to local partnerships and establish those, Matt, if we don't already have a couple of these set up, yeah?\n[Matt Ruddick]: Yeah, I think I can also, I can talk to Megan. My plan was to talk to Megan and have Megan make some phone calls, because I pay her by the hour already anyway, have her make some phone calls to some local coffee shops and things like that, just try to set up a couple of partnerships. I don't think that'll be tough, you know, two or three hours on the phone, she should be able to set up some good stuff. So I will, I got to talk to her at the end of this week anyway, so I plan to bring that up to her when I talk to her then.\n[Samantha Katchen]: I was looking on our concierge program on the website and I think most of that stuff is in Illinois. I don't see, I think I see one that's in Arizona and it's in Tucson. Otherwise all of those concierge partners we have listed on our website um aren't Arizona so I thought maybe there'd be some there that we could start with but um looks like those are 90 Illinois based one in Tucson I think a couple in in Las Vegas so um the here on this main page Kevin how you have like covered and explore with your agent I like how that's like getting there? I know we had talked about at one point being able to use the comp statements and stuff to have that updated, but I don't think we're there yet. So is it gonna be every time Nadine registers a client to be a part of this, she's gonna have to put in what their coverage is? And then can we have it just be automatic that we have the list of whatever it is, seven to 10 different product lines of coverage, and then whatever Nadine doesn't select is going to be what is there under explore with your agent.\n[Kevin Beeftink]: So, two questions, right? One is, yes, eventually it'll be tied to column statements. We're not there yet. Right now, it'll be extremely practical. So, the way I have it in mind now, because we can manage this in this setup. So, whoever has an admin account in the portal is able to adjust these values per user. Assuming that she's not going to sell 150 within the week, this should still be fairly manageable. So if these come in by the dozen at most, then the general idea is she sells this. We generate an email that gets sent to her automatically, like we do with many campaigns, that basically tell our NAD, and congratulations, we have a new subscription client. Here's the list we need filled out for this person to get onboarded. Can you give me a yes or no for each of these policies? She replies back in the table of that email, and the team just processes it manually for now, which is a two-minute job, just logging into the system, pressing yes or no, and then activating the account. So that will be fairly straightforward. Eventually, this will be a lot more dynamic, but I think because the link to getting this straight out of a comp statement is definitely still two, three months out, This step in the meantime is the most straightforward, the least hand-holding, but it also means that we still have a couple of people just chasing her down if we're still waiting for a response in certain stuff.\n[Samantha Katchen]: Well, how does she sign someone up or how does she register a client for the portal? Because it would almost make sense in my mind, whatever that process is for her to set up her client in the system to just have buttons there that she can click so that it's not like another follow follow-up thing, but could it be something that is a part of, until we get to the point that we use the comm statements, can that be a required thing to set up the portal for a client?\n[Kevin Beeftink]: Right now, no. So the way it works is when the agent wants to sign them up, they present them with a Stripe checkout, which basically contains the product and it contains whatever additional service want to add on a monthly basis. That basically means there's a base subscription fee to be part of the system, and there's a variable option, which we need to figure out how to best configure that as a second line item. They can basically upsell their value based on what they want to add for that client. So the way that would work is every client will bring in a set amount of revenue, but the agent still has freedom to extend the value of that retainer with whatever value they want to add on a monthly basis, basically incentivize them to say, hey, if you can sell this for more, do it. And then position that as this gives you access to our system, this gets you access to them. That checkout is going to capture the claim details, credit card info, and then will create a ongoing subscription to our system to continuously collect the revenue directly from their credit card. So that triggers there's then every step that comes after. But it does not allow us to add a quick checklist that says, oh, by the way, fill this out for two reasons. One, technically, it gets very complicated. But second, in the future, it is likely that we're not going to sell this in person. We're also going to run campaigns. So this checkout will allow us to send out an email and have people out of their comfort of their own home or on their phone just fill out the checkout and say, yes, I want this. I set up their subscription and then the system runs in the back.\n[Matt Ruddick]: The checklist that you're talking about can't be done at the point of sale, Sam, because the point of sale is done through Stripe. It's not done through our website. Stripe's not going to allow us to put something else in there like that.\n[Samantha Katchen]: Stripe is still collecting name, phone number, like name and like some sort of unique identifier, right? They've got it.\n[Kevin Beeftink]: Name, email address. And the agent ID. So every agent will have a unique ID added to their checkout. So we always know when it gets to what agent is connected to the user account. Eventually, I'd like this to be a KRS checkout. We'll connect it directly to Stripe on the back end. But it's one of the things on the list that we want to add on later, but it's also going to get in the way of us launching this faster. So the way we talked about it was, let's get an MVP version out that is good enough. And the checklist, honestly, also, especially for when they need to sign up themselves, creates friction, because the checklist would have to get filled up by the agent, not the client. So the only way that would work is if the agent sits next to the client and says, all right, let's fill out your details. Whereas if we start doing campaigns around the subscription portal, we can't ask the user to fill out their own qualification.\n[Samantha Katchen]: No, I was saying that it was like the agent registering their client for that time.\n[Kevin Beeftink]: We want to be able to do both.\n[Samantha Katchen]: Um, yeah, I just feel like it will, it would be tedious to have to then like have another follow up where she's having to put what coverage her client has and what they don't and then ongoing, you know, like updating that, you know, if the client does wind up getting something that they don't have, then what's the process of updating the portal so that it's accurate and up to date. If it's just a two to three month problem, I guess that's no big deal. I think it just will be important that we'll get to the point then that we can automate that and use the statements to do that otherwise it just from the agent's end could be really tedious with making sure not only that initial information is in there but then it's like updated ongoing as things change and clients.\n[Kevin Beeftink]: Yeah so it is a short-term fix and Matt asked me to build out the six in the process the sheets in parallel, right? So we're actively working not just on getting this portal out, but we're also able to now, well, to soon in full process comp statements, do the math on earnings, analyze churn data, so who actually stopped on this particular policy, gap analysis, and that then also allows us to pull the local normalized data of the simplified version of this into the portal and say, all right, these are the active policies, which we can just update by uploading a spreadsheet to the system. So get in there. We're just not there yet. This is an intermediary solution.\n[Matt Ruddick]: Go ahead. In the beginning, it's basically they just have to do a turn in sheet for the subscription model, just like they do a turn in sheet for when they sell any other product. It's going to auto generate an email that's basically a turn in sheet for the subscription and some of the information will be auto filled, some of it won't be, and they're going to just have to work through it. It's probably going to take an extra two minutes to fill out the turn in sheet for the subscription, but that's the only way that we can necessarily do it now and not have to wait another three months to launch it.\n[Samantha Katchen]: Is there going to be a process for right now for then it's the client has coverage or we just don't care about editing that?\n[Kevin Beeftink]: You mean when changes happen in the next couple of months?\n[Samantha Katchen]: So like, again, if it's like a turn in sheet for the initial process, but then like, what if me as the agent want to like, make a change to what's reflecting on the clients? Like changes coverage or ads coverage or drops coverage. Like, do we have a process for that? Or should we just, are we just donating that we're just going to wait a few months if she needs changes from on that initial enrollment?\n[Kevin Beeftink]: It'll likely be the latter. And that has mostly to do with whether it's worth the expense and the effort, right? So if we build the intermediary solution for the next two to three months, but it's still a written off expense to build that out because it's still going to be replaced with something a couple of months down the line, then it has to offset the risk that this causes a problem if we don't update it frequently enough. And if we look at just the fact that people will probably log into this one twice, maybe three times over, and then that's enough for them. They just want to buy the idea of their agent's availability more than the portal itself, is the assumption. And it doesn't really make sense to add this intermediary process in the meantime, because the chances that they're going to look at not just the portal, they're actually going to try and access it, are so low that, like, even if the odd client does end up logging in and sees a policy change did happen, it's not reflecting the point That's something we can fairly okay manage as long as we set the expectation with the agent.\n[Samantha Katchen]: Okay, yeah, in this, is the idea in these next months, is Nadine the only person working this or are we planning to have more agencies?\n[Kevin Beeftink]: That's a mad question.\n[Matt Ruddick]: I'm not sure yet. I want to see how well it goes with Nadine for the first month or two before we roll it out to somebody else. But the next people we roll it out to will be in Arizona just because it's easiest way to expand it from there. So I would think the next person I would give it to would be Veronica, as long as Nadine goes through and breaks it for a month or two is my thought, and then we'll see from there. I mean, about the time that we can autofill all that product information is about the time that there's an app as well, so we'll be able to roll those two things out at the same time simultaneously. We don't want to have the app until we know we can autofill the data and the data is correct either. So that's why I say I think we can probably do those both at the same time and we should be able to get that both done before AEP happens. That's the timeline that we're looking at. Done by August 1st.\n[Kevin Beeftink]: Anything else you want to add to that? Okay, cool. Let's see, a couple other things. So real quick, again this is just make sure we're all in the same page as to how to best handle a situation. One more time and just make sure we all talk this through one more time. Last week, I already brought this up to Matt on Monday, Sam, we talked obviously about managing the gap between now Ryan's accounting hours and how Megan and George's process crossover. Just to paint the picture, initially we just fixed it. I told Mitch and the team that moving forward we because it's no longer our accountability to do anything in Ryan's account, nor are we allowed to, unless we perform the audit. So we ended up emailing Ryan and telling him, hey, man, here's what we did in the past. Here's how we're going to change that moving forward. So here's what you can expect from us that we need to change. That email was sent out late last week. The quick follow up after was, hey, for Megan's process, no, for collecting leads that are being sent into the website now specifically for Geneva. We need you guys to handle that on your end to process it into your system and make sure it gets assigned to the right agent. We got crickets after that. So again, just to make sure we're all on the same page, that to me means we've done our job, we've set and managed expectations, we've delivered on what we're supposed to deliver on from our end, it is now Ryan's responsibility and accountability to handle stuff on his end to make sure things work out, which includes addressing the needs of George after I told George that I can't help him in that account. That is something he needs to ask Ryan about. Am I recapping that right, or do we still, do we see anything different?\n[Samantha Katchen]: No, I think you're recapping that right.\n[Kevin Beeftink]: Yeah, no, I'm good with that.\n[Kevin Beeftink]: All right, so that means it's up to Ryan to reply back or not. We are done until he replies back to us.\n[Samantha Katchen]: And he has not replied, but outside of the George situation, he has not replied back about the situation with him having deleted the workflow you guys made for lead routing into his sub account. You haven't heard anything back from him on a solution for that. So then what are we doing if leads come in and he doesn't have that set up? I don't know that that's a huge problem or that we're having a ton of volume come in.\n[Mitch Santos]: We're sending them. To Geneva, but there's a chance that the owner might get overwritten because Zapier has limitations on the assignment. So that's why we set up the workflow in his subaccount to make sure that it doesn't get overwritten. But right now, since we can't do that, Zapier is sending the information, and there's a chance that it might get overwritten, but it'll go to his account.\n[Samantha Katchen]: Yeah, Matt, I don't know if you... How much you want to follow up on that, but that's what...\n[Matt Ruddick]: I'm gonna bring it up. I gotta talk... I'll be there... I gotta talk to him on Friday anyway, so I'm gonna bring it up and make sure he knows that this is something that's on him and he needs to figure out, and I'll clear it up. I'm not gonna babysit it, but I'll bring it up one time, and then from there, it's his problem.\n[Kevin Beeftink]: Well, it's supposed to be fair. It would also be just a nice courtesy to get a, okay, thank you, I'll look into it, reply back from him, you know, as a professional courtesy of, I'm on top of my shit, thank you for letting us know. Yes, sir.\n[Samantha Katchen]: I agree.\n[Samantha Katchen]: A response to an email is a bare minimum, I feel like, to ask for, but\n[Matt Ruddick]: I agree, and I'm going to say those exact words.\n[Kevin Beeftink]: I would appreciate that. Also, for Mitch, keep knowing we're all good on the alignment and we stop at service. Again, we're very wired to just take accountability and fix shit, right? So, Mitch already asked me for and twice, can I really not log in and just fucking fix in the account? And the answer is still no. So I just want to be super clear. And it creates more issues as well, right? Because if Ryan gets used to us still fixing shit on his end, he doesn't know to actually take accountability over it. So I just got to put a hard moat in there.\n[Matt Ruddick]: Yes, you're exactly right. Mitch, don't do anything. I had to have this same conversation with Carrie last week because turn in sheets were coming in last week with no phone numbers on them. And she was she's like, I'm just going to email the agents. They have a March Madness contest going on. I said, if you email those agents, I'm going to throw your freaking laptop in the backyard. Do not. She's like, I told Ryan about it today. I said, well, that's where it ends. If this shit doesn't get submitted, it's not our problem. We were very clear. The information has to come over and be complete for us to submit it. We're not chasing their people down. This is a them problem, not us. So with a lot of hesitation, she And listen to me and then magically that night it was all fixed Ryan sent her all the phone numbers and I think it hasn't been a problem since then so She's the same way as Mitch. She's like I'd rather just log in and I'd rather just fix it myself and get it done But then you enable them and then every time there's a problem. They're always gonna be just like well They'll fix it or they'll find their way around it or whatever it is And I don't want that it can't be that way so the answer is a whole No, do not fix anything for them. It's broken. Let them lay in it. I don't care If my shits broke, please fix it Of course, I mean I was just a bit That's just a bit worried because you're not a part of my shit that needs to be fixed That's all I'm saying.\n[Kevin Beeftink]: In terms of fixing shit, what a great segue. So after the website was migrated over, it turns out that emails sent in through the website didn't necessarily end up in the right place. So Allie flagged an issue that she wasn't getting the support requests in her inbox anymore. And upon expectation, we found that because the website was migrated by a hash or go high level, things were changed that we didn't know about. So we triaged it, fixed it, it's fixed moving forward, and we sent back any requests since that switchover of the website back to Allie, so she's now perfectly back into the loop. So again, if stuff breaks, that is stuff that we do and fix and take care of As long as it's our domain and our accountability, then we're good. So we took care of that, Allie's up to speed again. We double checked that everything's now in the right place, and that's fixed.\n[Matt Ruddick]: So that happened because of the problems we had when Ryan was trying to come out and the whole thing went down and GHL had to fix it. You're talking about that situation, like whatever it was a couple of weeks ago, that's what messed this up for Allie.\n[Kevin Beeftink]: So good thing is entries weren't lost. Everything was still stored. We have backup emails always generated as part of this setup. Those are still triggering as well, which is also why we didn't flag it because the backups that come through, it just turns out that Allie wasn't seeing them. So that is done. Let's see. Steven is enrolled in T65. So basically Sam Gilberry is going to run it for him. The communication is done in his name. So it's a slight adjustment, but he wanted to basically do T65 campaigning in his own name, supported by Sam. The difference now being that all materials have his name and face on it. But she's going to do the outreach and the RV ends are going to be by Sam representing Steven. So that's a slight adjustment to the setup. What was that?\n[Matt Ruddick]: Is he going to record videos?\n[UNKNOWN_SPEAKER]: You should have seen his face when I told him to.\n[Matt Ruddick]: I'm sure there's a lot of pushback to that. But his wife is in the room and I It doesn't need to look great.\n[Kevin Beeftink]: And then from the back of the room. I heard we got podcasting stuff in the house. We're fine It doesn't need to look pretty man, I just need some content not a ton of people are gonna watch it But you're like if you're a market put your fucking brand. Yeah, put your He's gonna do it. Well Jason now make sure it gets done on TCS 5 on the topic Sam Prices t65 campaign got launched. I think it was last Monday Mitch if I'm not mistaken.\n[Matt Ruddick]: So she's live now as well She's got it set up for Check yes now Carrie just told me that Sam got a hold of her yesterday the day before about Because I got to get all the shit stuff printed out for her and get her stamps and envelopes So I think I don't know what it is Carrie's dealing with it and she's gonna have all the stuff there for so she'll have of what she needs to be able to set everything up.\n[Kevin Beeftink]: Yeah, which means I remember we had out here. Um, yeah, so she's doing 40 leads a month, which totals to after six months 1716 mailers sent out after six months. So I'll give you an idea.\n[UNKNOWN_SPEAKER]: Multiple different mailers.\n[Kevin Beeftink]: Basically, you're adding four Every envelope is what I'm saying No, basically every lead gets six mailers, which means every month they get another one Which is different from the previous one.\n[Matt Ruddick]: So she's gonna need like 300 copies of each each mailer is what you're telling me because there's 1800 total that need to go out Figure out how many how many of each mailer do I need to print for her?\n[Kevin Beeftink]: There are a total of thirty five hundred and twenty prints.\n[Matt Ruddick]: We did the math after nine months that gets sent out if I'm not mistaken or sorry after six months yep can you send me an email Mitch with that math so that I know how many of each mailer to get printed please cuz I'm never gonna do it one you know what I'm saying if Carrie's gonna do this I'm just gonna say print 4,000 copies and give her and so she's gonna need 40 stamps per month right so we're probably looking at another 400 stamps now now It's 40 cumulative.\n[Kevin Beeftink]: So it's going to be a total of 1,800 stamps, something like that at some point. In a year? Nine months. I think we did the math. Nine months, 1,800 stamps.\n[Matt Ruddick]: Stamps are easy because I can just mail them to her. I can just I can send her 100 at a time. That's not a big deal. It's the it's the copies that I want to make sure I just do it once so that I don't have to deal with it again.\n[Kevin Beeftink]: I think at the end of the day, it's going to be six different mailers to 40 leads across six months. So the math, if you just do the total, it's going to be six times 40 times six. Am I saying that right? So six mailers, 240 times six is 12.\n[Matt Ruddick]: Yeah, so it's like 1400. Yeah, of course, there you go.\n[Kevin Beeftink]: Okay, and that's for every mailer, so times two.\n[Matt Ruddick]: That's $2,800, okay. Yeah, just send me all that in an email so that I can give it to Kerry, and then we know what we need to do.\n[Kevin Beeftink]: Yeah, sounds good.\n[Kevin Beeftink]: So that's ongoing. Branding guidelines, we talked about obviously yesterday, so we're getting that split up, and I'll send out the two documents early next week. Allie's request for an issue we talked about for current meeting her next Friday again, Matt, to just see if the base setup we did and go out level is going to help her out. I'll just flag it again. This is a honestly something I want to do. Don't take this the wrong way, but the bare minimum, because if I start to over-engineer whatever she needs, it's not her bare minimum.\n[Matt Ruddick]: It needs to be easy for her. To be bare minimum because it needs to be easy for her to understand. And the bare minimum is going to make her 25% more efficient just from the jump because of what she's doing. So yeah, I want it to be bare minimum. We can always add more in later a little bit at a time, but also she's right in the middle of tax season too. So I can't, we, we need to do something to help, but we all, uh, so that she can use the system more efficiently, but I don't want to re-engineer her entire life right now. It's not, it's not the time to do it and it can't be done all at once anyway. So I agree with you, bare minimum, little steps. Use the system for what's already built. Here's how you can use it better for what's already there. This is what you should do. And then I think we just leave it at that. I don't, I'm not saying we need to build her a system at this point. I want her to just be able to use the system that's there and understand how to be more efficient with it. That's all.\n[Kevin Beeftink]: So she'll be able to emphasize they're using DHL more and we're building two pipelines. One is for onboarding and one is for account management. So she can just drag cars from one state to another and we just tell her right if you did this then do that If you did this do that and then you'll know where everyone's at.\n[Matt Ruddick]: That's the idea creating yourself tasks and reminders in there Is you saw the picture of all her post-it notes? Like just the fact that she can organize herself with tests and reminders on one spot and the system will be huge That's the idea Simple stuff that'll make a huge difference for her Okay All right, um, what else I think that's it.\n[Kevin Beeftink]: Um, yeah, so last thing to also operationalize or at least set the expectation of um I'm expecting To be able to do consistent churn reports and gap analysis reports in about two weeks That means that I'm going to pay the opportunity first, then we decide what to do next. So we have the opportunity, we're on a comp sheet, and then compare it to last month's comp sheet and say, all right, here's the difference between this one and that one. These are the likely ones to have churned this month, broken down by age. That's analysis one. The other is, here's a list of people that have X but do not have Y, or people that have A and B but not C, and we can run that every time we run an import. So on a practical basis, if we take a weekly or monthly export of commissions and run that through the system, the report and say, here are the insights gathered. The insights could lead to awesome opportunities, but then we need an agent that understands, hey, I need to now pick up the phone and do something. I think that is the operational side of things that I, the opportunity is massive, right? Having the analysis is great. But then Considering the overwhelm of agents and managers currently, we're just adding another cool thing on their plate to consider, which I think is the biggest opportunity we can grant them. I don't think they can properly assess that, nor know how to handle it right now. So my question for that is, when we're able to run these reports, what do we do? For whom? How often? And what kind of handholding are we going to provide? I have some recommendations, but I'll ask the question first, and then I'd like to see where we take that. So I'll ask it to both of you. How do you see that work out?\n[Matt Ruddick]: Well, I think you and I talked a little bit about this yesterday, so you know what I'm about, what I'm going to say. And I talked actually, Sam and I talked about it yesterday too, that I totally agree with you that I could give, I could hand them a list and say, all of these people want to buy something. That doesn't mean that they're going to actually pick up the phone and call someone on that list. So then it becomes a matter of, do we do like what we were talking about yesterday and say, we're going to put together a campaign that's two texts and two emails and I'm going to hit button on this and I'm going to market the annuities for you. And then when that happens, I'm going to take everything 20% that comes out of there because my team is marketing it for you. And then to Sam's At this point, she's like, when I told her that, she's like, I agree. And then she's like, then they won't read the messaging when it comes through and go high level. They won't even know that the client messaged them back because they're not efficient on that. I said, okay, then I'll take an admin and I'll have an admin set the appointments for. And now I'm taking another 20% of the count. So it may have to be a system that's that way that we hand hold it to the point where we just make the appointment for them. But it's like I was telling you yesterday, there's nothing else that's free. The days of giving stuff away for free are over because I we've built out plenty. So I think that's probably what it's going to have to be. And even my best agent, if you if I told Nadine, hey, I'm going to set you an appointment with somebody that wants an But I'm taking 40% and she will say, you can have it. So I don't know if that answers the question. I don't know, Sam, if you disagree with anything I said or if you've got another angle there, but I almost think that it's going to have to be that way because I agree with you. The history has shown us, even if I put it on a plate, that doesn't necessarily mean they're gonna eat it. They would almost rather be hungry in some places, in some instances, I think. I don't know.\n[Samantha Katchen]: Yeah, no, I agree completely. I think we have to, we can't do hand-holding without there being some sort of way that we get more for doing more. So I think that's fair and it makes sense. And I think even with the Steven situation, you know, seeing how much more invested he is and how great your feedback Kevin has been in working with him like 100% has to do with the fact that he's paying for it. He's got his stuff on the line not Matt's stuff on the line and I think that makes people work something in a different way you know so yeah I agree.\n[Matt Ruddick]: So I guess moral of the story is while it's gonna be great to manipulate the data that way like we've been wanting to and we've been talking about for the last couple years and I think this is the best and most efficient way to do it, building it into the whole system that we've got. I also think it doesn't mean anything until we have a series of two text messages and two emails to send out that's very elementary that an AI could write for us of a campaign that goes along with it that says, all right, Veronica, this is everybody that you have that has a MedSupp that doesn't have an annuity. We're sending messages about an annuity product. And we have a way, like I was Yesterday we got to make sure we have a way to track it so that I know if she writes something on that person That I'm being cut incorrectly, you know, so as long as we can build the back end out to where when you put XYZ Tag on it That tag is specific for that campaign for that specific agent So that when they go in and they do a turn-in sheet on that specific person We can make sure that it matches up But I think that's the that's the second half of building that system with the cross sale campaign that we're talking about Now on the Geneva side of it.\n[Samantha Katchen]: I think we just give them the data Because I can't set I can't set up workflows and stuff in their account and I will say I don't know I'm just talking a lot I haven't thought this through but I don't know if giving certain people just the data and not doing all of the hand-holding and taking 20% is a scenario we should consider but I can tell you that if I was an agent in this scenario I would work the data and not give you 20% and I would actually do it and if I was being told that you're doing it and taking my 20% client stuff I'd be pissed and I also think again with certain people our top upper echelon agents I think about the fact that like sometimes you know you can't really quantify yes your text message may have made the client finally pull the trigger on an annuity but what if I been presenting that annuity or talking about it with the client for a year. And then that finally just made the timing come in. And then now I have to give you 20% for that. Like, you know, I'm just trying to think devil's advocate and things like that would make me mad if I had a client I've been working with for a couple of years. Again, not to say that text message didn't like find like spark something, but if I had already been presenting a product and they just hadn't pulled the trigger, like, how are we going to know for sure to say when Also don't have an agent like you.\n[Matt Ruddick]: Our best agent is Nadine. Nadine does not work a list. If I gave Nadine a list, she's not going to work a list. I asked her if she wanted to work my client list and she said, no, I've got too much going on. I don't want to work your client list. So I don't know that we have that problem because we don't have an agent like you in the organization I'm the same way you are. I would say give me the data.\n[Kevin Beeftink]: I'll work it It's also often basis, right? So, um, it's not a we're gonna just do this and take a cut It's gonna be hey, here's a campaign that I think is smart to run on your list you want it because then we just need to take the 20 out and then they choose and it's It will always be direct response campaigns, right? It's always gonna run for a very short while with a very clear sales intent saying hey For example, hey, I see you have this, but you don't have this. I think it's definitely something we want to talk about. Do you have time next Tuesday to sit down about this and just talk it through for half an hour? It's going to be that type of campaign, extremely direct, very personal. But it's the type of message you need to sit down, think of, write, and then follow up on twice to make sure you get the response that you want. And they can choose to say yes or no to the exact list that we extract for that Yes, please do. I haven't been in touch with them. I haven't talked to them. So I mean that's one way to get around.\n[Matt Ruddick]: I don't know. I don't know. I don And because I agree with what Sam said, I would be the same way. I don't know that we have a lot of agents that would be, I could be surprised, but if we do it that way and just say, Hey, here's the, here's the list that we're going to message this to, and we're going to take 20% cross out any name you don't want that you don't want this information going to.\n[Kevin Beeftink]: But I think again, they could even do their own analysis, right? They can build this if they want, they could just take the call.\n[Samantha Katchen]: I think that was my initial question. Like are we giving them the option to just like with Geneva get the data versus the option of the handholding in the 20 percent?\n[Kevin Beeftink]: So I would then ask why Let's just ask the basic question. Why would you give it to them? They already have it.\n[Matt Ruddick]: They just don't have a system Because yeah, I mean my my response is I'm giving you this system and I built it for you because you obviously didn't build it for yourself And a lot of them will say and like Mike Thomas, for example, he'll say well That's the reason that I partner with you and I have you guys and Kevin because I want you to build these systems for me They don't want to build them. Don't know how to build them, etc. All right, so We cannot run the campaign at all That's fine. If they say no don't run the campaign. What's your clients? I'm not gonna run it if you tell me But if you want me to run the campaign, I'm going to be charging you for it. It's not free.\n[Samantha Katchen]: And part of running the campaign is getting them the data. There's no scenario that you're giving people the data like you are for Geneva.\n[Kevin Beeftink]: Are we going to do it for Geneva?\n[Samantha Katchen]: Well, then I feel like then you shouldn't. Why would you give it to Geneva and not have that up just because of their their contract level and their deal and their agreement.\n[Kevin Beeftink]: So then what does that mean? What kind, what do they get? Here's an example. Hey Ryan, here's your return data for the month and here's a gap analysis on has this but does not have that. Hey man, thanks. Can you give me list, I'm looking to get this and this out of the list. Do we do that?\n[Matt Ruddick]: No, we're not. And I don't, I obviously haven't thought through all of these scenarios, but I think what we have to, what we would have to do in that scenario with across the board is just say, here is the list of data that we can get, that we can, that's available, right? We're not manipulating and doing 15 different types of requests to try to get data together. I'm going to give you a turn list, data list, And I'm gonna give you XYZ right whatever it is. It's five reports These are the reports that we can glean and we can give to you That's it. If you want anything outside of that take the data manipulate it yourself Again I haven't thought this through this is just off the top of my head That's what I would think we're how we would solve that problem because you're right Ryan's gonna say I want this variable this variable this variable and this variable from all these different sheets and I want you to put it all together and give me that No, do it yourself. I'll get you the main data. Do it yourself.\n[Kevin Beeftink]: So again, like my, my pushback there is he already has it. So what are we really giving him is a journal analysis. So it's an extract of the list that of comparison from this the last time. And then here's what churn.\n[Matt Ruddick]: And the answer to that is, I don't know, I would, I guess, The first thing I would need to do is ask him, what data do you want that you don't currently have?\n[Kevin Beeftink]: So let's collaborate. What's the purpose of what? How do you, and then I'll just be selfish, man. How do you benefit from doing that?\n[Matt Ruddick]: Well, hopefully they work the data and work their houses better and write more business because they're making better use of the data. If they write more business, I make more money.\n[Kevin Beeftink]: But then there's no vested interest. They may or may not. So I would say, why not flip this? And why not say, don't share it with anyone. Start with small pilots. See who's interested in RevShare. And if it turns out that this is great, then at a larger scale, we make the data. Because as soon as you make the data available, you get questions. You need to provide support. There's overhead. There are discrepancies.\n[Matt Ruddick]: So yeah, I don't know. We're going to have to talk through it more, exactly how I'd want to set it up. Because I don't, like I told you before, don't want to give anything away for free anymore. It's got to be consistent across the board of how I do it and why I why I'm doing something. Another big thing that we need to figure out how to do is to take every MedSupp client that we have that has had a rate increase over year over year of more than 5% and print out a list. That's a huge opportunity that I know agents, you know, right.\n[Kevin Beeftink]: But that needs to be translated into, hey, Andres, here's for your team, here's an instruction that goes with it for you to actually make a fucking buck out of this.\n[Matt Ruddick]: Yeah, but that doesn't mean you can do it. I have to do it for him and because I have to do it for him, I'm going to charge him for it.\n[Kevin Beeftink]: But then I don't think like you want to have a clear scope of here's what you get as being part of the organization. Here's the add-on you can choose. You'll make more money with our help. And I think when you will split that up very Purposely there is no reason to give them access to the data again. It's an analysis of what they already have We're not there's nothing proprietary about this, right?\n[Matt Ruddick]: so then You're basically creating overhead And expenses Without I have to get something out of it.\n[Kevin Beeftink]: That's correct So then start with a smaller scope make sure you make money immediately with a clear small set of people Where are you going to see, right? Are these campaigns affected? They got nothing to lose yet. They just pay on the back end. We try a few out. We see if it works or not. And if it does, we either increase the scale of these little pilots or we try and get other people to also make use of the analysis. If they make use of the analysis, but they want to run their own campaigns, is that for free? Or that they can buy into a fucking subscription or whatever. I think you got to be more selfish, man.\n[Matt Ruddick]: Like the best fucking eight years. I know I get it. I know I gotta work through it But I gotta go because I gotta try to hire other people so that I can make more money. So Let's talk on this again Talk to you guys later See you man.\n[Samantha Katchen]: So there's anything else you want to do?\n[Samantha Katchen]: No, I didn't have anything All right.\n[Kevin Beeftink]: Okay pushing back on the idea. I think it's a great idea to have this but I think I mean, we're all just learning Even if we just spell it out, that doesn't mean it's going to happen. Exactly like with Steven, like you said, if there's a vested interest, if there is a monetary interest, there's risk involved, then there's motivation. So nothing else you want to go over?\n[UNKNOWN_SPEAKER]: All right.\n[Samantha Katchen]: Then I wish you a great week. We'll talk later.\n[UNKNOWN_SPEAKER]: Sounds good. You too.\n[UNKNOWN_SPEAKER]: Do the same. All right.\n[UNKNOWN_SPEAKER]: Bye guys."
+  },
+  "metrics": {
+    "read_score": 80.76939769131596,
+    "sentiment": 74.73641640690319,
+    "engagement": 86.80237897572874
+  }
+}

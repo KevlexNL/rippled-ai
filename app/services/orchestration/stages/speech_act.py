@@ -27,8 +27,10 @@ def execute_speech_act(
         gate_confidence=gate_result.confidence,
     )
 
+    system_prompt = prompt.build_system_prompt(signal.source_type)
+
     return call_llm_structured(
-        system_prompt=prompt.SYSTEM_PROMPT,
+        system_prompt=system_prompt,
         user_prompt=user_prompt,
         output_type=SpeechActResult,
         model_name=model_cfg.primary,

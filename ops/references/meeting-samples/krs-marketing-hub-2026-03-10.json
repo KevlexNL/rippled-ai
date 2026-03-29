@@ -1,0 +1,926 @@
+{
+  "id": "01KKC3VTBGPDW5AFW8310R5JR5",
+  "start_time_ms": 1773154462064,
+  "end_time_ms": 1773158488146,
+  "scheduled_start_time_ms": 1773154800000,
+  "scheduled_end_time_ms": 1773158400000,
+  "participants": [
+    {
+      "name": "Allyson Rose Powers",
+      "email": "apowers@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "name": "Andres Sanchez",
+      "email": "andressanchez@krsinsbroker.com",
+      "invited": false,
+      "attended": true
+    },
+    {
+      "name": "Chris Adkins",
+      "email": "cadkins@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "name": "Cindy Hoppe",
+      "email": "choppe@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "name": "Growth Kevlex",
+      "email": "growth@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "name": "Jon Cook",
+      "email": "jcook@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "name": "Katie Diemer",
+      "email": "kdiemer@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "name": "Kevin Beeftink",
+      "invited": false,
+      "attended": true
+    },
+    {
+      "name": "Mike Thomas",
+      "email": "mthomas@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "name": "Nancy Ohrberg",
+      "email": "nohrberg@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "name": "Robert Soules",
+      "email": "rsoules@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "name": "Samantha Gilberti",
+      "email": "sgilberti@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "name": "Samantha Katchen",
+      "email": "skatchen@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "name": "Stephen Polich",
+      "email": "spolich@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "name": "Veronica McGee",
+      "email": "vmcgee@krs.insure",
+      "invited": true,
+      "attended": true
+    },
+    {
+      "email": "nkaakouche@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "ralarcon@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "cmasure@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "kevin@kevlex.digital",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "jkuehn-kinney@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "egrigorian@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "xscott@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "bdiaz@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "mitch@kevlex-academy.com",
+      "invited": false,
+      "attended": false
+    },
+    {
+      "email": "scash@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "abegley@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "ediez@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "sommurray@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "dparis@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "mitch.kevlex.academy@gmail.com",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "jgrady@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "kevin.beeftink@gmail.com",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "cschock@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "jbaxter@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "jhogan@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "mruddick@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "bjacobsen@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "fhalcovage@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "aalvarez@krs.insure",
+      "invited": true,
+      "attended": false
+    },
+    {
+      "email": "admin@kevlex-academy.com",
+      "invited": false,
+      "attended": false
+    },
+    {
+      "email": "mpeterson@krs.insure",
+      "invited": true,
+      "attended": false
+    }
+  ],
+  "owner": {
+    "name": "Growth Kevlex",
+    "email": "growth@krs.insure"
+  },
+  "title": "KRS - Marketing Hub Update",
+  "report_url": "https://app.read.ai/analytics/meetings/01KKC3VTBGPDW5AFW8310R5JR5",
+  "platform": "meet",
+  "platform_id": "atc-pgaq-goa",
+  "folders": [
+    "Educational"
+  ],
+  "live_enabled": false,
+  "summary": "The meeting reviewed a new front-and-back annuities one-pager and connected it to broader marketing and lead-nurturing playbooks. Allyson presented the one-pager covering retirees\u2019 concerns, annuity basics, benefits, and myth-busting and solicited field feedback to tailor content\u2014suggestions included visualizing long\u2011term care riders, emphasizing product personalization and variety, and expanding similar one-pagers for life insurance and living benefits to reach younger markets.\n\nDiscussion then turned to distribution and campaign strategy: the team recommended embedding flyers in email and using the materials within multi-month nurture sequences rather than one-off sends, with attention to opt-out risk and identifying engaged leads. Kevin Beeftink introduced a channel-evaluation framework that converts annual income to hourly value and calculates required leads, appointments, and policies; his example showed $100,000/year (~$60/hour), a $500 average commission, needing 17 policies/month, ~68 appointments, and ~200 leads at a 35% meeting conversion rate. Kevin also compared cold-calling time costs to higher-priced \u201chot\u201d leads, reviewed organic content and a systemized T65 mailer approach, and committed to sharing his spreadsheet and T65 enrollment data. The group reinforced using the Notion marketing hub, promoting documented playbooks (door-knocking, cold-calling, seminar reactivation), and agreed to convert meeting takeaways into concise, operational tactics; Allyson committed to revising and distributing the flyer and developing additional assets.",
+  "action_items": [
+    "Allyson Rose Powers will upload the annuities one-pager to Notion",
+    "Chris Adkins will provide input on visualizing long-term care riders for the flyer",
+    "Allyson Rose Powers will expand the one-pager to emphasize long-term care riders and product personalization based on field feedback",
+    "Allyson Rose Powers will include financial literacy content in Client for Life communications for April",
+    "Kevin Beeftink and Allyson Rose Powers will discuss integrating the one-pager into a broader lead-nurturing campaign and target lists",
+    "Allyson Rose Powers will review and repurpose existing long-term care materials from Notion for the new flyer",
+    "Kevin Beeftink will share the spreadsheet used for the hourly valuation and lead-cost calculations with the team",
+    "Andres Sanchez will coordinate a follow-up meeting to review T65 metrics and share region-specific questions for discussion",
+    "Kevin Beeftink will assemble structured numbers and review enrolled T65 participants to prepare a case study and metrics presentation",
+    "Kevin Beeftink will investigate and report on logistic issues for mailers, including bounced addresses, for enrolled T65 campaigns",
+    "Agents will identify five current clients without annuities and call them to schedule appointments using the annuity flyer.",
+    "Allyson Rose Powers will revise the annuity flyer based on feedback and distribute it to the group.",
+    "Allyson Rose Powers will develop additional marketing flyers based on the feedback received.",
+    "Kevin Beeftink will continue to surface and reference documented playbooks (interviews and written playbooks) in future calls."
+  ],
+  "key_questions": [
+    "Can the flyer better visualize long-term care riders and thresholds offered by annuities?",
+    "Can these pieces be sent to leads in Hatch across local offices for credibility-building and seminar follow-up?",
+    "Could you share the spreadsheet with us?",
+    "Can we set up a meeting to review T65 metrics, successes, struggles, and lessons across regions?",
+    "Were there any other questions or pieces of feedback for marketing to consider?",
+    "Is the request that sessions provide three immediately applicable items and playbook-style instructions correct?",
+    "Can we take five minutes to show agents the playbooks in the hub?"
+  ],
+  "transcript": {
+    "speakers": [
+      {
+        "name": "Allyson Rose Powers"
+      },
+      {
+        "name": "Andres Sanchez"
+      },
+      {
+        "name": "Chris Adkins"
+      },
+      {
+        "name": "Jon Cook"
+      },
+      {
+        "name": "Kevin Beeftink"
+      },
+      {
+        "name": "Stephen Polich"
+      },
+      {
+        "name": "UNKNOWN_SPEAKER"
+      },
+      {
+        "name": "Veronica McGee"
+      }
+    ],
+    "turns": [
+      {
+        "start_time_ms": 1773158347402,
+        "end_time_ms": 1773158347667,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Thank you."
+      },
+      {
+        "start_time_ms": 1773158346211,
+        "end_time_ms": 1773158347192,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Have a great week. Cheers."
+      },
+      {
+        "start_time_ms": 1773158344248,
+        "end_time_ms": 1773158345650,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Bye y'all. Have a good week."
+      },
+      {
+        "start_time_ms": 1773158337200,
+        "end_time_ms": 1773158342847,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Appreciate you all showing up. We're looking forward to the next one. Thanks for hopping on everyone."
+      },
+      {
+        "start_time_ms": 1773158303364,
+        "end_time_ms": 1773158337180,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "So I think we can wrap this up by also saying, as we all know, like nothing works unless we work it, right? So back to Jon's point, find some things that you can take away from this call, you know, take five minutes after this call, reflect on your biggest takeaways, and then come up with some steps that you want to take moving forward because the more you work, anything that you do, the more fruit you're going to get out of it. So we hope this was helpful to everybody."
+      },
+      {
+        "start_time_ms": 1773158249254,
+        "end_time_ms": 1773158297401,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Yeah, so for me, I just looked it up. So the quickest way to find it is I would just go to our marketing database, which has everything. I just hit search, and I'll just look for playbook. And I'll find a bunch of stuff here. I just happen to know which one I have to pick out. The other way to do it is Going from marketing materials, we've got this little folder here called articles and playbooks. You pop this open, you'll see the marketing updates, you'll see the Growth playbooks here. Here we've covered all these Growth playbooks. Are we covered from long-term email campaigns to the policy we have for reaching out to leads, how to run the T65 campaign, we document all that. Of it."
+      },
+      {
+        "start_time_ms": 1773158243523,
+        "end_time_ms": 1773158249234,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Can you go back to the homepage and then show Tell us slowly how you got there."
+      },
+      {
+        "start_time_ms": 1773158069635,
+        "end_time_ms": 1773158242623,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "365 we've already covered. So there's specific ones and there's basic ones. So here's a good example. This is door knocking one on one with my Mike, let me pull this up. I love how we're all saying the same thing, right? This isn't about one-off campaigns. I continue to do this every day, which was me quoting Mike on the interview that we had, right? So, Doorknocking 101 is where I interviewed Mike on his tactics. He's been teaching doorknocking since I think for over two decades, if I'm not mistaken. And he broke down every step. He broke down his specific tactics. He talks about leaving post-it notes on people's doors with just his phone number on it, no business card. So if it's just a phone number, people are more likely to dial you back. And then you're able to pick up the conversation from there. So there are small nuances. Mike's tactic that really make it his. And I'm pretty sure because now Jon, you're teaching your team to do door knocking as well. And I think we brought it up at the time as though you have some different takes, like the baseline is obviously the same, but everyone's got their own approach to it. But the basics are all the same, right? You build your list, you schedule, plan your route, you just do the work, follow up and you continuously improve. And again, if this But then you start also sending mailers to these people, or also trying a different tactic just on top of this, or you also have a local presence through Facebook ads. It means that you're going to be seen more, and your reputation, your trust factor will go up. So that makes this tactic, where you're connecting with people, all the more effective. Same goes for cold calling, right? And this is a basic playbook, but we also put together, I think it was this one. So reactivating seminar leads. A lot of you guys are running seminars. It means that you have an old list of people that signed up and may or may not have shown up. You may or may not have done business with these people. That email address is still in there. They've been tagged. We know that they signed up. We've got a great hook for them to get re-interested. So maybe we do this campaign which is more of a direct response campaign. You reach out at the time. We haven't been able to connect in the meantime. I figured I'd just reach out and see if you're still interested. I'd love to get on a call with you. Send that out to 100 people. You got one or two people that reply back. I think all of these playbooks are different ways of making this work out. There's a ton of them in there. So I think it's, yeah, again, a great idea to revisit these from time to time and bring them up."
+      },
+      {
+        "start_time_ms": 1773158045133,
+        "end_time_ms": 1773158067648,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Sam just dropped in the chat and I had the same thought. Can we take like five minutes quickly to show them some of the playbooks in the hub? Because they've built out a lot of this stuff to give you guys step-by-step of playbook on some of these different topics we're talking Let me see if I can pull one up."
+      },
+      {
+        "start_time_ms": 1773157946165,
+        "end_time_ms": 1773158044372,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "So I keep talking about these channels and these tactics in my calls as well, guys. I've done some interviews late last year as well, different agents on different tactics. I know Mike Mike Thomas gave us a playbook on his door knocking tactics at the time, which can also be found in the hub. I'll just keep mentioning it. But those are all playbooks we've written up there. But I think just for these calls as well, I think it'd be good to just keep revisiting these things as well, just to keep putting them on the map and keep telling people, these are the basics and this is stuff you can try in addition to it, 100%. And I think what I'm also hearing from many of you guys across different office locations is the basics still drive the biggest amount of revenue, right? The other stuff that gets added on top frees up your time or makes you more effective. And that's how to see these things into perspective. None of it will work by itself and picking up the phone and knocking on doors is still one of the most foundational things to really get into a good habit of And then once you are able to spend more money, you could trade your time for dollars, and then do more with less time. And that's how we level up. But that's why I keep saying, cover your basics first. If that is in place, add one tactic, do it well, stick with it for a while, and then figure out maybe another. Let's start stacking. Cool. We're almost at the top of the hour. I appreciate everyone hopping on. Go ahead."
+      },
+      {
+        "start_time_ms": 1773157813076,
+        "end_time_ms": 1773157942763,
+        "speaker": {
+          "name": "Andres Sanchez"
+        },
+        "text": "Absolutely. No, I can, I can definitely relate with what you're saying. Pretty much like, just to give an example, like you got it in down your, um, the social security seminars when I spoke with you, I mean, like you're passionate. It makes sense. It works and you become effective at it. Really good, right? So what does the playbook look like for Jon for example somebody wants to learn to do social security seminars like Katie somebody wants to be able to run the effective 365 campaigns that's the playbook right if somebody wants to learn how to do the calling part, right? Because it also comes with budgeting. It comes with that, right? If you don't have a budget, okay, you need to ground it. Like Kevin said, you need to pound the phone. Kevin, I was looking at your numbers and they look good. I mean, like if I can make 250 dials in 12 hours, probably I will be unemployed for sure. That's more like four hours. But it's like, okay, If I don't have the capital, the budget to invest in the business, right? I have to put it with effort. Correct? So then I have to put that effort. Okay. When I get those leads and then I have to call in and it's about volume, how much massive, right? And probably you're going to have to make $200 one person. That's what it is in these days, in this, in these markets. But that's what I got to start. That's why I got to start. So they can use scale back and you can use Katie's method. Eventually you want to get to what Jon's method is doing. Right of the seminars because the seminars take money, you know, it costs money just what it is but it's a play before whatever category you want to build on because Prospecting is like food, right? Different things if you eat apples every day you gotta get Disgusted with it at some point, but it's just learning how to Evolve I guess but there's gotta be a ground middle ground. I think that That's where the journey's coming from It's like, yeah, we have a lot of stuff that works, but let's pick the best people at what they're doing, something, and copy that model. And so people can take something from it, right? That makes great sense."
+      },
+      {
+        "start_time_ms": 1773157765715,
+        "end_time_ms": 1773157812396,
+        "speaker": {
+          "name": "Jon Cook"
+        },
+        "text": "Yeah, just kind of because to everyone's point, we all do things similar but different. So, So, you know, I mean, and also to piggyback off of Kevin, maybe we share some basics, like, hey, I'm really good at doing these basics, and here's what I do for these basics. And then, you know, to the other end of the spectrum, there's Katie, where she has the basics down, but she has enhanced it with X, Y, and Z. So maybe, you know, we have a call each month. It can be, you know, here's a picture-perfect stack of the basics that give me appointments, and here's a more advanced strategy. So that way, we're covering newer agents, experienced agents, but it's just laid out. It's kind of like instructions like, hey, here's what I do. Now, whether it works for that person or not, I'm sure they'll take something from it that they can add and enhance because they can read it and kind of, you know, they can kind of put it together if you will."
+      },
+      {
+        "start_time_ms": 1773157748309,
+        "end_time_ms": 1773157762533,
+        "speaker": {
+          "name": "Andres Sanchez"
+        },
+        "text": "Jon, I guess that, correct me if I'm wrong, what you were trying to convey is like three things to get out that people can go and apply and use right away. Does that make sense? What you were trying to ask?"
+      },
+      {
+        "start_time_ms": 1773157679825,
+        "end_time_ms": 1773157743607,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "I was going to add to that. As you guys were talking, it kind of came to my mind of For example, like with the annuity flyer you guys go back in your fact finders an action step can be identify Five clients that don't have annuities you haven't had a conversation with them ever or in a long time and say Pick up the phone call them and say hey, I know the markets crazy right now and I have Some helpful information for you. Let's schedule an appointment print out this annuity flyer and go sit down and talk with them about it. So that can be an action step of you guys identifying some current clients that don't have an annuity that you can talk with them about this new flyer. So I'm going to make a few changes based on the feedback that we got today, and then we'll make sure to get that flyer out. And I'll work on developing those other flyers. But that could be an action step. That was a great point, Jon."
+      },
+      {
+        "start_time_ms": 1773157533508,
+        "end_time_ms": 1773157679805,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I think I fully agree. I think if we have any takeaways that I want to leave you guys with, first and foremost, get your basics in order. Because as much as I love the field operate in as marketing. If you don't have your basis in order, if you don't have a foundation, where you have one channel, you're consistently driving, then all the other stuff starts getting a distraction. Right? So if that means you're just the type of person that'll just pick up the phone and dial numbers, make sure that baseline is set, and then add one more thing. If you're great at door knocking, have a team that supports you and getting great at door knocking, leverage that and just do that plus maybe one other thing. And if the one other thing is anything, then do something organic because that will also take a while, right? So then follow Ali's strategy, make sure you post something regularly on social media, make sure you repost the stuff that we put out there as a company. Because if we start doing these basics right, then it becomes more interesting to start doing other stuff. So again, as much as I love talking about this, the reason I want to put all this into perspective, again, is choose one that fits with you, understand the numbers that go with it, and just keep doing it. I started my career doing five years of cold calling, which was brutal. But it taught me how to get in touch with people, how to figure out the basic math for every 10 dials, I got a conversation 10 conversations, I got an appointment, for every five appointments, I made a deal. I got there doing the reps, just doing the work. And then adding something like leads, well, after I got good at sales, it was easier to then wrap that into a bigger strategy. So if there's any takeaways here, guys, do the, like, cover your bases, right? Make sure you do one thing very well, and then consider maybe one other channel. And then once thing settles down, and I'm sure Katie will testify to this, once it starts working, you can add one more. Once that starts working, you can add one more. But starts working is not two weeks. Starts working is three to six months to 12, right? It doesn't happen overnight. So if anything, these marketing taxes are great. Do this when you've got your basis in order."
+      },
+      {
+        "start_time_ms": 1773157489146,
+        "end_time_ms": 1773157530627,
+        "speaker": {
+          "name": "Jon Cook"
+        },
+        "text": "I remember when I was a new agent, a long time ago, the brainstorming meetings are really good. But then I left and I was excited, but I didn't really know what to do. I was excited and I wanted to go to work. I said, I don't necessarily know how, where I found helped me is you have the brainstorming ideas, but it's like, Hey, here's three, you know, on paper strategies that people are doing that works. And then, you know, people have those and if they want to mix it into their business, it's good. Or if they want to take a part of it or just rob and repeat it, that's good too. But I think at the end of these, just kind of laying out two or three simple strategies that are people using for success. And over time, they'll blend it into their own, along with the brainstorming. Because I think we need both of those."
+      },
+      {
+        "start_time_ms": 1773157487165,
+        "end_time_ms": 1773157488566,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Yeah, go ahead."
+      },
+      {
+        "start_time_ms": 1773157486704,
+        "end_time_ms": 1773157487145,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Jon again."
+      },
+      {
+        "start_time_ms": 1773157484162,
+        "end_time_ms": 1773157486664,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Appreciate it."
+      },
+      {
+        "start_time_ms": 1773157482521,
+        "end_time_ms": 1773157483762,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I'll take the thumbs up on dress."
+      },
+      {
+        "start_time_ms": 1773157459857,
+        "end_time_ms": 1773157475495,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Did we find this call helpful? Your guys' feedback and interaction helps us tailor these calls to benefit you guys, you know, so we really want to, you know, hear from you guys and know what's beneficial to you."
+      },
+      {
+        "start_time_ms": 1773157445286,
+        "end_time_ms": 1773157451951,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "All right, on that note, I think we can close out. Were there any other questions or pieces of feedback, guys, for us to consider moving forward for marketing?"
+      },
+      {
+        "start_time_ms": 1773157440362,
+        "end_time_ms": 1773157441083,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Good, thank you."
+      },
+      {
+        "start_time_ms": 1773157421701,
+        "end_time_ms": 1773157439145,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Absolutely. Yeah, some of the things that came out, for example, when you start sending out mailers, a percentage of the addresses will bounce, right? So that's stuff we've got to sort out with you. And there's logistics we've got to make sure we figure out. So yeah, let me see if we can pull some numbers. And I'll review the people that have already enrolled. And then see if we can put a case study together."
+      },
+      {
+        "start_time_ms": 1773157400835,
+        "end_time_ms": 1773157420761,
+        "speaker": {
+          "name": "Andres Sanchez"
+        },
+        "text": "Yeah, I mean, like, I get it. Like, we can see different examples. Katie does, obviously, the A++ stuff, right? I get that. But I want to see, for example, how Veronica is doing. We have different areas where they have different challenges, how they work on the challenges, and what needs to start working. That's all."
+      },
+      {
+        "start_time_ms": 1773157400375,
+        "end_time_ms": 1773157400555,
+        "speaker": {
+          "name": "Andres Sanchez"
+        },
+        "text": "Sure."
+      },
+      {
+        "start_time_ms": 1773157319093,
+        "end_time_ms": 1773157399554,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "We can put some structured numbers together, Andres. I think the challenge here, though, does come with how every situation is different. So if you're, and again, putting this into perspective, if you're running radio commercials, you're paying money for billboards, you're showing up in ads, and you're then delivering mailers to people's homes, and you're showing up at their door, you stack all those efforts, then the effectiveness of this campaign will go through the roof. I mean, I think Katie just said she's got a bunch of appointments ready, but that's also Also because Katie spends efforts elsewhere to stack the value, right? So am I saying that to say this is not a great campaign? No, it absolutely is. So make sure just to put it into perspective, right? So if I'm going to say, if I ask Katie, can we talk about your number? She says, yes. And I'm going to portray that to all of you and say, all right, guys, do this because it's a great success. That wouldn't exactly be fair because Katie's done stuff that you guys may not have put in to get to the outcome that you wanted, right? So I'm happy to look into the numbers, and I'll see if we can put a case together that shows some of the impact. I just want to say, when we do, especially with case studies like this, we have to put it into perspective. So I'll see what we can do. And if we can put some numbers together."
+      },
+      {
+        "start_time_ms": 1773157291836,
+        "end_time_ms": 1773157319073,
+        "speaker": {
+          "name": "Andres Sanchez"
+        },
+        "text": "Are we able to set up maybe next time, maybe a meeting where we can go over the metrics on the ones who are working with the T65? So we can see like, you know, the success, struggles, right, the good, bad, and indifferent, and also what we can learn from that. And obviously every area is different, but there might be some common denominators that we can pick and we can apply to the different areas where we work."
+      },
+      {
+        "start_time_ms": 1773157037718,
+        "end_time_ms": 1773157290756,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Oh, no, I totally forgot. Again, to put it into perspective, let me pull this up. So I think this one's pretty obvious, right? So for volume cold calling just takes a lot of effort. Whereas if you got inbound hot leads, so basically people pay already picked up the phone and are telling you please sell me something. It's a different game. But I want to put this matrix into perspective as well. Right. So So when you look at where things fit, then we want to look against both axes, right? So we want to see what is the lead quality versus the time investment that goes with it, because quality usually equals cost. And then you'll see that the highest quality also comes with a fairly high cost. And that's not just cost out of pocket. So seminars and events are great. You connect with people. Person, you can build a relationship on the spot and try to connect with them then and there to follow up. It does require effort. Like for everyone that's been hosting events here, you all know it's not a one hour thing. Like you got to make sure it's promoted. You actually set it up. You actually show up. You actually deliver. And then it doesn't stop. We then also follow up and keep connecting with the people that came. So there are a lot of heavy lifting goes into this, but then the quality needs to also make sense. So stale leads that have been just sitting there, they're much harder to monetize, which ties into what I told you, Andres, just now for that campaign. If they're stale and we're just now sending them a one-off email, it's not going to do much, right? Because people haven't heard from us in a while. They have lost interest because the reason they end up in your list in the first place, also that event took a while. So now they're basically just cold contacts that are trying reach out to. So it has to be a bigger thing and a consistent thing for you to run this. And then what Ali just said makes a lot of sense, right? What we then want to do is not just take the lead and send out a quick email. We'll do an email after email after email, but then also pick up the phone. Because if you do both, and you check out the numbers in GHL, in Hatch, and you see, all right, I've seen these emails go out this these 10 people open every email. Maybe you want to call So it's not just the one thing where you can sit back and see none of these efforts are automatic, because then we would have all been fricking millionaires. I would have just pointed at you and say, do this, put money there, and open up your wallet and let the money pour in. It doesn't work like that. So put in the effort, and then start stacking. You've got a bunch of leads that you want to go after, send out that email campaign, but then pick up the phone, connect with them on social media, figure out ways in front of these people to build the relationship. That's how we then increase the lead quality for the people we connect with, and then we just balance it out with how much effort goes into it. Cool. Let me see what else I had on the calendar to go over. Again, if there's any questions, feedback, feel free to bring that up. Finally, we are opening up new rounds for T65. So if anyone is interested in also running their T65 campaign, I know a couple of people on here have been running it for a while. I think Katie, for you, it's worked out quite well. So if there's anyone else interested in signing up and making this campaign work out for themselves, we're taking new people again. So feel free to send us a quick message, and then we'll make sure to get you geared up. It means that we'll set up the entire campaign. We'll make sure you get prompted. To send out the print media that we've created on a monthly basis. We'll make sure the reminders to reach out to these people get set up for you. And if you're looking at doorknock or cold call, we've carried a structure for that as well. So again, we're trying to make it as easy as possible. Have you spent as little time as possible to make your cost-effective."
+      },
+      {
+        "start_time_ms": 1773156980760,
+        "end_time_ms": 1773157035836,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "And I think back to what we talked about on our last call, it's like all these things that work hand in hand, right? Like you could pour gasoline in one area and focus on that and drive home. But I know agents who have done multiple initiatives and spent their time doing social and doing print media and making calls like and running ads All that stuff working hand in hand can really help you build a local presence. So keep that in mind. Don't put all your eggs in one basket. Find different initiatives to really see what works for you and see kind of like the mixture of things that work for you. Whether that's door knocking, some people have success still door knocking. Find those things that work."
+      },
+      {
+        "start_time_ms": 1773156978099,
+        "end_time_ms": 1773156978839,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "which I'll have to think about."
+      },
+      {
+        "start_time_ms": 1773156966122,
+        "end_time_ms": 1773156977530,
+        "speaker": {
+          "name": "Andres Sanchez"
+        },
+        "text": "That is right. I mean, I can testify that it's very, uh, it takes a long time and it's very expensive. So it's not cheap. You want to do a cheap, he's going to take even longer. Yeah."
+      },
+      {
+        "start_time_ms": 1773156911572,
+        "end_time_ms": 1773156964781,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "For sure, yeah. Yeah, that's been a great initiative. Thank you, Katie. Katie was mentioning the monthly newsletter that we're sending out now. Yeah, I'm really excited to see that go out every month. Thank you. Just to touch on this again for you as well, Andres, when we talk about social, put it into that perspective, right? How much effort goes into making this work for you? And where do you sit along that snowball effect of social media? If you're still pushing that snowball uphill, it's going to take a lot of heavy lifting until it starts rolling down. You actually read the benefits, right? So I'm not trying to discourage anyone from doing it. I'm just trying to put it into perspective that it can take a while to get where you want to get when it comes to organic."
+      },
+      {
+        "start_time_ms": 1773156908652,
+        "end_time_ms": 1773156910892,
+        "speaker": {
+          "name": "Andres Sanchez"
+        },
+        "text": "Really good, Kevin. Could you share that spreadsheet with us?"
+      },
+      {
+        "start_time_ms": 1773155924400,
+        "end_time_ms": 1773156905191,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I saw Katie's comment as well on long-term care. So it's a nice segue into the hub as well to keep reminding people of the fact that it's there. If we look at marketing that we currently have. Probably, I'm not sure if it's the most recent example, but he did something for Nadine and Dan at the time, Allie. That was also a long-term care flyer that's popping up on my screen here. I bring it up because if we look at everything we have there, there's so much information and so many materials Allie's already created. I'm not even sure if she even remembers herself that she made this in the past. But that's just, I think an obvious point is we already have a ton of stuff So I think that's why it's so important for us to keep pointing out that there's a lot of things already in Notion that you can have repurposed. I know Allie's got her new forum going, and there's a ton of people now routing their questions through there, which is great. So if there's any ideas or thoughts around existing material that we want repurposed, that's obviously way faster for Allie to work on than trying to create something from scratch. I think long-term care might be a good example of that, Katie. There's something we've already created. I think it's a great thing if that is something we care about for Ali to look at repurposing some of that, maybe. What do you think about that, Ali? I'm seeing a nod. That's awesome. I think that's great. OK, so in the spirit of time, Ali, did you want to touch on anything else? I just want to cover a couple more things. All good? Yeah. All right. So for one, well, I want to make sure I keep bringing up Notion every time that we have this call, guys. The resource hub, we spent a ton of time on it. I want to make sure people keep using it. Whether that's for finding materials, whether you're looking to onboard or contract with a carrier, all the way down to quoting with a carrier, everything is documented there. And if it isn't, it's a click on the button to ask for Sam's help. So again, I want to keep encouraging everyone, make sure to at least log in there once a month and just explore and see whatever challenge you run into, whether there's an answer to your question right there in the hub. For today's topic, I wanted to build a little bit more on last month's discussion. Andres, you asked a couple of questions which is about social, how to run campaigns. I wanted to today touch a little bit more on what seems like a very boring topic, but I think is extremely important, which is the basic math of how to make the most of your time. And the reason I want to do that is it will put into perspective why certain things are or aren't worth spending the time on, how at some point you want to make different decisions as you're looking to continue to grow your business. That starts with knowing what you're worth. So I've got a little spreadsheet here, which even if you're just listening in, I'll keep talking through the numbers, don't worry about it. But if we know what we're worth per hour, it puts us it gives us so much more perspective on what is worth our time, right? So let's say that your income would sit around $100,000 year. Then if we count for 48 weeks a year that we're productive, and let's say, and I'm going to say this on the high end, we're productive about seven hours a day, then on an hourly basis, you are making $60 an hour. So I'll say it again, if you're looking to make $100,000 per hour, you should be making 60. All right. If that sits around $30,000, that's $18. If you're looking into a million, I know it'll put things into perspective. That's about $600 an hour. Why am I doing this simple math? Why? Because I think it's important for us to consider not just Results, but also effort. And I think that is one of the most overlooked aspects when it comes to acquiring new clients, because that's what I want to try and zoom in on a little bit. So let's say you're making $100,000 and you're saying, you know what, I want to make $100,000 more in new client acquisition before the end of the year. And then let's put the average commission value. I know there's not a real average, guys, like a ton of different products. Let's just, for the sake of it, put that around $500. Then, if you're looking to make an extra $100K in the year, the average commission value is $500. That means you need to close 17 policies per month, which now makes it a little more tangible, right? So we have our monthly effort and across the month, want to make sure I hit 17 new policies. And then how many appointments? So I'm going to reverse engineer here to get the outcome. How many appointments would we need to get to 17 new policies, newly written policies, for new clients? Let's say, and I went with industry standard here, right? So this sits like the close rate per appointment on the industry standard, for whatever that's worth, sits around So let's say we take the average and we put it at That means to write 17 new policies, we need to have 68 appointments every month. That's a little over two per day if you were working seven days a week. I mean, that's an ambitious number. But let's say we want to make that work. Then we can look at how many leads we need to get to that meeting. Now, again, I went with an industry standard just to make a point. So let's say across all the leads you've got coming in, 35% converges into a meeting. Then you need roughly 200 leads per month to try and make $100,000 extra by the end of the year. So again, I'm doing the math to make it more tangible to see what is it that actually want, because clicks aren't relevant, social media reach isn't relevant. At the end of the day, how many people are you connecting with, setting up appointments with, and then closing business with? Those are the numbers that actually drive the results. So if we need 200 leads to get to 17 new policies, then we consider, where are we pulling these leads from And is that 35% actually the number that I'm hitting? Here's where it gets interesting, right? Across all the channels that we leverage, I'm seeing examples come up where people are willing to spend a lot per lead and very little per lead, depending on their mindset, depending on the state of their business, the state of their book. But I think it's important to now look at the hidden cost that goes with cheap leads. Because I would say, and I'll do the math for you to prove it, cheap leads are a waste of your time. And here's why. So let's say we focus on cold calling. To run 250 dials, I'm going to put it at 12 hours of effort. So we make 250 dials, we get 12 hours of effort. And then let's say your cost per lead for getting 250 phone numbers sits around $13. That looks pretty cheap. So you spend $13 and then worth a day and a half to do 250 dials to get to the outcome that you wanted. Now, if we take your hourly rate and do the actual math, then you didn't spend $13. You spent over $700 of value to get to the outcome. Why is it over $700? It is because you're spending 12 hours times your hourly rate, what you should be making every hour, to get to the outcome that you want. So it's not just the $13 out of pocket. It's the effective cost per lead. That we also want to consider when we're running campaigns. Now to offset that, let's look at the other scenario. I know Stephen, you're working on this. When you choose to not look at coal calling stale leads, but you choose to buy hot coal swaps. So you're spending way more per lead, right? So here we're buying 250 phone numbers for a little over 10 bucks. If we're trying to get 10 calls, that'd be closer to $45 per call. That's triple the amount just for one call, which is a massive gap, right? So your cost per lead or your total cost for these leads is around $450. If you're buying 10 calls, that is supposed to then convert into that meeting and to that client. But then the effective cost. Because we're looking at how much time we then also spend. It's actually lower. So I'm doing the math here, right? We bought 10 calls. Let's say that the calls are going to cost you $45 an hour. Now Stephen can tell me what the actual numbers are. I think we're pretty close to that. And then let's say you take those 10 calls and you take two hours to process them. So you take two hours to qualify them, choose which of these people you want to keep talking to, qualify them, and then actually pursue the client. Then we take the two hours times your hourly valuation plus the $450 and that puts you around $570. So that is your actual cost to acquire the business. Now this then is probably also a good way to look at social. So we talked about this last time and I think this is where the challenge sits for most of the the organic channels. When we start with social medium, we need to work very hard for very little. Because if you're going to produce content, the way it works is you produce content over and over and over and over. You reach one person, two people, 10, 15, 20, 25, until you get to maybe But that takes time. Which means when we start with social, and again, I'm taking some hypothetical numbers here, right? So let's say it takes you a full work week, 40 hours to write up 100 social media posts, make them look nice, make sure that's scheduled out. Then you're basically spending $2,400 of your time, if you're sitting at the $100,000 mark, to actually produce the content and get the result you want. But if you have a bigger, audience, you've done this for a while, You've been consistent, you've built a reputation. Now, for every 10 posts you place, you get a result. Now your effective cost per lead, because you're not paying anything for social obviously, it's just the effort, is now $240. Now, is this about the numbers I'm putting up here? Not necessarily, but I'm trying to frame the idea of campaigning a little differently because what I see happen all the time is, man let me try something, I'll take this list of stale leads and I'll pay like ten bucks a lead. I know they haven't been contacted in a while, I know they probably filled out a form maybe six months ago, but hey, may as well try it and see what happens. But if you were that person that filled out a form six months ago, or even in practice, if you were a person and you filled that about 24 hours ago. You've probably already forgotten. So that's stale lead, which you're probably paying a bit more of a premium for than just cold contact lists. You spend some money on that, it's still considered a fairly cold lead. You just know a little bit more about this person. So does that mean none of that is worth your time? I don't think that's the case. I think we need to put it into perspective From two angles one is how much time you actually willing to spend on your campaign Because here's what's different now. We got all these numbers here, right? So I'll put this at a million dollars. Let's say you've grown your business. You're doing fucking fantastic, right? Then does it make sense for you to spend 40 hours on writing a hundred posts? Well, that means you're effectively spending $24,000 your time Probably not worth it. But if you're doing 35, you're starting out, you're trying to make your first bit of money, you're trying to work through it, then the numbers skew a bit more. Now, for example, cold calling gets more interesting because you're focused less on referrals, your time is still evaluated at a lower amount, so then it becomes more interesting to actually dial out and run your numbers. So all that is to say, when we try and level up in our game, try and put all these channels into perspective and try to evolve with the size of your book and the size of your income to also grow your business. Because I think the best way we can make this work out is by not just considering what we're spending in terms of dollars, but I think it's much more important for us to consider what we're spending in terms of time on these things, actually get the result that we want. So that's just a little math that I wanted to clear up for people. I hope that was a value and I hope that puts things into a bit more perspective. Because whether you're just starting out, and you're at a lower level of income, you're just trying to crush it and make the most of your time, pick up the phone, start dialing, it's still extremely cost effective when you're starting out. But if you're doing much more business, you're growing the size Then it becomes more interesting to spend more money and spend less time. So spend money on those ads. Spend money on the billboards. Spend money on print media. Spend money on ads. Try and figure stuff out that puts you out there in front of your audience. And make sure that when you do, that you're really good at closing. Because if these numbers don't stick, none of this will work. So make sure you get enough reps in the game. The people that are more senior here know when we're just starting out, all of these numbers still need to check out for this to work out. That's why it's so freaking hard to get into insurance, right? So yeah, I wanted to put this into perspective. Hope that inspires people. If there's any questions on this, you want me to run a few different numbers, I'm happy to do it. I'll share this a little later as well, so you can play around with the metrics if you want yourself as well. I just wanted to touch on this. Also now, for example, T65, right? When we're doing a T65 campaign, for Medicare. We're starting early, but it's a fairly low effort game, which means we are sending out materials once a week to the full list based on the system that's pre-designed for you. So there's no thinking, there's no override. You just do what the system says to get the results that you want. I think that's where we as a team can help you the best is how can we make the most of your time and, you know, point out where you probably can best spend your dollars from time to time. Cool, questions, thoughts, feedback?"
+      },
+      {
+        "start_time_ms": 1773155918115,
+        "end_time_ms": 1773155920217,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Yeah, we can definitely build something like that out."
+      },
+      {
+        "start_time_ms": 1773155900663,
+        "end_time_ms": 1773155916234,
+        "speaker": {
+          "name": "Chris Adkins"
+        },
+        "text": "Yeah, it's just more of living benefits, especially for people in their 30s, 40s and 50s, get them some type of critical illness coverage, sell with a hospital plan, and start building clients before they retire was my idea."
+      },
+      {
+        "start_time_ms": 1773155893481,
+        "end_time_ms": 1773155895381,
+        "speaker": {
+          "name": "Andres Sanchez"
+        },
+        "text": "Definitely a good topic and it's a market for that."
+      },
+      {
+        "start_time_ms": 1773155839702,
+        "end_time_ms": 1773155882097,
+        "speaker": {
+          "name": "Chris Adkins"
+        },
+        "text": "I had just an idea, Ms. Crisper, is I've noticed I've run into, obviously we're retirement planners and it's a different target market. So this is just more of me having an idea out there, but I run into a lot of people in the healthcare industry and they ask more questions about critical illness benefits other than life insurance. Is that something, this is me just opening up, is anybody else seeing that at all or is anybody else get any build out from that as well?"
+      },
+      {
+        "start_time_ms": 1773155810474,
+        "end_time_ms": 1773155839682,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Any other thoughts on this or anything else? I wanted to open up the floor as well to other, like, materials. Like I said, if there's some topics like life insurance or even one pager like this where it goes in the details of long-term care. Like, is there any materials marketing-wise that we don't already have built that you guys would find beneficial?"
+      },
+      {
+        "start_time_ms": 1773155800870,
+        "end_time_ms": 1773155806792,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "I think it's worth a conversation to see what we can do for lead nurturing as well. We can take that aside, Allie. That's a good idea. Okay."
+      },
+      {
+        "start_time_ms": 1773155761033,
+        "end_time_ms": 1773155799229,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "If we make it more of a broader campaign like that, then we'll actually get a lot I was going to say next month in April on the Client for Life side, I'm definitely going to hone in blogs and content because it's financial literacy month in April. So on the Client for Life side, they'll definitely next month be getting content around these topics. That's for the Client for Life side, so."
+      },
+      {
+        "start_time_ms": 1773155630433,
+        "end_time_ms": 1773155760853,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Yeah, for sure. I think We should look at it in a bigger perspective, though. This ties into our conversation from the other week as Andres said, we send this kind of material out, especially to a list that we haven't talked to in a while, then it's going to come as a surprise. And what we want is for it to feel educational and of value. And the best way to do that is to do what we call a nurturing campaign. So rather than just sending a off as a good idea, what we'd rather do is, on a monthly basis, like we do for Client for Life, for example, educate people on our products and our offers if they're not yet a client. So this type of information, including our blogs and other assets, would probably fit best in more of a nurturing sequence, where we frequently show up for these leads so that they continue to see pop up on a regular basis, rather than just picking the one topic. So I think it's a great idea to look at this kind of value add, because right now it's mostly client for life, considering this also for lead nurturing could be very interesting. I think there is one aspect to consider there, though, is most of the leads in your system right now haven't been touched in a long time. So two things will happen with that. Is the first time you message them, you'll see a ton of people opting out, which is generally okay. It just means that the lead is no longer interested. But second is it will take a while for them to respond, and they'll only do that, which ties back to the last sponsor conversation, if we're consistent in showing up to these people. So if we're going to use this for a campaign, I would opt to make it part of a bit bigger one, where we choose the list that you have in your account. And we say, all right, we're going to nurture these people for the next four or five, six months with frequent messaging, see which of these people stick around, and then task our agents with the people that are actually looking at the content frequently, to maybe reach out to them and try and reconnect."
+      },
+      {
+        "start_time_ms": 1773155607882,
+        "end_time_ms": 1773155628312,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Yeah. I wonder if this is something that, um, I know you mentioned a few different scenarios, um, whether it's like after a seminar or something, Kevin, can we like, I'm pretty sure we can embed a flyer within an email and like have it be a button and have clients download it."
+      },
+      {
+        "start_time_ms": 1773155550045,
+        "end_time_ms": 1773155606121,
+        "speaker": {
+          "name": "Andres Sanchez"
+        },
+        "text": "So I have a question. Are we able to send these pieces out to every data that we have in Hatch in the local offices? From Illinois to Arizona to Nevada, name it, for the purpose of building credibility on the upfront. So, this file goes out, let's say via text or email, and the agents or advisors can follow up with a call. And if they're doing a seminar, it can be sent out after the seminar as well as a point of reference. So, with the purpose of building credibility, the educational is an educational piece."
+      },
+      {
+        "start_time_ms": 1773155545402,
+        "end_time_ms": 1773155550025,
+        "speaker": {
+          "name": "Andres Sanchez"
+        },
+        "text": "Not to pressure you."
+      },
+      {
+        "start_time_ms": 1773155526087,
+        "end_time_ms": 1773155539517,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Anyway, that's a great point. And I wanna say here at the bottom, let me see what I, and maybe I can elaborate on this a little bit more."
+      },
+      {
+        "start_time_ms": 1773155481718,
+        "end_time_ms": 1773155524477,
+        "speaker": {
+          "name": "Veronica McGee"
+        },
+        "text": "I think, hi guys. So one of the things that I've been doing a lot more annuities lately than I think I ever have in my career. And one of the talking points that I give when I'm actually building out A retirement plan for the client is, and maybe this could be a talking point on a flyer, is that we have many products to cater to the needs. So, like, there's so many options. It's not just, you know, F&G or NASA or, you know, whatever. Like, we are able to build them something that's very personalized that fits their needs specifically for their income or retirement income planning."
+      },
+      {
+        "start_time_ms": 1773155478497,
+        "end_time_ms": 1773155479518,
+        "speaker": {
+          "name": "Veronica McGee"
+        },
+        "text": "Yeah, that's a great point."
+      },
+      {
+        "start_time_ms": 1773155468065,
+        "end_time_ms": 1773155476657,
+        "speaker": {
+          "name": "Chris Adkins"
+        },
+        "text": "Yeah, I appreciate that advice. Sean, it's something where I, yeah, I think circling back trying to get my financial advisor license would be a good focus for me. Thank you."
+      },
+      {
+        "start_time_ms": 1773155441432,
+        "end_time_ms": 1773155465664,
+        "speaker": {
+          "name": "Jon Cook"
+        },
+        "text": "Awesome. So something that really changes the game is two for one is once you become a former advisor, whether it's financial or investment advisor on the series, when you come across as a financial advisor, and you can say, Hey, Mr. Mr. Jones, I think you should get this. There's just way less resistance being the advisor. And one, it's good for them. And two, it's good for you because you can just do more in the house because you have more licenses."
+      },
+      {
+        "start_time_ms": 1773155437470,
+        "end_time_ms": 1773155440631,
+        "speaker": {
+          "name": "Jon Cook"
+        },
+        "text": "I'm in year one right now of insurance."
+      },
+      {
+        "start_time_ms": 1773155436389,
+        "end_time_ms": 1773155437370,
+        "speaker": {
+          "name": "Chris Adkins"
+        },
+        "text": "No, no."
+      },
+      {
+        "start_time_ms": 1773155432808,
+        "end_time_ms": 1773155436369,
+        "speaker": {
+          "name": "Chris Adkins"
+        },
+        "text": "Hey, Chris, are you a financial advisor or investment advisor?"
+      },
+      {
+        "start_time_ms": 1773155431947,
+        "end_time_ms": 1773155432788,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Yes. Hey, Jon."
+      },
+      {
+        "start_time_ms": 1773155429986,
+        "end_time_ms": 1773155431327,
+        "speaker": {
+          "name": "Jon Cook"
+        },
+        "text": "Yeah, Jon, I have a question."
+      },
+      {
+        "start_time_ms": 1773155348592,
+        "end_time_ms": 1773155426285,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Of course. I want this guys, I want this to be beneficial to you. So all of this helps me understand your guys's needs. Yeah, Katie, that's a great point. And that's what I thought like when you guys are in the house, obviously, you talk about this kind of stuff, but I want something when you leave the house for them to sit back and go over again with their spouse or something for them to just like reiterate the points that you guys went over with them. So yeah, that's definitely where my mind was at when creating this. Anybody else have any thoughts? Exactly. Yeah. Everything I developed for you guys, I wanted to support that. Katie said it feels like that makes us look like educators, not salespeople. And that is definitely the goal. So."
+      },
+      {
+        "start_time_ms": 1773155346651,
+        "end_time_ms": 1773155347832,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Thank you. I do appreciate it."
+      },
+      {
+        "start_time_ms": 1773155315274,
+        "end_time_ms": 1773155343248,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "No, that's great feedback. Yeah, because that's something that I really want clients to see. Every agent on this call is a comprehensive retirement planner, right? And long-term care is a big piece that many clients think that Medicare covers, that it doesn't. So that is a great talking point and a great thought that I can find a way to highlight that. Bit more on this."
+      },
+      {
+        "start_time_ms": 1773155282549,
+        "end_time_ms": 1773155314540,
+        "speaker": {
+          "name": "Chris Adkins"
+        },
+        "text": "Because they're not health qual, you don't have to health qualify for most annuities to my understanding. Um, there's, it just really changes the whole picture for retirement. And then they're not stuck with it. $150, $200 standalone long-term care policy. Um, but yes, this and this build out is wonderful. Um, for, for me a little bit, uh, for me, what would help me target my clients is elaborating more and help visualize that long-term care writer. Okay."
+      },
+      {
+        "start_time_ms": 1773155270406,
+        "end_time_ms": 1773155281969,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Okay. So are you, cause I put it here as like long-term care riders. Are you thinking of elaborating that on like you want to elaborate on that? Yeah. I like that."
+      },
+      {
+        "start_time_ms": 1773155246973,
+        "end_time_ms": 1773155268806,
+        "speaker": {
+          "name": "Chris Adkins"
+        },
+        "text": "I love this concept. One area I'm running into a lot is getting people on long-term care. I know a lot of annuities offer long-term care benefits. Being able to visualize that because I know there's certain thresholds for annuities would be very helpful just because I know that's one of the benefits for annuities."
+      },
+      {
+        "start_time_ms": 1773155245272,
+        "end_time_ms": 1773155245652,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Hey Chris."
+      },
+      {
+        "start_time_ms": 1773155242292,
+        "end_time_ms": 1773155244432,
+        "speaker": {
+          "name": "Chris Adkins"
+        },
+        "text": "Hey Al, how are you doing? This is Chris Adkins."
+      },
+      {
+        "start_time_ms": 1773154965147,
+        "end_time_ms": 1773155241692,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Awesome. So I have been thinking about, obviously we have a lot of marketing materials in the drive, but annuities have been on my mind. And as you guys know, with everything changing in the Medicare, space. You guys being a comprehensive retirement planner from health to wealth is now more important than ever. I've been thinking about ways that you guys can bring up annuities to clients without it being this trigger word because a lot of you know that clients have big misconceptions around the ideas of annuities. Before you guys talk products or carriers, I was like, let me think of a one pager I can develop that can be a leave behind for you guys, for clients that can just talk the concept without getting into the works of, like I said, a product or a carrier. So I wanted to show you guys, it's a front and back one pager. I wanted to show you guys that today is something I just developed and kind of get your feedback. And then also I wanted to talk about once we go over this one pager and we're on the idea of giving you guys resources to talk about different topics, whether it's long-term care, whether it's life insurance, like we could build out these flyers for other concepts as well to give an overview of the benefits. So I just wanted to get an understanding. Let me not get ahead of myself. Let me show you guys this one pager first before I go into my other thoughts. So we will upload this to Notion. Can everybody see this? Where'd you guys go? Okay, we can see this. Yes. Okay. This just talks a little bit about some questions retirees are worrying about. Obviously, you guys know being in the field, people's number one concern is if their money will outlive them. Some just questions here, some reasons why people are choosing annuities, explaining a little bit of the concept of annuities. Benefits I put here. And then on the back of this will be myth like busting some misconceptions. So I really wanted to address, especially this last one about financial advisors. I've heard a lot in the field like, oh, well, if annuities were good, then my financial advisor would have recommended an annuity. So I just kind of took the top misconceptions that I have heard. And if there's one that's not on here that you guys feel really strongly that you keep hearing in the field, based on your guys' feedback, we definitely can tailor the content of this a little bit. But I wanted to give you guys, like I said, a simple printout that you can leave behind with clients before you really go over any product or carriers to again just break down the fundamentals of what an annuity is and the benefits to a client's retirement plan. So hopefully the goal with this is to give you guys another way to bring up annuities, another way to talk about people's money. So feel free to drop in the chat if you have any questions, comments, concerns. I really want to hear you guys' feedback, if you think this is something that would be helpful and beneficial to you in the field. The more we hear from you, the more we're able to tailor this stuff to you guys. So feedback is always really appreciated. I know it can be a little nervous sometimes trying to speak up."
+      },
+      {
+        "start_time_ms": 1773154962366,
+        "end_time_ms": 1773154965007,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Yeah, please."
+      },
+      {
+        "start_time_ms": 1773154960705,
+        "end_time_ms": 1773154962006,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Yeah, you want me to kick off? Yeah."
+      },
+      {
+        "start_time_ms": 1773154953902,
+        "end_time_ms": 1773154959004,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Awesome. You want to kick things off? And then I have a couple of things I want to go over."
+      },
+      {
+        "start_time_ms": 1773154952421,
+        "end_time_ms": 1773154952661,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Yes."
+      },
+      {
+        "start_time_ms": 1773154923917,
+        "end_time_ms": 1773154951260,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Let's see who else is here. Chris, nice to see you. Jon's here. I see Katie. Sam popped in. Awesome, guys. I think we might as well kick it off. We've got a couple of things I want to get into today, but I know you wanted to bring up, I think it was annuities. Was that today?"
+      },
+      {
+        "start_time_ms": 1773154892462,
+        "end_time_ms": 1773154892896,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "I know."
+      },
+      {
+        "start_time_ms": 1773154890956,
+        "end_time_ms": 1773154891481,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Time flies."
+      },
+      {
+        "start_time_ms": 1773154870745,
+        "end_time_ms": 1773154888571,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Hey, Andres. How's everybody's month going so far? Can't believe we're already in March."
+      },
+      {
+        "start_time_ms": 1773154868924,
+        "end_time_ms": 1773154869664,
+        "speaker": {
+          "name": "UNKNOWN_SPEAKER"
+        },
+        "text": "Good morning, everyone."
+      },
+      {
+        "start_time_ms": 1773154862822,
+        "end_time_ms": 1773154867224,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "Taking another minute. I'm sure people are dripping in."
+      },
+      {
+        "start_time_ms": 1773154855689,
+        "end_time_ms": 1773154856570,
+        "speaker": {
+          "name": "Allyson Rose Powers"
+        },
+        "text": "Morning, everybody."
+      },
+      {
+        "start_time_ms": 1773154839650,
+        "end_time_ms": 1773154854547,
+        "speaker": {
+          "name": "Kevin Beeftink"
+        },
+        "text": "It's a beautiful day. Well done. You got a busy week ahead of you. Yes, sir. Hey, Ali."
+      },
+      {
+        "start_time_ms": 1773154837547,
+        "end_time_ms": 1773154839630,
+        "speaker": {
+          "name": "Stephen Polich"
+        },
+        "text": "Oh, just making it through the wet roads."
+      }
+    ],
+    "text": "[Stephen Polich]: Oh, just making it through the wet roads.\n[Kevin Beeftink]: It's a beautiful day. Well done. You got a busy week ahead of you. Yes, sir. Hey, Ali.\n[Allyson Rose Powers]: Morning, everybody.\n[Kevin Beeftink]: Taking another minute. I'm sure people are dripping in.\n[UNKNOWN_SPEAKER]: Good morning, everyone.\n[Allyson Rose Powers]: Hey, Andres. How's everybody's month going so far? Can't believe we're already in March.\n[Kevin Beeftink]: Time flies.\n[Allyson Rose Powers]: I know.\n[Kevin Beeftink]: Let's see who else is here. Chris, nice to see you. Jon's here. I see Katie. Sam popped in. Awesome, guys. I think we might as well kick it off. We've got a couple of things I want to get into today, but I know you wanted to bring up, I think it was annuities. Was that today?\n[Allyson Rose Powers]: Yes.\n[Kevin Beeftink]: Awesome. You want to kick things off? And then I have a couple of things I want to go over.\n[UNKNOWN_SPEAKER]: Yeah, you want me to kick off? Yeah.\n[Kevin Beeftink]: Yeah, please.\n[Allyson Rose Powers]: Awesome. So I have been thinking about, obviously we have a lot of marketing materials in the drive, but annuities have been on my mind. And as you guys know, with everything changing in the Medicare, space. You guys being a comprehensive retirement planner from health to wealth is now more important than ever. I've been thinking about ways that you guys can bring up annuities to clients without it being this trigger word because a lot of you know that clients have big misconceptions around the ideas of annuities. Before you guys talk products or carriers, I was like, let me think of a one pager I can develop that can be a leave behind for you guys, for clients that can just talk the concept without getting into the works of, like I said, a product or a carrier. So I wanted to show you guys, it's a front and back one pager. I wanted to show you guys that today is something I just developed and kind of get your feedback. And then also I wanted to talk about once we go over this one pager and we're on the idea of giving you guys resources to talk about different topics, whether it's long-term care, whether it's life insurance, like we could build out these flyers for other concepts as well to give an overview of the benefits. So I just wanted to get an understanding. Let me not get ahead of myself. Let me show you guys this one pager first before I go into my other thoughts. So we will upload this to Notion. Can everybody see this? Where'd you guys go? Okay, we can see this. Yes. Okay. This just talks a little bit about some questions retirees are worrying about. Obviously, you guys know being in the field, people's number one concern is if their money will outlive them. Some just questions here, some reasons why people are choosing annuities, explaining a little bit of the concept of annuities. Benefits I put here. And then on the back of this will be myth like busting some misconceptions. So I really wanted to address, especially this last one about financial advisors. I've heard a lot in the field like, oh, well, if annuities were good, then my financial advisor would have recommended an annuity. So I just kind of took the top misconceptions that I have heard. And if there's one that's not on here that you guys feel really strongly that you keep hearing in the field, based on your guys' feedback, we definitely can tailor the content of this a little bit. But I wanted to give you guys, like I said, a simple printout that you can leave behind with clients before you really go over any product or carriers to again just break down the fundamentals of what an annuity is and the benefits to a client's retirement plan. So hopefully the goal with this is to give you guys another way to bring up annuities, another way to talk about people's money. So feel free to drop in the chat if you have any questions, comments, concerns. I really want to hear you guys' feedback, if you think this is something that would be helpful and beneficial to you in the field. The more we hear from you, the more we're able to tailor this stuff to you guys. So feedback is always really appreciated. I know it can be a little nervous sometimes trying to speak up.\n[Chris Adkins]: Hey Al, how are you doing? This is Chris Adkins.\n[UNKNOWN_SPEAKER]: Hey Chris.\n[Chris Adkins]: I love this concept. One area I'm running into a lot is getting people on long-term care. I know a lot of annuities offer long-term care benefits. Being able to visualize that because I know there's certain thresholds for annuities would be very helpful just because I know that's one of the benefits for annuities.\n[Allyson Rose Powers]: Okay. So are you, cause I put it here as like long-term care riders. Are you thinking of elaborating that on like you want to elaborate on that? Yeah. I like that.\n[Chris Adkins]: Because they're not health qual, you don't have to health qualify for most annuities to my understanding. Um, there's, it just really changes the whole picture for retirement. And then they're not stuck with it. $150, $200 standalone long-term care policy. Um, but yes, this and this build out is wonderful. Um, for, for me a little bit, uh, for me, what would help me target my clients is elaborating more and help visualize that long-term care writer. Okay.\n[Allyson Rose Powers]: No, that's great feedback. Yeah, because that's something that I really want clients to see. Every agent on this call is a comprehensive retirement planner, right? And long-term care is a big piece that many clients think that Medicare covers, that it doesn't. So that is a great talking point and a great thought that I can find a way to highlight that. Bit more on this.\n[UNKNOWN_SPEAKER]: Thank you. I do appreciate it.\n[Allyson Rose Powers]: Of course. I want this guys, I want this to be beneficial to you. So all of this helps me understand your guys's needs. Yeah, Katie, that's a great point. And that's what I thought like when you guys are in the house, obviously, you talk about this kind of stuff, but I want something when you leave the house for them to sit back and go over again with their spouse or something for them to just like reiterate the points that you guys went over with them. So yeah, that's definitely where my mind was at when creating this. Anybody else have any thoughts? Exactly. Yeah. Everything I developed for you guys, I wanted to support that. Katie said it feels like that makes us look like educators, not salespeople. And that is definitely the goal. So.\n[Jon Cook]: Yeah, Jon, I have a question.\n[UNKNOWN_SPEAKER]: Yes. Hey, Jon.\n[Chris Adkins]: Hey, Chris, are you a financial advisor or investment advisor?\n[Chris Adkins]: No, no.\n[Jon Cook]: I'm in year one right now of insurance.\n[Jon Cook]: Awesome. So something that really changes the game is two for one is once you become a former advisor, whether it's financial or investment advisor on the series, when you come across as a financial advisor, and you can say, Hey, Mr. Mr. Jones, I think you should get this. There's just way less resistance being the advisor. And one, it's good for them. And two, it's good for you because you can just do more in the house because you have more licenses.\n[Chris Adkins]: Yeah, I appreciate that advice. Sean, it's something where I, yeah, I think circling back trying to get my financial advisor license would be a good focus for me. Thank you.\n[Veronica McGee]: Yeah, that's a great point.\n[Veronica McGee]: I think, hi guys. So one of the things that I've been doing a lot more annuities lately than I think I ever have in my career. And one of the talking points that I give when I'm actually building out A retirement plan for the client is, and maybe this could be a talking point on a flyer, is that we have many products to cater to the needs. So, like, there's so many options. It's not just, you know, F&G or NASA or, you know, whatever. Like, we are able to build them something that's very personalized that fits their needs specifically for their income or retirement income planning.\n[Allyson Rose Powers]: Anyway, that's a great point. And I wanna say here at the bottom, let me see what I, and maybe I can elaborate on this a little bit more.\n[Andres Sanchez]: Not to pressure you.\n[Andres Sanchez]: So I have a question. Are we able to send these pieces out to every data that we have in Hatch in the local offices? From Illinois to Arizona to Nevada, name it, for the purpose of building credibility on the upfront. So, this file goes out, let's say via text or email, and the agents or advisors can follow up with a call. And if they're doing a seminar, it can be sent out after the seminar as well as a point of reference. So, with the purpose of building credibility, the educational is an educational piece.\n[Allyson Rose Powers]: Yeah. I wonder if this is something that, um, I know you mentioned a few different scenarios, um, whether it's like after a seminar or something, Kevin, can we like, I'm pretty sure we can embed a flyer within an email and like have it be a button and have clients download it.\n[Kevin Beeftink]: Yeah, for sure. I think We should look at it in a bigger perspective, though. This ties into our conversation from the other week as Andres said, we send this kind of material out, especially to a list that we haven't talked to in a while, then it's going to come as a surprise. And what we want is for it to feel educational and of value. And the best way to do that is to do what we call a nurturing campaign. So rather than just sending a off as a good idea, what we'd rather do is, on a monthly basis, like we do for Client for Life, for example, educate people on our products and our offers if they're not yet a client. So this type of information, including our blogs and other assets, would probably fit best in more of a nurturing sequence, where we frequently show up for these leads so that they continue to see pop up on a regular basis, rather than just picking the one topic. So I think it's a great idea to look at this kind of value add, because right now it's mostly client for life, considering this also for lead nurturing could be very interesting. I think there is one aspect to consider there, though, is most of the leads in your system right now haven't been touched in a long time. So two things will happen with that. Is the first time you message them, you'll see a ton of people opting out, which is generally okay. It just means that the lead is no longer interested. But second is it will take a while for them to respond, and they'll only do that, which ties back to the last sponsor conversation, if we're consistent in showing up to these people. So if we're going to use this for a campaign, I would opt to make it part of a bit bigger one, where we choose the list that you have in your account. And we say, all right, we're going to nurture these people for the next four or five, six months with frequent messaging, see which of these people stick around, and then task our agents with the people that are actually looking at the content frequently, to maybe reach out to them and try and reconnect.\n[Allyson Rose Powers]: If we make it more of a broader campaign like that, then we'll actually get a lot I was going to say next month in April on the Client for Life side, I'm definitely going to hone in blogs and content because it's financial literacy month in April. So on the Client for Life side, they'll definitely next month be getting content around these topics. That's for the Client for Life side, so.\n[Kevin Beeftink]: I think it's worth a conversation to see what we can do for lead nurturing as well. We can take that aside, Allie. That's a good idea. Okay.\n[Allyson Rose Powers]: Any other thoughts on this or anything else? I wanted to open up the floor as well to other, like, materials. Like I said, if there's some topics like life insurance or even one pager like this where it goes in the details of long-term care. Like, is there any materials marketing-wise that we don't already have built that you guys would find beneficial?\n[Chris Adkins]: I had just an idea, Ms. Crisper, is I've noticed I've run into, obviously we're retirement planners and it's a different target market. So this is just more of me having an idea out there, but I run into a lot of people in the healthcare industry and they ask more questions about critical illness benefits other than life insurance. Is that something, this is me just opening up, is anybody else seeing that at all or is anybody else get any build out from that as well?\n[Andres Sanchez]: Definitely a good topic and it's a market for that.\n[Chris Adkins]: Yeah, it's just more of living benefits, especially for people in their 30s, 40s and 50s, get them some type of critical illness coverage, sell with a hospital plan, and start building clients before they retire was my idea.\n[Allyson Rose Powers]: Yeah, we can definitely build something like that out.\n[Kevin Beeftink]: I saw Katie's comment as well on long-term care. So it's a nice segue into the hub as well to keep reminding people of the fact that it's there. If we look at marketing that we currently have. Probably, I'm not sure if it's the most recent example, but he did something for Nadine and Dan at the time, Allie. That was also a long-term care flyer that's popping up on my screen here. I bring it up because if we look at everything we have there, there's so much information and so many materials Allie's already created. I'm not even sure if she even remembers herself that she made this in the past. But that's just, I think an obvious point is we already have a ton of stuff So I think that's why it's so important for us to keep pointing out that there's a lot of things already in Notion that you can have repurposed. I know Allie's got her new forum going, and there's a ton of people now routing their questions through there, which is great. So if there's any ideas or thoughts around existing material that we want repurposed, that's obviously way faster for Allie to work on than trying to create something from scratch. I think long-term care might be a good example of that, Katie. There's something we've already created. I think it's a great thing if that is something we care about for Ali to look at repurposing some of that, maybe. What do you think about that, Ali? I'm seeing a nod. That's awesome. I think that's great. OK, so in the spirit of time, Ali, did you want to touch on anything else? I just want to cover a couple more things. All good? Yeah. All right. So for one, well, I want to make sure I keep bringing up Notion every time that we have this call, guys. The resource hub, we spent a ton of time on it. I want to make sure people keep using it. Whether that's for finding materials, whether you're looking to onboard or contract with a carrier, all the way down to quoting with a carrier, everything is documented there. And if it isn't, it's a click on the button to ask for Sam's help. So again, I want to keep encouraging everyone, make sure to at least log in there once a month and just explore and see whatever challenge you run into, whether there's an answer to your question right there in the hub. For today's topic, I wanted to build a little bit more on last month's discussion. Andres, you asked a couple of questions which is about social, how to run campaigns. I wanted to today touch a little bit more on what seems like a very boring topic, but I think is extremely important, which is the basic math of how to make the most of your time. And the reason I want to do that is it will put into perspective why certain things are or aren't worth spending the time on, how at some point you want to make different decisions as you're looking to continue to grow your business. That starts with knowing what you're worth. So I've got a little spreadsheet here, which even if you're just listening in, I'll keep talking through the numbers, don't worry about it. But if we know what we're worth per hour, it puts us it gives us so much more perspective on what is worth our time, right? So let's say that your income would sit around $100,000 year. Then if we count for 48 weeks a year that we're productive, and let's say, and I'm going to say this on the high end, we're productive about seven hours a day, then on an hourly basis, you are making $60 an hour. So I'll say it again, if you're looking to make $100,000 per hour, you should be making 60. All right. If that sits around $30,000, that's $18. If you're looking into a million, I know it'll put things into perspective. That's about $600 an hour. Why am I doing this simple math? Why? Because I think it's important for us to consider not just Results, but also effort. And I think that is one of the most overlooked aspects when it comes to acquiring new clients, because that's what I want to try and zoom in on a little bit. So let's say you're making $100,000 and you're saying, you know what, I want to make $100,000 more in new client acquisition before the end of the year. And then let's put the average commission value. I know there's not a real average, guys, like a ton of different products. Let's just, for the sake of it, put that around $500. Then, if you're looking to make an extra $100K in the year, the average commission value is $500. That means you need to close 17 policies per month, which now makes it a little more tangible, right? So we have our monthly effort and across the month, want to make sure I hit 17 new policies. And then how many appointments? So I'm going to reverse engineer here to get the outcome. How many appointments would we need to get to 17 new policies, newly written policies, for new clients? Let's say, and I went with industry standard here, right? So this sits like the close rate per appointment on the industry standard, for whatever that's worth, sits around So let's say we take the average and we put it at That means to write 17 new policies, we need to have 68 appointments every month. That's a little over two per day if you were working seven days a week. I mean, that's an ambitious number. But let's say we want to make that work. Then we can look at how many leads we need to get to that meeting. Now, again, I went with an industry standard just to make a point. So let's say across all the leads you've got coming in, 35% converges into a meeting. Then you need roughly 200 leads per month to try and make $100,000 extra by the end of the year. So again, I'm doing the math to make it more tangible to see what is it that actually want, because clicks aren't relevant, social media reach isn't relevant. At the end of the day, how many people are you connecting with, setting up appointments with, and then closing business with? Those are the numbers that actually drive the results. So if we need 200 leads to get to 17 new policies, then we consider, where are we pulling these leads from And is that 35% actually the number that I'm hitting? Here's where it gets interesting, right? Across all the channels that we leverage, I'm seeing examples come up where people are willing to spend a lot per lead and very little per lead, depending on their mindset, depending on the state of their business, the state of their book. But I think it's important to now look at the hidden cost that goes with cheap leads. Because I would say, and I'll do the math for you to prove it, cheap leads are a waste of your time. And here's why. So let's say we focus on cold calling. To run 250 dials, I'm going to put it at 12 hours of effort. So we make 250 dials, we get 12 hours of effort. And then let's say your cost per lead for getting 250 phone numbers sits around $13. That looks pretty cheap. So you spend $13 and then worth a day and a half to do 250 dials to get to the outcome that you wanted. Now, if we take your hourly rate and do the actual math, then you didn't spend $13. You spent over $700 of value to get to the outcome. Why is it over $700? It is because you're spending 12 hours times your hourly rate, what you should be making every hour, to get to the outcome that you want. So it's not just the $13 out of pocket. It's the effective cost per lead. That we also want to consider when we're running campaigns. Now to offset that, let's look at the other scenario. I know Stephen, you're working on this. When you choose to not look at coal calling stale leads, but you choose to buy hot coal swaps. So you're spending way more per lead, right? So here we're buying 250 phone numbers for a little over 10 bucks. If we're trying to get 10 calls, that'd be closer to $45 per call. That's triple the amount just for one call, which is a massive gap, right? So your cost per lead or your total cost for these leads is around $450. If you're buying 10 calls, that is supposed to then convert into that meeting and to that client. But then the effective cost. Because we're looking at how much time we then also spend. It's actually lower. So I'm doing the math here, right? We bought 10 calls. Let's say that the calls are going to cost you $45 an hour. Now Stephen can tell me what the actual numbers are. I think we're pretty close to that. And then let's say you take those 10 calls and you take two hours to process them. So you take two hours to qualify them, choose which of these people you want to keep talking to, qualify them, and then actually pursue the client. Then we take the two hours times your hourly valuation plus the $450 and that puts you around $570. So that is your actual cost to acquire the business. Now this then is probably also a good way to look at social. So we talked about this last time and I think this is where the challenge sits for most of the the organic channels. When we start with social medium, we need to work very hard for very little. Because if you're going to produce content, the way it works is you produce content over and over and over and over. You reach one person, two people, 10, 15, 20, 25, until you get to maybe But that takes time. Which means when we start with social, and again, I'm taking some hypothetical numbers here, right? So let's say it takes you a full work week, 40 hours to write up 100 social media posts, make them look nice, make sure that's scheduled out. Then you're basically spending $2,400 of your time, if you're sitting at the $100,000 mark, to actually produce the content and get the result you want. But if you have a bigger, audience, you've done this for a while, You've been consistent, you've built a reputation. Now, for every 10 posts you place, you get a result. Now your effective cost per lead, because you're not paying anything for social obviously, it's just the effort, is now $240. Now, is this about the numbers I'm putting up here? Not necessarily, but I'm trying to frame the idea of campaigning a little differently because what I see happen all the time is, man let me try something, I'll take this list of stale leads and I'll pay like ten bucks a lead. I know they haven't been contacted in a while, I know they probably filled out a form maybe six months ago, but hey, may as well try it and see what happens. But if you were that person that filled out a form six months ago, or even in practice, if you were a person and you filled that about 24 hours ago. You've probably already forgotten. So that's stale lead, which you're probably paying a bit more of a premium for than just cold contact lists. You spend some money on that, it's still considered a fairly cold lead. You just know a little bit more about this person. So does that mean none of that is worth your time? I don't think that's the case. I think we need to put it into perspective From two angles one is how much time you actually willing to spend on your campaign Because here's what's different now. We got all these numbers here, right? So I'll put this at a million dollars. Let's say you've grown your business. You're doing fucking fantastic, right? Then does it make sense for you to spend 40 hours on writing a hundred posts? Well, that means you're effectively spending $24,000 your time Probably not worth it. But if you're doing 35, you're starting out, you're trying to make your first bit of money, you're trying to work through it, then the numbers skew a bit more. Now, for example, cold calling gets more interesting because you're focused less on referrals, your time is still evaluated at a lower amount, so then it becomes more interesting to actually dial out and run your numbers. So all that is to say, when we try and level up in our game, try and put all these channels into perspective and try to evolve with the size of your book and the size of your income to also grow your business. Because I think the best way we can make this work out is by not just considering what we're spending in terms of dollars, but I think it's much more important for us to consider what we're spending in terms of time on these things, actually get the result that we want. So that's just a little math that I wanted to clear up for people. I hope that was a value and I hope that puts things into a bit more perspective. Because whether you're just starting out, and you're at a lower level of income, you're just trying to crush it and make the most of your time, pick up the phone, start dialing, it's still extremely cost effective when you're starting out. But if you're doing much more business, you're growing the size Then it becomes more interesting to spend more money and spend less time. So spend money on those ads. Spend money on the billboards. Spend money on print media. Spend money on ads. Try and figure stuff out that puts you out there in front of your audience. And make sure that when you do, that you're really good at closing. Because if these numbers don't stick, none of this will work. So make sure you get enough reps in the game. The people that are more senior here know when we're just starting out, all of these numbers still need to check out for this to work out. That's why it's so freaking hard to get into insurance, right? So yeah, I wanted to put this into perspective. Hope that inspires people. If there's any questions on this, you want me to run a few different numbers, I'm happy to do it. I'll share this a little later as well, so you can play around with the metrics if you want yourself as well. I just wanted to touch on this. Also now, for example, T65, right? When we're doing a T65 campaign, for Medicare. We're starting early, but it's a fairly low effort game, which means we are sending out materials once a week to the full list based on the system that's pre-designed for you. So there's no thinking, there's no override. You just do what the system says to get the results that you want. I think that's where we as a team can help you the best is how can we make the most of your time and, you know, point out where you probably can best spend your dollars from time to time. Cool, questions, thoughts, feedback?\n[Andres Sanchez]: Really good, Kevin. Could you share that spreadsheet with us?\n[Kevin Beeftink]: For sure, yeah. Yeah, that's been a great initiative. Thank you, Katie. Katie was mentioning the monthly newsletter that we're sending out now. Yeah, I'm really excited to see that go out every month. Thank you. Just to touch on this again for you as well, Andres, when we talk about social, put it into that perspective, right? How much effort goes into making this work for you? And where do you sit along that snowball effect of social media? If you're still pushing that snowball uphill, it's going to take a lot of heavy lifting until it starts rolling down. You actually read the benefits, right? So I'm not trying to discourage anyone from doing it. I'm just trying to put it into perspective that it can take a while to get where you want to get when it comes to organic.\n[Andres Sanchez]: That is right. I mean, I can testify that it's very, uh, it takes a long time and it's very expensive. So it's not cheap. You want to do a cheap, he's going to take even longer. Yeah.\n[Allyson Rose Powers]: which I'll have to think about.\n[Allyson Rose Powers]: And I think back to what we talked about on our last call, it's like all these things that work hand in hand, right? Like you could pour gasoline in one area and focus on that and drive home. But I know agents who have done multiple initiatives and spent their time doing social and doing print media and making calls like and running ads All that stuff working hand in hand can really help you build a local presence. So keep that in mind. Don't put all your eggs in one basket. Find different initiatives to really see what works for you and see kind of like the mixture of things that work for you. Whether that's door knocking, some people have success still door knocking. Find those things that work.\n[Kevin Beeftink]: Oh, no, I totally forgot. Again, to put it into perspective, let me pull this up. So I think this one's pretty obvious, right? So for volume cold calling just takes a lot of effort. Whereas if you got inbound hot leads, so basically people pay already picked up the phone and are telling you please sell me something. It's a different game. But I want to put this matrix into perspective as well. Right. So So when you look at where things fit, then we want to look against both axes, right? So we want to see what is the lead quality versus the time investment that goes with it, because quality usually equals cost. And then you'll see that the highest quality also comes with a fairly high cost. And that's not just cost out of pocket. So seminars and events are great. You connect with people. Person, you can build a relationship on the spot and try to connect with them then and there to follow up. It does require effort. Like for everyone that's been hosting events here, you all know it's not a one hour thing. Like you got to make sure it's promoted. You actually set it up. You actually show up. You actually deliver. And then it doesn't stop. We then also follow up and keep connecting with the people that came. So there are a lot of heavy lifting goes into this, but then the quality needs to also make sense. So stale leads that have been just sitting there, they're much harder to monetize, which ties into what I told you, Andres, just now for that campaign. If they're stale and we're just now sending them a one-off email, it's not going to do much, right? Because people haven't heard from us in a while. They have lost interest because the reason they end up in your list in the first place, also that event took a while. So now they're basically just cold contacts that are trying reach out to. So it has to be a bigger thing and a consistent thing for you to run this. And then what Ali just said makes a lot of sense, right? What we then want to do is not just take the lead and send out a quick email. We'll do an email after email after email, but then also pick up the phone. Because if you do both, and you check out the numbers in GHL, in Hatch, and you see, all right, I've seen these emails go out this these 10 people open every email. Maybe you want to call So it's not just the one thing where you can sit back and see none of these efforts are automatic, because then we would have all been fricking millionaires. I would have just pointed at you and say, do this, put money there, and open up your wallet and let the money pour in. It doesn't work like that. So put in the effort, and then start stacking. You've got a bunch of leads that you want to go after, send out that email campaign, but then pick up the phone, connect with them on social media, figure out ways in front of these people to build the relationship. That's how we then increase the lead quality for the people we connect with, and then we just balance it out with how much effort goes into it. Cool. Let me see what else I had on the calendar to go over. Again, if there's any questions, feedback, feel free to bring that up. Finally, we are opening up new rounds for T65. So if anyone is interested in also running their T65 campaign, I know a couple of people on here have been running it for a while. I think Katie, for you, it's worked out quite well. So if there's anyone else interested in signing up and making this campaign work out for themselves, we're taking new people again. So feel free to send us a quick message, and then we'll make sure to get you geared up. It means that we'll set up the entire campaign. We'll make sure you get prompted. To send out the print media that we've created on a monthly basis. We'll make sure the reminders to reach out to these people get set up for you. And if you're looking at doorknock or cold call, we've carried a structure for that as well. So again, we're trying to make it as easy as possible. Have you spent as little time as possible to make your cost-effective.\n[Andres Sanchez]: Are we able to set up maybe next time, maybe a meeting where we can go over the metrics on the ones who are working with the T65? So we can see like, you know, the success, struggles, right, the good, bad, and indifferent, and also what we can learn from that. And obviously every area is different, but there might be some common denominators that we can pick and we can apply to the different areas where we work.\n[Kevin Beeftink]: We can put some structured numbers together, Andres. I think the challenge here, though, does come with how every situation is different. So if you're, and again, putting this into perspective, if you're running radio commercials, you're paying money for billboards, you're showing up in ads, and you're then delivering mailers to people's homes, and you're showing up at their door, you stack all those efforts, then the effectiveness of this campaign will go through the roof. I mean, I think Katie just said she's got a bunch of appointments ready, but that's also Also because Katie spends efforts elsewhere to stack the value, right? So am I saying that to say this is not a great campaign? No, it absolutely is. So make sure just to put it into perspective, right? So if I'm going to say, if I ask Katie, can we talk about your number? She says, yes. And I'm going to portray that to all of you and say, all right, guys, do this because it's a great success. That wouldn't exactly be fair because Katie's done stuff that you guys may not have put in to get to the outcome that you wanted, right? So I'm happy to look into the numbers, and I'll see if we can put a case together that shows some of the impact. I just want to say, when we do, especially with case studies like this, we have to put it into perspective. So I'll see what we can do. And if we can put some numbers together.\n[Andres Sanchez]: Sure.\n[Andres Sanchez]: Yeah, I mean, like, I get it. Like, we can see different examples. Katie does, obviously, the A++ stuff, right? I get that. But I want to see, for example, how Veronica is doing. We have different areas where they have different challenges, how they work on the challenges, and what needs to start working. That's all.\n[Kevin Beeftink]: Absolutely. Yeah, some of the things that came out, for example, when you start sending out mailers, a percentage of the addresses will bounce, right? So that's stuff we've got to sort out with you. And there's logistics we've got to make sure we figure out. So yeah, let me see if we can pull some numbers. And I'll review the people that have already enrolled. And then see if we can put a case study together.\n[UNKNOWN_SPEAKER]: Good, thank you.\n[Kevin Beeftink]: All right, on that note, I think we can close out. Were there any other questions or pieces of feedback, guys, for us to consider moving forward for marketing?\n[Allyson Rose Powers]: Did we find this call helpful? Your guys' feedback and interaction helps us tailor these calls to benefit you guys, you know, so we really want to, you know, hear from you guys and know what's beneficial to you.\n[Kevin Beeftink]: I'll take the thumbs up on dress.\n[Kevin Beeftink]: Appreciate it.\n[UNKNOWN_SPEAKER]: Jon again.\n[Kevin Beeftink]: Yeah, go ahead.\n[Jon Cook]: I remember when I was a new agent, a long time ago, the brainstorming meetings are really good. But then I left and I was excited, but I didn't really know what to do. I was excited and I wanted to go to work. I said, I don't necessarily know how, where I found helped me is you have the brainstorming ideas, but it's like, Hey, here's three, you know, on paper strategies that people are doing that works. And then, you know, people have those and if they want to mix it into their business, it's good. Or if they want to take a part of it or just rob and repeat it, that's good too. But I think at the end of these, just kind of laying out two or three simple strategies that are people using for success. And over time, they'll blend it into their own, along with the brainstorming. Because I think we need both of those.\n[Kevin Beeftink]: I think I fully agree. I think if we have any takeaways that I want to leave you guys with, first and foremost, get your basics in order. Because as much as I love the field operate in as marketing. If you don't have your basis in order, if you don't have a foundation, where you have one channel, you're consistently driving, then all the other stuff starts getting a distraction. Right? So if that means you're just the type of person that'll just pick up the phone and dial numbers, make sure that baseline is set, and then add one more thing. If you're great at door knocking, have a team that supports you and getting great at door knocking, leverage that and just do that plus maybe one other thing. And if the one other thing is anything, then do something organic because that will also take a while, right? So then follow Ali's strategy, make sure you post something regularly on social media, make sure you repost the stuff that we put out there as a company. Because if we start doing these basics right, then it becomes more interesting to start doing other stuff. So again, as much as I love talking about this, the reason I want to put all this into perspective, again, is choose one that fits with you, understand the numbers that go with it, and just keep doing it. I started my career doing five years of cold calling, which was brutal. But it taught me how to get in touch with people, how to figure out the basic math for every 10 dials, I got a conversation 10 conversations, I got an appointment, for every five appointments, I made a deal. I got there doing the reps, just doing the work. And then adding something like leads, well, after I got good at sales, it was easier to then wrap that into a bigger strategy. So if there's any takeaways here, guys, do the, like, cover your bases, right? Make sure you do one thing very well, and then consider maybe one other channel. And then once thing settles down, and I'm sure Katie will testify to this, once it starts working, you can add one more. Once that starts working, you can add one more. But starts working is not two weeks. Starts working is three to six months to 12, right? It doesn't happen overnight. So if anything, these marketing taxes are great. Do this when you've got your basis in order.\n[Allyson Rose Powers]: I was going to add to that. As you guys were talking, it kind of came to my mind of For example, like with the annuity flyer you guys go back in your fact finders an action step can be identify Five clients that don't have annuities you haven't had a conversation with them ever or in a long time and say Pick up the phone call them and say hey, I know the markets crazy right now and I have Some helpful information for you. Let's schedule an appointment print out this annuity flyer and go sit down and talk with them about it. So that can be an action step of you guys identifying some current clients that don't have an annuity that you can talk with them about this new flyer. So I'm going to make a few changes based on the feedback that we got today, and then we'll make sure to get that flyer out. And I'll work on developing those other flyers. But that could be an action step. That was a great point, Jon.\n[Andres Sanchez]: Jon, I guess that, correct me if I'm wrong, what you were trying to convey is like three things to get out that people can go and apply and use right away. Does that make sense? What you were trying to ask?\n[Jon Cook]: Yeah, just kind of because to everyone's point, we all do things similar but different. So, So, you know, I mean, and also to piggyback off of Kevin, maybe we share some basics, like, hey, I'm really good at doing these basics, and here's what I do for these basics. And then, you know, to the other end of the spectrum, there's Katie, where she has the basics down, but she has enhanced it with X, Y, and Z. So maybe, you know, we have a call each month. It can be, you know, here's a picture-perfect stack of the basics that give me appointments, and here's a more advanced strategy. So that way, we're covering newer agents, experienced agents, but it's just laid out. It's kind of like instructions like, hey, here's what I do. Now, whether it works for that person or not, I'm sure they'll take something from it that they can add and enhance because they can read it and kind of, you know, they can kind of put it together if you will.\n[Andres Sanchez]: Absolutely. No, I can, I can definitely relate with what you're saying. Pretty much like, just to give an example, like you got it in down your, um, the social security seminars when I spoke with you, I mean, like you're passionate. It makes sense. It works and you become effective at it. Really good, right? So what does the playbook look like for Jon for example somebody wants to learn to do social security seminars like Katie somebody wants to be able to run the effective 365 campaigns that's the playbook right if somebody wants to learn how to do the calling part, right? Because it also comes with budgeting. It comes with that, right? If you don't have a budget, okay, you need to ground it. Like Kevin said, you need to pound the phone. Kevin, I was looking at your numbers and they look good. I mean, like if I can make 250 dials in 12 hours, probably I will be unemployed for sure. That's more like four hours. But it's like, okay, If I don't have the capital, the budget to invest in the business, right? I have to put it with effort. Correct? So then I have to put that effort. Okay. When I get those leads and then I have to call in and it's about volume, how much massive, right? And probably you're going to have to make $200 one person. That's what it is in these days, in this, in these markets. But that's what I got to start. That's why I got to start. So they can use scale back and you can use Katie's method. Eventually you want to get to what Jon's method is doing. Right of the seminars because the seminars take money, you know, it costs money just what it is but it's a play before whatever category you want to build on because Prospecting is like food, right? Different things if you eat apples every day you gotta get Disgusted with it at some point, but it's just learning how to Evolve I guess but there's gotta be a ground middle ground. I think that That's where the journey's coming from It's like, yeah, we have a lot of stuff that works, but let's pick the best people at what they're doing, something, and copy that model. And so people can take something from it, right? That makes great sense.\n[Kevin Beeftink]: So I keep talking about these channels and these tactics in my calls as well, guys. I've done some interviews late last year as well, different agents on different tactics. I know Mike Mike Thomas gave us a playbook on his door knocking tactics at the time, which can also be found in the hub. I'll just keep mentioning it. But those are all playbooks we've written up there. But I think just for these calls as well, I think it'd be good to just keep revisiting these things as well, just to keep putting them on the map and keep telling people, these are the basics and this is stuff you can try in addition to it, 100%. And I think what I'm also hearing from many of you guys across different office locations is the basics still drive the biggest amount of revenue, right? The other stuff that gets added on top frees up your time or makes you more effective. And that's how to see these things into perspective. None of it will work by itself and picking up the phone and knocking on doors is still one of the most foundational things to really get into a good habit of And then once you are able to spend more money, you could trade your time for dollars, and then do more with less time. And that's how we level up. But that's why I keep saying, cover your basics first. If that is in place, add one tactic, do it well, stick with it for a while, and then figure out maybe another. Let's start stacking. Cool. We're almost at the top of the hour. I appreciate everyone hopping on. Go ahead.\n[Allyson Rose Powers]: Sam just dropped in the chat and I had the same thought. Can we take like five minutes quickly to show them some of the playbooks in the hub? Because they've built out a lot of this stuff to give you guys step-by-step of playbook on some of these different topics we're talking Let me see if I can pull one up.\n[Kevin Beeftink]: 365 we've already covered. So there's specific ones and there's basic ones. So here's a good example. This is door knocking one on one with my Mike, let me pull this up. I love how we're all saying the same thing, right? This isn't about one-off campaigns. I continue to do this every day, which was me quoting Mike on the interview that we had, right? So, Doorknocking 101 is where I interviewed Mike on his tactics. He's been teaching doorknocking since I think for over two decades, if I'm not mistaken. And he broke down every step. He broke down his specific tactics. He talks about leaving post-it notes on people's doors with just his phone number on it, no business card. So if it's just a phone number, people are more likely to dial you back. And then you're able to pick up the conversation from there. So there are small nuances. Mike's tactic that really make it his. And I'm pretty sure because now Jon, you're teaching your team to do door knocking as well. And I think we brought it up at the time as though you have some different takes, like the baseline is obviously the same, but everyone's got their own approach to it. But the basics are all the same, right? You build your list, you schedule, plan your route, you just do the work, follow up and you continuously improve. And again, if this But then you start also sending mailers to these people, or also trying a different tactic just on top of this, or you also have a local presence through Facebook ads. It means that you're going to be seen more, and your reputation, your trust factor will go up. So that makes this tactic, where you're connecting with people, all the more effective. Same goes for cold calling, right? And this is a basic playbook, but we also put together, I think it was this one. So reactivating seminar leads. A lot of you guys are running seminars. It means that you have an old list of people that signed up and may or may not have shown up. You may or may not have done business with these people. That email address is still in there. They've been tagged. We know that they signed up. We've got a great hook for them to get re-interested. So maybe we do this campaign which is more of a direct response campaign. You reach out at the time. We haven't been able to connect in the meantime. I figured I'd just reach out and see if you're still interested. I'd love to get on a call with you. Send that out to 100 people. You got one or two people that reply back. I think all of these playbooks are different ways of making this work out. There's a ton of them in there. So I think it's, yeah, again, a great idea to revisit these from time to time and bring them up.\n[Allyson Rose Powers]: Can you go back to the homepage and then show Tell us slowly how you got there.\n[Kevin Beeftink]: Yeah, so for me, I just looked it up. So the quickest way to find it is I would just go to our marketing database, which has everything. I just hit search, and I'll just look for playbook. And I'll find a bunch of stuff here. I just happen to know which one I have to pick out. The other way to do it is Going from marketing materials, we've got this little folder here called articles and playbooks. You pop this open, you'll see the marketing updates, you'll see the Growth playbooks here. Here we've covered all these Growth playbooks. Are we covered from long-term email campaigns to the policy we have for reaching out to leads, how to run the T65 campaign, we document all that. Of it.\n[Allyson Rose Powers]: So I think we can wrap this up by also saying, as we all know, like nothing works unless we work it, right? So back to Jon's point, find some things that you can take away from this call, you know, take five minutes after this call, reflect on your biggest takeaways, and then come up with some steps that you want to take moving forward because the more you work, anything that you do, the more fruit you're going to get out of it. So we hope this was helpful to everybody.\n[Kevin Beeftink]: Appreciate you all showing up. We're looking forward to the next one. Thanks for hopping on everyone.\n[UNKNOWN_SPEAKER]: Bye y'all. Have a good week.\n[Kevin Beeftink]: Have a great week. Cheers.\n[UNKNOWN_SPEAKER]: Thank you."
+  },
+  "metrics": {
+    "read_score": 73.35523823376592,
+    "sentiment": 83.58456473399892,
+    "engagement": 63.12591173353292
+  }
+}
