@@ -289,17 +289,34 @@ def _poll_source(source: Source) -> dict:
             except Exception:
                 pass
 
-    # Update last_synced_at after successful sync
+    # Update last_synced_at and clear error state after successful sync
     with get_sync_session() as db:
         db_source = db.get(Source, source_id)
         if db_source:
             db_source.last_synced_at = datetime.now(timezone.utc)
+            db_source.last_error = None
+            db_source.last_error_at = None
 
     return {"ingested": ingested, "duplicates": duplicates, "errors": errors}
 
 
+def _record_source_error(source_id: str, error: str) -> None:
+    """Persist error details on the source row for visibility."""
+    try:
+        with get_sync_session() as db:
+            db_source = db.get(Source, source_id)
+            if db_source:
+                db_source.last_error = error[:2000]  # truncate long tracebacks
+                db_source.last_error_at = datetime.now(timezone.utc)
+    except Exception as exc:
+        logger.warning("Failed to record error on source %s: %s", source_id, exc)
+
+
 def poll_all_email_sources() -> dict:
     """Poll all active email Sources, using per-source credentials.
+
+    Error isolation: a failing source is logged and skipped so the remaining
+    sources continue to be polled.
 
     Returns summary: {total_ingested, total_duplicates, total_errors, sources_polled, sources_failed}
     """
@@ -327,7 +344,18 @@ def poll_all_email_sources() -> dict:
             total["errors"] += result.get("errors", 0)
             total["sources_polled"] += 1
         except Exception as e:
-            logger.error("Email source %s failed: %s", source.id, e)
+            host = ""
+            if source.credentials:
+                try:
+                    creds = decrypt_credentials(source.credentials)
+                    host = creds.get("imap_host", "")
+                except Exception:
+                    pass
+            logger.error(
+                "Email source %s (host=%s) failed — isolated, continuing: %s",
+                source.id, host, e,
+            )
+            _record_source_error(source.id, str(e))
             total["sources_failed"] += 1
 
     return total

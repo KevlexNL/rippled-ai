@@ -1,4 +1,4 @@
-.PHONY: test test-unit test-integration lint
+.PHONY: test test-unit test-integration lint backfill-extraction
 
 PYTHON := .venv/bin/python
 PYTEST  := .venv/bin/pytest
@@ -17,3 +17,7 @@ test: test-unit test-integration
 # Lint
 lint:
 	.venv/bin/ruff check app/
+
+# Backfill detection_audit data for source_items processed before audit logging
+backfill-extraction:
+	$(PYTHON) scripts/backfill_extraction_data.py

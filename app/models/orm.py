@@ -21,7 +21,7 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, ENUM, JSONB, UUID
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Mirror the PostgreSQL enum types created in the Phase 01 migration.
 # create_type=False tells SQLAlchemy not to CREATE TYPE (they already exist in the DB).
@@ -99,6 +99,8 @@ class Source(Base):
     credentials: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, nullable=True)
     last_synced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    last_error_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
@@ -740,3 +742,36 @@ class CandidateSignalRecord(Base):
     field_confidence_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     routing_action: Mapped[str] = mapped_column(String(50), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+# ---------------------------------------------------------------------------
+# Common Terms (Domain Vocabulary)
+# ---------------------------------------------------------------------------
+
+class CommonTerm(Base):
+    """User-defined canonical term with context for transcript enrichment."""
+    __tablename__ = "common_terms"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    canonical_term: Mapped[str] = mapped_column(String(255), nullable=False)
+    context: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    aliases: Mapped[list["CommonTermAlias"]] = relationship(
+        "CommonTermAlias", back_populates="term", cascade="all, delete-orphan",
+    )
+
+
+class CommonTermAlias(Base):
+    """Alias string that resolves to a CommonTerm."""
+    __tablename__ = "common_term_aliases"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    term_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("common_terms.id", ondelete="CASCADE"), nullable=False, index=True)
+    alias: Mapped[str] = mapped_column(String(255), nullable=False)
+    source: Mapped[str | None] = mapped_column(String(100), server_default="manual", nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    term: Mapped["CommonTerm"] = relationship("CommonTerm", back_populates="aliases")
