@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session
 
 from app.connectors.shared.credentials_utils import decrypt_value
 from app.connectors.shared.normalized_signal import NormalizedSignal
+from app.services.identity.term_resolver import get_term_context_block_sync
 from app.models.orm import (
     Commitment,
     CommitmentSignal,
@@ -239,6 +240,11 @@ def run_seed_pass(user_id: str, db: Session) -> SeedPassResult:
         "Seed pass: found %d unprocessed items for user %s", len(items), user_id
     )
 
+    # Pre-compute term context for enrichment
+    term_context = get_term_context_block_sync(user_id, db)
+    if term_context:
+        logger.info("Seed pass: injecting %d-char term context block", len(term_context))
+
     # Process in batches
     for batch_start in range(0, len(items), _BATCH_SIZE):
         batch = items[batch_start : batch_start + _BATCH_SIZE]
@@ -251,7 +257,7 @@ def run_seed_pass(user_id: str, db: Session) -> SeedPassResult:
 
         for item in batch:
             try:
-                llm_result = _extract_commitments(client, _DEFAULT_MODEL, item)
+                llm_result = _extract_commitments(client, _DEFAULT_MODEL, item, term_context=term_context)
 
                 if llm_result.commitments is None:
                     # No content / too short — no LLM call was made.
@@ -326,6 +332,7 @@ def _extract_commitments(
     model: str,
     item: SourceItem,
     signal: NormalizedSignal | None = None,
+    term_context: str = "",
 ) -> _LLMResult:
     """Call Anthropic LLM to extract commitments from a source item.
 
@@ -395,6 +402,9 @@ def _extract_commitments(
                 due_str = f" (due: {due})" if due else ""
                 ai_lines.append(f"- {ai.get('title', 'untitled')} [assignee: {assignee}]{due_str}")
             parts.append("\n".join(ai_lines))
+
+    if term_context:
+        parts.append(f"\n{term_context}")
 
     parts.append(f"\n[CURRENT MESSAGE]\n{latest_text}")
     if prior_context:

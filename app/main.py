@@ -15,6 +15,7 @@ from app.api.routes import user_settings as user_settings_routes
 from app.api.routes import clarifications as clarifications_routes
 from app.api.routes import stats as stats_routes
 from app.api.routes import identity as identity_routes
+from app.api.routes import terms as terms_routes
 from app.api.routes import report as report_routes
 from app.api.routes.webhooks import email as webhook_email, slack as webhook_slack, meetings as webhook_meetings
 from app.voice_bridge.twilio_handler import router as voice_bridge_router
@@ -61,6 +62,7 @@ app.include_router(user_settings_routes.router, prefix=settings.api_prefix, tags
 app.include_router(clarifications_routes.router, prefix=settings.api_prefix, tags=["clarifications"])
 app.include_router(stats_routes.router, prefix=settings.api_prefix, tags=["stats"])
 app.include_router(identity_routes.router, prefix=settings.api_prefix, tags=["identity"])
+app.include_router(terms_routes.router, prefix=settings.api_prefix, tags=["terms"])
 app.include_router(report_routes.router, prefix=settings.api_prefix, tags=["report"])
 app.include_router(voice_bridge_router, tags=["voice-bridge"])
 

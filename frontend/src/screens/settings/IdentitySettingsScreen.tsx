@@ -9,6 +9,15 @@ import {
   runBackfill,
   type IdentityProfileRead,
 } from '../../api/identity'
+import {
+  listTerms,
+  createTerm,
+  updateTerm,
+  deleteTerm,
+  addAlias,
+  deleteAlias,
+  type CommonTermRead,
+} from '../../api/terms'
 
 function typeBadge(type: string) {
   const labels: Record<string, string> = {
@@ -33,10 +42,79 @@ export default function IdentitySettingsScreen() {
   const [manualValue, setManualValue] = useState('')
   const [backfillMessage, setBackfillMessage] = useState<string | null>(null)
 
+  // Common Terms state
+  const [newTermName, setNewTermName] = useState('')
+  const [newTermContext, setNewTermContext] = useState('')
+  const [newTermAliases, setNewTermAliases] = useState('')
+  const [addAliasInputs, setAddAliasInputs] = useState<Record<string, string>>({})
+  const [expandedContexts, setExpandedContexts] = useState<Set<string>>(new Set())
+
   const { data: profiles = [] } = useQuery<IdentityProfileRead[]>({
     queryKey: ['identity-profiles'],
     queryFn: getIdentityProfile,
   })
+
+  const { data: terms = [] } = useQuery<CommonTermRead[]>({
+    queryKey: ['common-terms'],
+    queryFn: listTerms,
+  })
+
+  const createTermMutation = useMutation({
+    mutationFn: createTerm,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['common-terms'] })
+      setNewTermName('')
+      setNewTermContext('')
+      setNewTermAliases('')
+    },
+  })
+
+  const updateTermMutation = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: { canonical_term?: string | null; context?: string | null } }) =>
+      updateTerm(id, body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['common-terms'] }),
+  })
+
+  const deleteTermMutation = useMutation({
+    mutationFn: deleteTerm,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['common-terms'] }),
+  })
+
+  const addAliasMutation = useMutation({
+    mutationFn: ({ termId, alias }: { termId: string; alias: string }) =>
+      addAlias(termId, alias),
+    onSuccess: (_data, { termId }) => {
+      queryClient.invalidateQueries({ queryKey: ['common-terms'] })
+      setAddAliasInputs(prev => ({ ...prev, [termId]: '' }))
+    },
+  })
+
+  const deleteAliasMutation = useMutation({
+    mutationFn: ({ termId, aliasId }: { termId: string; aliasId: string }) =>
+      deleteAlias(termId, aliasId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['common-terms'] }),
+  })
+
+  function handleCreateTerm() {
+    const aliases = newTermAliases
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+    createTermMutation.mutate({
+      canonical_term: newTermName.trim(),
+      context: newTermContext.trim() || undefined,
+      aliases,
+    })
+  }
+
+  function toggleContext(id: string) {
+    setExpandedContexts(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const confirmed = profiles.filter(p => p.confirmed)
   const unconfirmed = profiles.filter(p => !p.confirmed)
@@ -218,6 +296,139 @@ export default function IdentitySettingsScreen() {
               {manualMutation.isPending ? 'Adding...' : 'Add identity'}
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-gray-100 my-6" />
+
+      {/* Section 3: Common Terms */}
+      <div>
+        <h3 className="text-sm font-semibold text-black mb-1">Common Terms</h3>
+        <p className="text-xs text-gray-500 mb-4">
+          Define terms and abbreviations used in your work. Rippled uses these to enrich meeting transcripts and signal detection — resolving aliases to their canonical meaning.
+        </p>
+
+        {/* Terms table */}
+        {terms.length > 0 && (
+          <div className="overflow-x-auto mb-4">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="text-left py-2 pr-3 text-[10px] font-medium uppercase tracking-wide text-gray-400">Term</th>
+                  <th className="text-left py-2 pr-3 text-[10px] font-medium uppercase tracking-wide text-gray-400">Context</th>
+                  <th className="text-left py-2 pr-3 text-[10px] font-medium uppercase tracking-wide text-gray-400">Aliases</th>
+                  <th className="text-right py-2 text-[10px] font-medium uppercase tracking-wide text-gray-400">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {terms.map(term => (
+                  <tr key={term.id} className="border-b border-gray-50">
+                    {/* Term name */}
+                    <td className="py-2.5 pr-3 align-top">
+                      <span className="text-sm text-black font-medium">{term.canonical_term}</span>
+                    </td>
+
+                    {/* Context */}
+                    <td className="py-2.5 pr-3 align-top max-w-[200px]">
+                      {term.context ? (
+                        <button
+                          onClick={() => toggleContext(term.id)}
+                          className="text-xs text-gray-500 text-left hover:text-gray-700 transition-colors"
+                        >
+                          {expandedContexts.has(term.id)
+                            ? term.context
+                            : term.context.length > 50
+                              ? `${term.context.slice(0, 50)}...`
+                              : term.context}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-gray-300 italic">No context</span>
+                      )}
+                    </td>
+
+                    {/* Aliases as chips */}
+                    <td className="py-2.5 pr-3 align-top">
+                      <div className="flex flex-wrap gap-1 items-center">
+                        {term.aliases.map(a => (
+                          <span
+                            key={a.id}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[11px]"
+                          >
+                            {a.alias}
+                            <button
+                              onClick={() => deleteAliasMutation.mutate({ termId: term.id, aliasId: a.id })}
+                              className="text-gray-400 hover:text-red-500 transition-colors leading-none"
+                            >
+                              &times;
+                            </button>
+                          </span>
+                        ))}
+                        {/* Inline add alias */}
+                        <span className="inline-flex items-center gap-1">
+                          <input
+                            type="text"
+                            value={addAliasInputs[term.id] || ''}
+                            onChange={e => setAddAliasInputs(prev => ({ ...prev, [term.id]: e.target.value }))}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' && (addAliasInputs[term.id] || '').trim()) {
+                                addAliasMutation.mutate({ termId: term.id, alias: addAliasInputs[term.id].trim() })
+                              }
+                            }}
+                            placeholder="+ alias"
+                            className="w-16 border border-gray-200 rounded px-1.5 py-0.5 text-[11px] text-black placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-transparent"
+                          />
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-2.5 align-top text-right">
+                      <button
+                        onClick={() => deleteTermMutation.mutate(term.id)}
+                        disabled={deleteTermMutation.isPending}
+                        className="text-gray-400 hover:text-red-500 text-xs transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Add term form */}
+        <div className="flex flex-col gap-2 max-w-md">
+          <input
+            type="text"
+            value={newTermName}
+            onChange={e => setNewTermName(e.target.value)}
+            placeholder="Canonical term name (e.g. GoHighLevel)"
+            className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+          />
+          <input
+            type="text"
+            value={newTermContext}
+            onChange={e => setNewTermContext(e.target.value)}
+            placeholder="Context sentence (optional)"
+            className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+          />
+          <input
+            type="text"
+            value={newTermAliases}
+            onChange={e => setNewTermAliases(e.target.value)}
+            placeholder="Aliases, comma-separated (e.g. Hatch, GHL)"
+            className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+          />
+          <button
+            onClick={handleCreateTerm}
+            disabled={!newTermName.trim() || createTermMutation.isPending}
+            className="px-3 py-1.5 rounded-lg bg-black text-white text-xs font-medium hover:bg-gray-900 transition-colors self-start disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {createTermMutation.isPending ? 'Adding...' : 'Add term'}
+          </button>
         </div>
       </div>
     </div>
