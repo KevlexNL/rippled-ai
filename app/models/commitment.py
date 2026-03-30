@@ -12,6 +12,7 @@ from app.models.enums import (
     LifecycleState,
     CommitmentClass,
     CommitmentType,
+    DuePrecision,
     OwnershipAmbiguityType,
     TimingAmbiguityType,
     DeliverableAmbiguityType,
@@ -42,6 +43,13 @@ ownership_ambiguity_enum = SAEnum(
 timing_ambiguity_enum = SAEnum(
     TimingAmbiguityType,
     name="timing_ambiguity_type",
+    create_type=True,
+    values_callable=lambda e: [m.value for m in e],
+)
+
+due_precision_enum = SAEnum(
+    DuePrecision,
+    name="due_precision",
     create_type=True,
     values_callable=lambda e: [m.value for m in e],
 )
@@ -139,6 +147,7 @@ class Commitment(Base):
     vague_time_phrase: Mapped[str | None] = mapped_column(String, nullable=True)
     suggested_due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     timing_ambiguity: Mapped[TimingAmbiguityType | None] = mapped_column(timing_ambiguity_enum, nullable=True)
+    due_precision: Mapped[DuePrecision | None] = mapped_column(due_precision_enum, nullable=True)
 
     # Deliverable / Next step
     deliverable: Mapped[str | None] = mapped_column(Text, nullable=True)

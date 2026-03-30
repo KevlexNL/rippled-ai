@@ -162,3 +162,17 @@ class CommitmentType(str, enum.Enum):
     schedule = "schedule"
     confirm = "confirm"
     other = "other"
+
+
+class DuePrecision(str, enum.Enum):
+    """How precisely the due date/deadline was specified in the source.
+
+    day    — Exact date specified (e.g. "by Friday", "before March 31st").
+    week   — Week-level precision (e.g. "next week", "this week").
+    month  — Month-level precision (e.g. "by end of month", "in April").
+    vague  — Vague or relative (e.g. "soon", "ASAP", "in a few days").
+    """
+    day = "day"
+    week = "week"
+    month = "month"
+    vague = "vague"

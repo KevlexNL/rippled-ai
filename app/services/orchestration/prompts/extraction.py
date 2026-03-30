@@ -27,6 +27,7 @@ You must respond with ONLY valid JSON matching this schema:
   "timing_confidence": <float 0.0-1.0>,
   "target_confidence": <float 0.0-1.0>,
   "ambiguity_flags": [<list of string flags>],
+  "due_precision": "day" | "week" | "month" | "vague" | null,
   "rationale_short": "<1 sentence>"
 }
 
@@ -38,6 +39,7 @@ CRITICAL RULES:
 5. Keep deliverable_text concise and specific.
 6. If no commitment is present despite earlier stages suggesting one, set candidate_present=false.
 7. owner_resolution maps the owner to their role: "sender" if the message author commits themselves, "recipient" if they're asking the reader, "third_party" if about someone else.
+8. due_precision: set to "day" if an exact date is given (e.g. "by Friday", "before March 31st"), "week" for week-level phrases ("next week", "this week"), "month" for month-level phrases ("end of month", "in April"), "vague" for imprecise phrases ("soon", "ASAP", "in a few days"). Set null if no timing is mentioned at all.
 """
 
 

@@ -49,6 +49,10 @@ _timing_ambiguity_type = ENUM(
     'missing', 'vague', 'conflicting', 'changed', 'inferred_weak',
     name='timing_ambiguity_type', create_type=False,
 )
+_due_precision = ENUM(
+    'day', 'week', 'month', 'vague',
+    name='due_precision', create_type=False,
+)
 _deliverable_ambiguity_type = ENUM(
     'unclear', 'target_unknown',
     name='deliverable_ambiguity_type', create_type=False,
@@ -165,6 +169,7 @@ class Commitment(Base):
     vague_time_phrase: Mapped[str | None] = mapped_column(String, nullable=True)
     suggested_due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     timing_ambiguity: Mapped[str | None] = mapped_column(_timing_ambiguity_type, nullable=True)
+    due_precision: Mapped[str | None] = mapped_column(_due_precision, nullable=True)
     deliverable: Mapped[str | None] = mapped_column(Text, nullable=True)
     target_entity: Mapped[str | None] = mapped_column(String, nullable=True)
     suggested_next_step: Mapped[str | None] = mapped_column(Text, nullable=True)

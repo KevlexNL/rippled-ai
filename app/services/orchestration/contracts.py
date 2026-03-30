@@ -57,6 +57,13 @@ class EvidenceSource(str, enum.Enum):
     unknown = "unknown"
 
 
+class DuePrecision(str, enum.Enum):
+    day = "day"
+    week = "week"
+    month = "month"
+    vague = "vague"
+
+
 class RoutingAction(str, enum.Enum):
     discard = "discard"
     observe_quietly = "observe_quietly"
@@ -124,6 +131,7 @@ class CommitmentExtractionResult(BaseModel):
     timing_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     target_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     ambiguity_flags: list[str] = Field(default_factory=list)
+    due_precision: DuePrecision | None = None
     rationale_short: str = ""
 
 

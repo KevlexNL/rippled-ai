@@ -22,7 +22,7 @@ You must respond with ONLY valid JSON matching this schema:
 
 Where CandidateGateResult = {"candidate_type": str, "confidence": float, "rationale_short": str, "escalate_recommended": false}
 Where SpeechActResult = {"speech_act": str, "confidence": float, "actor_hint": str, "target_hint": str, "rationale_short": str, "ambiguity_flags": []}
-Where CommitmentExtractionResult = {"candidate_present": bool, "owner_text": str|null, "owner_resolution": str, "deliverable_text": str|null, "timing_text": str|null, "target_text": str|null, "evidence_span": str|null, "evidence_source": str, "owner_confidence": float, "deliverable_confidence": float, "timing_confidence": float, "target_confidence": float, "ambiguity_flags": [], "rationale_short": str}
+Where CommitmentExtractionResult = {"candidate_present": bool, "owner_text": str|null, "owner_resolution": str, "deliverable_text": str|null, "timing_text": str|null, "target_text": str|null, "evidence_span": str|null, "evidence_source": str, "owner_confidence": float, "deliverable_confidence": float, "timing_confidence": float, "target_confidence": float, "ambiguity_flags": [], "due_precision": "day"|"week"|"month"|"vague"|null, "rationale_short": str}
 
 RULES:
 - Only override stage outputs where you have HIGHER confidence.
