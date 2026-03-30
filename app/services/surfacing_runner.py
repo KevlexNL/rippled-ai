@@ -186,6 +186,7 @@ def run_surfacing_sweep(db: Session) -> dict:
                 new_surfaced_as=new_surface,
                 priority_score=Decimal(str(routing.priority_score)),
                 reason=routing.reason[:255] if routing.reason else None,
+                user_id=commitment.user_id,
             )
             db.add(audit)
             changed += 1
