@@ -19,6 +19,7 @@ import IntegrationsSettingsScreen from './screens/settings/IntegrationsSettingsS
 import IdentitySettingsScreen from './screens/settings/IdentitySettingsScreen'
 import PrototypeDashboard from './screens/PrototypeDashboard'
 import AdminScreen from './screens/AdminScreen'
+import SignalLabScreen from './screens/SignalLabScreen'
 import ArchitectureScreen from './screens/ArchitectureScreen'
 import { getIdentityStatus } from './api/identity'
 import { listSources } from './api/sources'
@@ -187,6 +188,14 @@ export default function App() {
         }
       />
       <Route path="/prototype" element={<PrototypeDashboard />} />
+      <Route
+        path="/lab"
+        element={
+          <AuthGuard>
+            <SignalLabScreen />
+          </AuthGuard>
+        }
+      />
       <Route
         path="/admin"
         element={

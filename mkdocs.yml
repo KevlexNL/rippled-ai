@@ -58,6 +58,7 @@ nav:
     - Signal Pipeline: architecture/signal-pipeline.md
     - Commitment Lifecycle: architecture/lifecycle.md
     - Data Model: architecture/data-model.md
+    - Common Terms: architecture/common-terms.md
   - Product:
     - Product Truth: product/truth.md
     - Domain Policy: product/domain-policy.md

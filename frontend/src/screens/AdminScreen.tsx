@@ -598,6 +598,12 @@ export default function AdminScreen() {
           >
             Architecture
           </button>
+          <button
+            onClick={() => navigate('/lab')}
+            className="text-[#6b7280] hover:text-[#191919] px-3 md:px-4 py-1 text-[13px] transition-colors"
+          >
+            Signal Lab
+          </button>
         </div>
         <div className="ml-auto flex-shrink-0" />
       </div>
