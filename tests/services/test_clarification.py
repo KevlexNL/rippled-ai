@@ -720,3 +720,206 @@ class TestClarifier:
 
         # Two flushes: post-promotion FK flush (line 113) + final flush (line 158)
         assert db.flush.call_count == 2
+
+    def test_clarifier_applies_speech_act_from_linked_entities(self):
+        """speech_act from model detection stored in linked_entities → set on commitment."""
+        from app.services.clarification.clarifier import run_clarification
+
+        candidate = _make_candidate(
+            linked_entities={
+                "people": [], "dates": [],
+                "speech_act": "request",
+            },
+            context_window={},
+            observe_until=datetime.now(timezone.utc) - timedelta(hours=1),
+        )
+        db = self._make_mock_db(candidate=candidate)
+
+        fake_commitment = types.SimpleNamespace(
+            id="commit-sa-1",
+            lifecycle_state="proposed",
+            user_id="user-001",
+            speech_act=None,
+            structure_complete=False,
+            user_relationship=None,
+            requester_name=None,
+            requester_resolved=None,
+            beneficiary_name=None,
+            beneficiary_resolved=None,
+            deliverable=None,
+        )
+
+        with patch("app.services.clarification.clarifier.promote_candidate", return_value=fake_commitment), \
+             patch("app.services.clarification.clarifier.generate_suggestions", return_value={}):
+            run_clarification(str(candidate.id), db)
+
+        assert fake_commitment.speech_act == "request"
+
+    def test_clarifier_applies_structure_complete_from_linked_entities(self):
+        """structure_complete from model detection → set on commitment."""
+        from app.services.clarification.clarifier import run_clarification
+
+        candidate = _make_candidate(
+            linked_entities={
+                "people": [], "dates": [],
+                "structure_complete": True,
+            },
+            context_window={},
+            observe_until=datetime.now(timezone.utc) - timedelta(hours=1),
+        )
+        db = self._make_mock_db(candidate=candidate)
+
+        fake_commitment = types.SimpleNamespace(
+            id="commit-sc-1",
+            lifecycle_state="proposed",
+            user_id="user-001",
+            speech_act=None,
+            structure_complete=False,
+            user_relationship=None,
+            requester_name=None,
+            requester_resolved=None,
+            beneficiary_name=None,
+            beneficiary_resolved=None,
+            deliverable=None,
+        )
+
+        with patch("app.services.clarification.clarifier.promote_candidate", return_value=fake_commitment), \
+             patch("app.services.clarification.clarifier.generate_suggestions", return_value={}):
+            run_clarification(str(candidate.id), db)
+
+        assert fake_commitment.structure_complete is True
+
+    def test_clarifier_applies_user_relationship_from_linked_entities(self):
+        """user_relationship from model detection → set on commitment."""
+        from app.services.clarification.clarifier import run_clarification
+
+        candidate = _make_candidate(
+            linked_entities={
+                "people": [], "dates": [],
+                "user_relationship": "watching",
+            },
+            context_window={},
+            observe_until=datetime.now(timezone.utc) - timedelta(hours=1),
+        )
+        db = self._make_mock_db(candidate=candidate)
+
+        fake_commitment = types.SimpleNamespace(
+            id="commit-ur-1",
+            lifecycle_state="proposed",
+            user_id="user-001",
+            speech_act=None,
+            structure_complete=False,
+            user_relationship=None,
+            requester_name=None,
+            requester_resolved=None,
+            beneficiary_name=None,
+            beneficiary_resolved=None,
+            deliverable=None,
+        )
+
+        with patch("app.services.clarification.clarifier.promote_candidate", return_value=fake_commitment), \
+             patch("app.services.clarification.clarifier.generate_suggestions", return_value={}):
+            run_clarification(str(candidate.id), db)
+
+        assert fake_commitment.user_relationship == "watching"
+
+    def test_clarifier_applies_deliverable_from_linked_entities(self):
+        """deliverable from model detection → set on commitment."""
+        from app.services.clarification.clarifier import run_clarification
+
+        candidate = _make_candidate(
+            linked_entities={
+                "people": [], "dates": [],
+                "deliverable": "Q2 budget report",
+            },
+            context_window={},
+            observe_until=datetime.now(timezone.utc) - timedelta(hours=1),
+        )
+        db = self._make_mock_db(candidate=candidate)
+
+        fake_commitment = types.SimpleNamespace(
+            id="commit-dv-1",
+            lifecycle_state="proposed",
+            user_id="user-001",
+            speech_act=None,
+            structure_complete=False,
+            user_relationship=None,
+            requester_name=None,
+            requester_resolved=None,
+            beneficiary_name=None,
+            beneficiary_resolved=None,
+            deliverable=None,
+        )
+
+        with patch("app.services.clarification.clarifier.promote_candidate", return_value=fake_commitment), \
+             patch("app.services.clarification.clarifier.generate_suggestions", return_value={}):
+            run_clarification(str(candidate.id), db)
+
+        assert fake_commitment.deliverable == "Q2 budget report"
+
+    def test_clarifier_defaults_speech_act_to_self_commitment(self):
+        """When no speech_act in linked_entities, default to self_commitment."""
+        from app.services.clarification.clarifier import run_clarification
+
+        candidate = _make_candidate(
+            linked_entities={"people": [], "dates": []},
+            context_window={},
+            observe_until=datetime.now(timezone.utc) - timedelta(hours=1),
+        )
+        db = self._make_mock_db(candidate=candidate)
+
+        fake_commitment = types.SimpleNamespace(
+            id="commit-sa-def",
+            lifecycle_state="proposed",
+            user_id="user-001",
+            speech_act=None,
+            structure_complete=False,
+            user_relationship=None,
+            requester_name=None,
+            requester_resolved=None,
+            beneficiary_name=None,
+            beneficiary_resolved=None,
+            deliverable=None,
+        )
+
+        with patch("app.services.clarification.clarifier.promote_candidate", return_value=fake_commitment), \
+             patch("app.services.clarification.clarifier.generate_suggestions", return_value={}):
+            run_clarification(str(candidate.id), db)
+
+        assert fake_commitment.speech_act == "self_commitment"
+
+    def test_clarifier_derives_structure_complete_from_entities(self):
+        """When requester + beneficiary + deliverable all present → structure_complete = True."""
+        from app.services.clarification.clarifier import run_clarification
+
+        candidate = _make_candidate(
+            linked_entities={
+                "people": [], "dates": [],
+                "requester": "Alice",
+                "beneficiary": "Bob",
+                "deliverable": "monthly report",
+            },
+            context_window={},
+            observe_until=datetime.now(timezone.utc) - timedelta(hours=1),
+        )
+        db = self._make_mock_db(candidate=candidate)
+
+        fake_commitment = types.SimpleNamespace(
+            id="commit-sc-derive",
+            lifecycle_state="proposed",
+            user_id="user-001",
+            speech_act=None,
+            structure_complete=False,
+            user_relationship=None,
+            requester_name=None,
+            requester_resolved=None,
+            beneficiary_name=None,
+            beneficiary_resolved=None,
+            deliverable=None,
+        )
+
+        with patch("app.services.clarification.clarifier.promote_candidate", return_value=fake_commitment), \
+             patch("app.services.clarification.clarifier.generate_suggestions", return_value={}):
+            run_clarification(str(candidate.id), db)
+
+        assert fake_commitment.structure_complete is True

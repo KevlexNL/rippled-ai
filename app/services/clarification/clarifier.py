@@ -88,8 +88,21 @@ def run_clarification(candidate_id: str, db: Session) -> dict:
     commitment = promote_candidate(candidate, db, analysis)
     logger.info("Candidate %s promoted to commitment %s", candidate_id, commitment.id)
 
-    # Step 5a — apply requester/beneficiary from model detection
+    # Step 5a — apply classification + entity fields from model detection
     entities = candidate.linked_entities or {}
+
+    # Speech-act classification (default to self_commitment for Tier 1/2 candidates)
+    commitment.speech_act = entities.get("speech_act") or "self_commitment"
+
+    # Deliverable text
+    if entities.get("deliverable"):
+        commitment.deliverable = entities["deliverable"]
+
+    # User relationship from model (may be overridden below by requester resolution)
+    if entities.get("user_relationship"):
+        commitment.user_relationship = entities["user_relationship"]
+
+    # Requester + beneficiary
     if entities.get("requester"):
         commitment.requester_name = entities["requester"]
         # Resolve requester against identity profiles
@@ -105,6 +118,14 @@ def run_clarification(candidate_id: str, db: Session) -> dict:
     # If requester resolved to the logged-in user, override relationship to 'mine'
     if getattr(commitment, "requester_resolved", None) == candidate.user_id:
         commitment.user_relationship = "mine"
+
+    # Structure completeness: use model value if available, otherwise derive
+    if entities.get("structure_complete"):
+        commitment.structure_complete = True
+    elif (getattr(commitment, "requester_name", None)
+          and getattr(commitment, "beneficiary_name", None)
+          and getattr(commitment, "deliverable", None)):
+        commitment.structure_complete = True
 
     # Step 5b — flush commitment NOW so FK constraints on Clarification /
     # LifecycleTransition are satisfied when those rows are inserted.
