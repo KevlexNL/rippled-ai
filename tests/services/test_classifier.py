@@ -281,6 +281,33 @@ class TestScoreConfidenceForSurfacing:
         result = score_confidence_for_surfacing(commitment)
         assert result == pytest.approx(0.5, abs=0.01)
 
+    def test_null_sub_dimensions_default_to_commitment_confidence(self):
+        """When confidence_owner and confidence_actionability are NULL,
+        the composite should equal confidence_commitment, not be dragged
+        down by a 0.5 default.
+
+        This is the typical case for promoted commitments from Tier 2 detection.
+        """
+        commitment = make_commitment(
+            confidence_commitment=Decimal("0.60"),
+            confidence_owner=None,
+            confidence_actionability=None,
+        )
+        result = score_confidence_for_surfacing(commitment)
+        # Should be 0.6, not 0.54 (which is what happens with 0.5 defaults)
+        assert result == pytest.approx(0.6, abs=0.01)
+
+    def test_null_owner_only_defaults_to_commitment_confidence(self):
+        """When only confidence_owner is NULL, default to confidence_commitment."""
+        commitment = make_commitment(
+            confidence_commitment=Decimal("0.70"),
+            confidence_owner=None,
+            confidence_actionability=Decimal("0.80"),
+        )
+        result = score_confidence_for_surfacing(commitment)
+        # (0.7 * 0.4) + (0.7 * 0.3) + (0.8 * 0.3) = 0.28 + 0.21 + 0.24 = 0.73
+        assert result == pytest.approx(0.73, abs=0.01)
+
     def test_low_commitment_conf_lowers_score(self):
         high = make_commitment(confidence_commitment=Decimal("0.9"))
         low = make_commitment(confidence_commitment=Decimal("0.1"))

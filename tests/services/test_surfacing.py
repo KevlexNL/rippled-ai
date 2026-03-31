@@ -307,6 +307,31 @@ class TestSurfacingRouter:
         # Medium-score internal → shortlist or None depending on total
         assert result.surface in ("shortlist", None)
 
+    def test_promoted_internal_commitment_surfaces(self):
+        """A typical promoted Tier 2 commitment should surface on shortlist.
+
+        This simulates the most common case: internal commitment detected by
+        pattern matching, with confidence_commitment=0.60, actionability=0.60,
+        no explicit timing, but with a deliverable and cognitive burden phrases.
+        """
+        commitment = make_commitment(
+            context_type="internal",
+            confidence_commitment=Decimal("0.60"),
+            confidence_owner=None,
+            confidence_actionability=Decimal("0.60"),
+            timing_ambiguity=None,
+            deliverable="revised proposal",
+            commitment_text="I'll send the revised proposal",
+            structure_complete=True,
+            speech_act="self_commitment",
+            observe_until=None,
+        )
+        result = route(commitment)
+        assert result.surface is not None, (
+            f"Expected promoted commitment to surface, got None "
+            f"(score={result.priority_score}, reason={result.reason})"
+        )
+
     def test_critical_ambiguity_routes_to_clarifications(self):
         commitment = make_commitment(
             ownership_ambiguity="missing",

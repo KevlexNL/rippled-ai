@@ -162,8 +162,10 @@ def promote_candidate(
         suggested_due_date=None,  # Phase 04 does not parse date strings to datetime
         suggested_next_step=None,
         confidence_commitment=candidate.confidence_score,
+        confidence_actionability=candidate.confidence_score,
         observe_until=candidate.observe_until,
         lifecycle_state=lifecycle_state,
+        structure_complete=True,
         context_tags=_derive_context_tags(candidate),
     )
     db.add(commitment)

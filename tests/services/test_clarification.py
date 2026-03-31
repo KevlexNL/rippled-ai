@@ -467,6 +467,41 @@ class TestPromoter:
         assert commitment.timing_ambiguity is None
         assert commitment.deliverable_ambiguity is None
 
+    def test_promote_sets_structure_complete_true(self):
+        """Promoted commitments must have structure_complete=True.
+
+        A candidate that passes detection + clarification has validated structure.
+        Without this, the surfacing router blocks ALL promoted commitments.
+        """
+        candidate = _make_candidate()
+        db = self._mock_db()
+        analysis = _make_analysis(issue_types=[])
+        commitment = promote_candidate(candidate, db, analysis)
+        assert commitment.structure_complete is True
+
+    def test_promote_sets_structure_complete_true_even_with_ambiguity(self):
+        """Even commitments with ambiguity issues should be structure_complete.
+
+        Ambiguity routes to clarifications surface, not blocked from surfacing entirely.
+        """
+        candidate = _make_candidate()
+        db = self._mock_db()
+        analysis = _make_analysis(issue_types=[AmbiguityType.owner_missing])
+        commitment = promote_candidate(candidate, db, analysis)
+        assert commitment.structure_complete is True
+
+    def test_promote_sets_confidence_actionability(self):
+        """Promoted commitments must have confidence_actionability populated.
+
+        A promoted candidate is inherently actionable — it passed the pipeline.
+        """
+        candidate = _make_candidate(confidence_score=Decimal("0.80"))
+        db = self._mock_db()
+        analysis = _make_analysis(issue_types=[])
+        commitment = promote_candidate(candidate, db, analysis)
+        assert commitment.confidence_actionability is not None
+        assert commitment.confidence_actionability == Decimal("0.800")
+
 
 # ---------------------------------------------------------------------------
 # Suggestions

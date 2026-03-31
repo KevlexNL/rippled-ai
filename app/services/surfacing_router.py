@@ -34,7 +34,7 @@ SurfaceDestination = Literal["main", "shortlist", "clarifications"] | None
 # ---------------------------------------------------------------------------
 
 _MAIN_THRESHOLD = 60
-_SHORTLIST_THRESHOLD = 35
+_SHORTLIST_THRESHOLD = 30
 # Minimum score to trigger the clarifications surface (don't route near-zero
 # confidence junk to clarifications)
 _CLARIFICATION_MIN_SCORE = 25

@@ -257,8 +257,11 @@ def score_confidence_for_surfacing(commitment) -> float:
         return float(val)
 
     conf_commitment = _float(getattr(commitment, "confidence_commitment", None))
-    conf_owner = _float(getattr(commitment, "confidence_owner", None))
-    conf_actionability = _float(getattr(commitment, "confidence_actionability", None))
+    # Use confidence_commitment as fallback for unmeasured sub-dimensions
+    # instead of 0.5 — avoids dragging the composite below the raw signal.
+    fallback = conf_commitment
+    conf_owner = _float(getattr(commitment, "confidence_owner", None), default=fallback)
+    conf_actionability = _float(getattr(commitment, "confidence_actionability", None), default=fallback)
 
     composite = (
         conf_commitment * 0.4
