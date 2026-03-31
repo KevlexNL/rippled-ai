@@ -221,6 +221,8 @@ class Commitment(Base):
     # Skip state — item removed from review queue without lifecycle change
     skipped_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     skip_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Context tags — signal source labels (e.g. ["meeting"], ["slack"], ["email"])
+    context_tags: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

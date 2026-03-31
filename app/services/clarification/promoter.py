@@ -76,6 +76,26 @@ _TIMING_ISSUES = {
 _DELIVERABLE_ISSUES = {AmbiguityType.deliverable_unclear, AmbiguityType.target_unclear}
 
 
+
+
+# ---------------------------------------------------------------------------
+# Context tags derivation
+# ---------------------------------------------------------------------------
+
+_SOURCE_TYPE_TAG_MAP: dict[str, list[str]] = {
+    "slack": ["slack"],
+    "email": ["email"],
+    "meeting": ["meeting"],
+}
+
+
+def _derive_context_tags(candidate: Any) -> list[str] | None:
+    """Derive context_tags from the candidate's signal source type."""
+    source_type = getattr(candidate, "source_type", None)
+    if not source_type:
+        return None
+    return _SOURCE_TYPE_TAG_MAP.get(str(source_type).lower())
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -144,6 +164,7 @@ def promote_candidate(
         confidence_commitment=candidate.confidence_score,
         observe_until=candidate.observe_until,
         lifecycle_state=lifecycle_state,
+        context_tags=_derive_context_tags(candidate),
     )
     db.add(commitment)
     # Flush commitment first so FK constraints on CandidateCommitment and

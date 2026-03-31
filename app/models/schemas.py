@@ -249,6 +249,8 @@ class CommitmentRead(_Base):
     # Skip state
     skipped_at: datetime | None = None
     skip_reason: str | None = None
+    # Context tags (e.g. ["meeting"], ["slack"], ["email"])
+    context_tags: list | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -288,6 +290,7 @@ class CommitmentCreate(_Base):
     structure_complete: bool = False
     observe_until: datetime | None = None
     observation_window_hours: Decimal | None = None
+    context_tags: list | None = None
 
 
 class CommitmentUpdate(_Base):
@@ -300,6 +303,7 @@ class CommitmentUpdate(_Base):
     deliverable: str | None = None
     confidence_actionability: Decimal | None = None
     is_surfaced: bool | None = None
+    context_tags: list | None = None
 
 
 # ---------------------------------------------------------------------------
