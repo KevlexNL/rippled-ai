@@ -18,7 +18,8 @@ import re
 from decimal import Decimal
 
 _NEWSLETTER_PATTERNS = re.compile(
-    r"^(?:no-?reply|noreply|donotreply|newsletter|notifications?|"
+    r"^(?:[\w.-]*[-._])?"
+    r"(?:no-?reply|noreply|donotreply|newsletters?|notifications?|"
     r"mailer-?daemon|updates?|digest|alerts?|info|marketing|promo)"
     r"@",
     re.IGNORECASE,

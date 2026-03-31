@@ -210,11 +210,34 @@ class TestSenderSuppression:
         assert detect_newsletter_sender("mailer-daemon@server.com") is True
         assert detect_newsletter_sender("updates@service.com") is True
 
+    def test_auto_detect_plural_newsletter(self):
+        """newsletters@ (plural) must be caught — WO-RIPPLED-ELIGIBILITY-FILTER."""
+        from app.services.detection.profile_matcher import detect_newsletter_sender
+
+        assert detect_newsletter_sender("newsletters@medium.com") is True
+
+    def test_auto_detect_prefixed_noreply(self):
+        """Prefixed noreply like CloudPlatform-noreply@ must be caught — WO-RIPPLED-ELIGIBILITY-FILTER."""
+        from app.services.detection.profile_matcher import detect_newsletter_sender
+
+        assert detect_newsletter_sender("CloudPlatform-noreply@google.com") is True
+        assert detect_newsletter_sender("billing-noreply@google.com") is True
+        assert detect_newsletter_sender("security-alerts@google.com") is True
+
+    def test_auto_detect_prefixed_newsletter(self):
+        """Prefixed newsletter like weekly-newsletter@ must be caught."""
+        from app.services.detection.profile_matcher import detect_newsletter_sender
+
+        assert detect_newsletter_sender("weekly-newsletter@company.com") is True
+        assert detect_newsletter_sender("daily-digest@service.com") is True
+
     def test_normal_sender_not_newsletter(self):
         from app.services.detection.profile_matcher import detect_newsletter_sender
 
         assert detect_newsletter_sender("alice@company.com") is False
         assert detect_newsletter_sender("bob.smith@client.com") is False
+        # Names that happen to contain filter words should NOT match
+        assert detect_newsletter_sender("alice.noreply-team@company.com") is False
 
     def test_suppressed_sender_case_insensitive(self):
         from app.services.detection.profile_matcher import is_sender_suppressed
@@ -428,3 +451,16 @@ class TestDetectionFunnel:
         from app.services.detection.profile_matcher import should_skip_detection
 
         assert should_skip_detection(None, _make_item(sender_email="no-reply@service.com")) is True
+
+    def test_wo_eligibility_filter_leak_senders_blocked(self):
+        """Regression: exact senders from WO-RIPPLED-ELIGIBILITY-FILTER must be blocked."""
+        from app.services.detection.profile_matcher import should_skip_detection
+
+        leaked_senders = [
+            "newsletters@medium.com",
+            "CloudPlatform-noreply@google.com",
+            "billing-noreply@google.com",
+        ]
+        for sender in leaked_senders:
+            item = _make_item(sender_email=sender)
+            assert should_skip_detection(None, item) is True, f"{sender} should be blocked"
