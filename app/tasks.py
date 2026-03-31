@@ -120,6 +120,11 @@ celery_app.conf.update(
             "task": "app.tasks.run_post_event_resolution",
             "schedule": crontab(minute=30),
         },
+        # Stale candidate discard — every 6 hours
+        "stale-candidate-discard": {
+            "task": "app.tasks.run_stale_candidate_discard",
+            "schedule": crontab(minute=0, hour="*/6"),
+        },
     },
 )
 
@@ -288,12 +293,21 @@ def run_clarification_task(self, candidate_id: str) -> dict:
             result = run_clarification(candidate_id, session)
         return result
     except ValueError as exc:
+        exc_msg = str(exc)
         # FK race: candidate not yet visible — short retry
+        if "not found" in exc_msg:
+            logger.warning(
+                "Clarification task: candidate %s not found (FK race?), retrying in 5s — %s",
+                candidate_id, exc,
+            )
+            raise self.retry(exc=exc, countdown=5)
+        # Promotion errors (already promoted, already discarded, text too short)
+        # are not transient — do not retry
         logger.warning(
-            "Clarification task: candidate %s not found (FK race?), retrying in 5s — %s",
+            "Clarification task: candidate %s hit non-retryable ValueError: %s",
             candidate_id, exc,
         )
-        raise self.retry(exc=exc, countdown=5)
+        return {"status": "error", "candidate_id": candidate_id, "error": exc_msg}
     except Exception as exc:
         logger.error(
             "Clarification task FAILED for candidate %s (retry %d/%d): %s",
@@ -1243,3 +1257,106 @@ def run_source_backfill(self, user_id: str, source_type: str, days: int = 90) ->
             user_id, source_type, exc,
         )
         raise self.retry(exc=exc)
+
+
+# ---------------------------------------------------------------------------
+# Routing backlog fix — WO-RIPPLED-ROUTING-BACKLOG
+# ---------------------------------------------------------------------------
+
+STALE_THRESHOLD_HOURS = 48
+"""Candidates stuck (not promoted, not discarded) for more than this many hours
+past their observe_until are considered stale and get discarded."""
+
+BACKLOG_TRIGGER_CLASSES = frozenset({
+    "obligation_marker",
+    "follow_up_commitment",
+    "blocker_signal",
+})
+"""Trigger classes identified in the routing backlog investigation."""
+
+
+@celery_app.task(name="app.tasks.run_stale_candidate_discard")
+def run_stale_candidate_discard() -> dict:
+    """Discard candidates stuck past their observation window + stale threshold.
+
+    Candidates that are was_promoted=False, was_discarded=False, and whose
+    observe_until is more than STALE_THRESHOLD_HOURS in the past are discarded
+    with reason 'stale_unresolved'.
+
+    Returns:
+        Dict with 'discarded' count.
+    """
+    from datetime import datetime, timezone, timedelta
+    from sqlalchemy import select, update, and_
+    from app.models.orm import CommitmentCandidate
+
+    stale_cutoff = datetime.now(timezone.utc) - timedelta(hours=STALE_THRESHOLD_HOURS)
+
+    with get_sync_session() as session:
+        # Find stale candidate IDs
+        stmt = select(CommitmentCandidate.id).where(
+            and_(
+                CommitmentCandidate.was_promoted.is_(False),
+                CommitmentCandidate.was_discarded.is_(False),
+                CommitmentCandidate.observe_until <= stale_cutoff,
+            )
+        )
+        stale_ids = session.execute(stmt).scalars().all()
+
+        if not stale_ids:
+            logger.info("Stale candidate discard: 0 stale candidates found")
+            return {"discarded": 0}
+
+        # Bulk update
+        update_stmt = (
+            update(CommitmentCandidate)
+            .where(CommitmentCandidate.id.in_(stale_ids))
+            .values(was_discarded=True, discard_reason="stale_unresolved")
+        )
+        session.execute(update_stmt)
+
+    logger.info(
+        "Stale candidate discard: %d candidate(s) discarded as stale_unresolved",
+        len(stale_ids),
+    )
+    return {"discarded": len(stale_ids)}
+
+
+@celery_app.task(name="app.tasks.cleanup_routing_backlog")
+def cleanup_routing_backlog() -> dict:
+    """One-time backlog cleanup for stuck routing candidates.
+
+    Discards candidates with trigger_class in BACKLOG_TRIGGER_CLASSES that are
+    was_promoted=False, was_discarded=False, and whose observe_until has passed.
+
+    Returns:
+        Dict with 'discarded' count.
+    """
+    from datetime import datetime, timezone
+    from sqlalchemy import update, and_
+    from app.models.orm import CommitmentCandidate
+
+    now = datetime.now(timezone.utc)
+
+    with get_sync_session() as session:
+        stmt = (
+            update(CommitmentCandidate)
+            .where(
+                and_(
+                    CommitmentCandidate.was_promoted.is_(False),
+                    CommitmentCandidate.was_discarded.is_(False),
+                    CommitmentCandidate.trigger_class.in_(list(BACKLOG_TRIGGER_CLASSES)),
+                    CommitmentCandidate.observe_until <= now,
+                )
+            )
+            .values(was_discarded=True, discard_reason="backlog_cleanup")
+        )
+        result = session.execute(stmt)
+        discarded = result.rowcount
+
+    logger.info(
+        "Routing backlog cleanup: %d candidate(s) discarded (trigger_classes=%s)",
+        discarded,
+        list(BACKLOG_TRIGGER_CLASSES),
+    )
+    return {"discarded": discarded}
