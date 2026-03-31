@@ -22,6 +22,13 @@ from app.models.orm import (
 )
 from app.services.clarification.analyzer import AnalysisResult
 
+# ---------------------------------------------------------------------------
+# Fragment gate — minimum text length for promotion
+# ---------------------------------------------------------------------------
+
+MIN_CANDIDATE_TEXT_LENGTH = 10
+"""Candidates with raw_text shorter than this (after stripping) are discarded."""
+
 
 # ---------------------------------------------------------------------------
 # Title derivation
@@ -123,6 +130,15 @@ def promote_candidate(
     Raises:
         ValueError: If candidate is already promoted or discarded.
     """
+    # Fragment gate: reject candidates with raw_text too short to be a real commitment
+    stripped_text = (candidate.raw_text or "").strip()
+    if len(stripped_text) < MIN_CANDIDATE_TEXT_LENGTH:
+        candidate.was_discarded = True
+        raise ValueError(
+            f"Candidate {candidate.id!r} raw_text too short "
+            f"({len(stripped_text)} chars < {MIN_CANDIDATE_TEXT_LENGTH})"
+        )
+
     if candidate.was_promoted:
         raise ValueError(
             f"Candidate {candidate.id!r} is already promoted"

@@ -314,8 +314,9 @@ def run_clarification_batch() -> dict:
     """
     from decimal import Decimal as D
     from datetime import datetime, timezone
-    from sqlalchemy import select, and_, or_
+    from sqlalchemy import select, and_, or_, func
     from app.models.orm import CommitmentCandidate
+    from app.services.clarification.promoter import MIN_CANDIDATE_TEXT_LENGTH
 
     enqueued = 0
     with get_sync_session() as session:
@@ -324,6 +325,7 @@ def run_clarification_batch() -> dict:
             and_(
                 CommitmentCandidate.was_promoted.is_(False),
                 CommitmentCandidate.was_discarded.is_(False),
+                func.length(func.trim(CommitmentCandidate.raw_text)) >= MIN_CANDIDATE_TEXT_LENGTH,
                 or_(
                     CommitmentCandidate.observe_until <= now,
                     CommitmentCandidate.observe_until.is_(None),
