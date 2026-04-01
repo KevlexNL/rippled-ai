@@ -127,6 +127,10 @@ def run_clarification(candidate_id: str, db: Session) -> dict:
           and getattr(commitment, "deliverable", None)):
         commitment.structure_complete = True
 
+    # Fallback: set resolved_owner from requester_name when no identity match
+    if getattr(commitment, "requester_name", None) and not getattr(commitment, "resolved_owner", None):
+        commitment.resolved_owner = commitment.requester_name
+
     # Step 5b — flush commitment NOW so FK constraints on Clarification /
     # LifecycleTransition are satisfied when those rows are inserted.
     # Without this flush, SQLAlchemy may emit the child INSERTs before the

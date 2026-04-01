@@ -67,6 +67,10 @@ class HybridDetectionService:
     def process(self, candidate: Any, user_name: str | None = None, user_email: str | None = None) -> dict[str, Any]:
         """Process a candidate through the hybrid pipeline.
 
+        The model is ALWAYS called (when available) for entity extraction
+        (requester, beneficiary, deliverable, etc.). Classification overrides
+        (promote/demote) are only applied in the ambiguous confidence zone.
+
         Args:
             candidate: CommitmentCandidate ORM object with .confidence_score.
             user_name: Display name of the logged-in user (for relationship detection).
@@ -81,24 +85,17 @@ class HybridDetectionService:
         result = _empty_result()
 
         confidence: Decimal = candidate.confidence_score or Decimal("0")
+        in_ambiguous_zone = AMBIGUOUS_LOWER <= confidence < AMBIGUOUS_UPPER
 
-        # Skip model for clear cases
-        if confidence >= AMBIGUOUS_UPPER or confidence < AMBIGUOUS_LOWER:
-            logger.debug(
-                "Candidate %s confidence=%s — skipping model (outside ambiguous zone)",
-                getattr(candidate, "id", "?"), confidence,
-            )
-            return result
-
-        # No model service configured
+        # No model service configured — return deterministic result
         if self._model is None:
             logger.debug(
-                "Candidate %s in ambiguous zone but model_service not configured",
+                "Candidate %s — model_service not configured, skipping model",
                 getattr(candidate, "id", "?"),
             )
             return result
 
-        # Call model
+        # Always call model for entity extraction
         result["model_called"] = True
         try:
             model_result: ModelDetectionResult | None = self._model.classify(candidate, user_name=user_name, user_email=user_email)
@@ -131,30 +128,34 @@ class HybridDetectionService:
         result["audit_prompt_version"] = model_result.prompt_version
         result["audit_error_detail"] = model_result.error_detail
 
-        # v3: Pass through commitment structure fields
+        # Always pass through entity extraction fields
         result["deliverable"] = model_result.deliverable
         result["counterparty"] = model_result.counterparty
         result["user_relationship"] = model_result.user_relationship
         result["structure_complete"] = model_result.structure_complete
-        # v4: Pass through requester + beneficiary
         result["requester"] = model_result.requester
         result["beneficiary"] = model_result.beneficiary
 
-        # Apply decision rules
-        if model_result.is_commitment and model_result.confidence > MODEL_PROMOTE_THRESHOLD:
-            result["detection_method"] = "model-assisted"
-            result["model_classification"] = "commitment"
+        # Classification overrides: only apply in the ambiguous zone
+        if in_ambiguous_zone:
+            if model_result.is_commitment and model_result.confidence > MODEL_PROMOTE_THRESHOLD:
+                result["detection_method"] = "model-assisted"
+                result["model_classification"] = "commitment"
 
-        elif not model_result.is_commitment and model_result.confidence > MODEL_DEMOTE_THRESHOLD:
-            result["detection_method"] = "model-overridden"
-            result["model_classification"] = "not-commitment"
-            result["was_discarded"] = True
-            result["discard_reason"] = "model-overridden"
+            elif not model_result.is_commitment and model_result.confidence > MODEL_DEMOTE_THRESHOLD:
+                result["detection_method"] = "model-overridden"
+                result["model_classification"] = "not-commitment"
+                result["was_discarded"] = True
+                result["discard_reason"] = "model-overridden"
 
+            else:
+                result["detection_method"] = "deterministic"
+                result["model_classification"] = "uncertain"
         else:
-            # Model uncertain — keep deterministic result
+            # Outside ambiguous zone: keep deterministic classification,
+            # model used only for entity extraction
             result["detection_method"] = "deterministic"
-            result["model_classification"] = "uncertain"
+            result["model_classification"] = "entity-extraction-only"
 
         logger.info(
             "Hybrid detection candidate=%s confidence=%s model_confidence=%.2f detection_method=%s",
