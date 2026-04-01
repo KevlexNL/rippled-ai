@@ -502,6 +502,7 @@ class CommitmentEventLinkRead(BaseModel):
     event_id: str
     relationship: str
     confidence: float | None
+    metadata_: dict | None = None
     created_at: datetime
 
     class Config:
@@ -611,16 +612,20 @@ async def patch_delivery_state(
 @router.get("/{commitment_id}/events", response_model=list[CommitmentEventLinkRead])
 async def list_commitment_events(
     commitment_id: str,
+    link_type: str | None = Query(None, description="Filter by relationship type: delivery_at, deadline_hint, completion_hint, context"),
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ) -> list[CommitmentEventLinkRead]:
-    """List all event links for a commitment."""
+    """List event links for a commitment, optionally filtered by link_type."""
     await _get_commitment_or_404(commitment_id, user_id, db)
-    result = await db.execute(
+    q = (
         select(CommitmentEventLink)
         .where(CommitmentEventLink.commitment_id == commitment_id)
-        .order_by(CommitmentEventLink.created_at.desc())
     )
+    if link_type:
+        q = q.where(CommitmentEventLink.relationship == link_type)
+    q = q.order_by(CommitmentEventLink.created_at.desc())
+    result = await db.execute(q)
     links = result.scalars().all()
     return [CommitmentEventLinkRead.model_validate(link) for link in links]
 

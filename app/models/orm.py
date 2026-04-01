@@ -458,6 +458,8 @@ class CommitmentEventLink(Base):
     event_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("events.id", ondelete="CASCADE"), nullable=False, index=True)
     relationship: Mapped[str] = mapped_column(String(20), nullable=False)
     confidence: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    # Phase D3 — matching metadata (matched_on, scoring dimensions)
+    metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 

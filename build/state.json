@@ -1,10 +1,8 @@
 {
   "current_cycle": "A",
-  "current_phase": "D3-calendar-integration",
+  "current_phase": "D4-feedback-loops",
   "phase_step": "A1",
-  "phase_queue": [
-    "D4-feedback-loops"
-  ],
+  "phase_queue": [],
   "phases_completed": [
     "01-schema",
     "02-api-scaffold",
@@ -31,12 +29,13 @@
     "C1-gap-analysis",
     "cycle-c-planning",
     "D1-observation-windows",
-    "D2-auto-close-config"
+    "D2-auto-close-config",
+    "D3-calendar-integration"
   ],
-  "last_action": "D1 + D2 both complete — confirmed via git log (aec415d) and completed.flags. Advancing to D3 A1 interpretation.",
-  "last_action_time": "2026-04-01T20:03:00Z",
-  "next_action": "Spawn Claude Code for D3 interpretation — calendar-as-evidence matching service",
-  "claude_code_session": "rippled-d3-interpretation",
+  "last_action": "D3 calendar-as-evidence matching complete — 51 new tests, CalendarMatcher service, scorer context boost, observation window shortening, API link_type filter",
+  "last_action_time": "2026-04-02T12:00:00Z",
+  "next_action": "Spawn Claude Code for D4 interpretation — feedback loops",
+  "claude_code_session": "rippled-d3-build",
   "blockers_for_kevin": [],
-  "notes": "D1 + D2 built in same Claude Code session. 67 new tests total, all passing. D3 is the calendar matching phase — adds event_commitment_links table, calendar_matcher.py service, and urgency boost from upcoming meetings."
+  "notes": "D3 adds CalendarMatcher service matching events to commitments by entity/topic overlap. Three new link types: deadline_hint, completion_hint, context. Scorer gets context_proximity_boost (0-15 pts). Observation window shortens for imminent meetings. 51 new tests all passing, zero regressions."
 }

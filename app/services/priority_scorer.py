@@ -131,10 +131,33 @@ def delivery_state_modifier(delivery_state: str | None) -> float:
     return _DELIVERY_STATE_MODIFIERS.get(delivery_state or "", 0.0)
 
 
+def context_proximity_boost(context_proximity_hours: float | None) -> float:
+    """Calculate context proximity boost (0-15) based on hours until context event.
+
+    D3 addition: upcoming events linked via 'context' relationship provide
+    a smaller urgency boost than delivery_at events.
+
+    context_proximity_hours >= 48:  0 (no boost)
+    24 <= hours < 48:               5
+    4 <= hours < 24:                10
+    0 <= hours < 4:                 15
+    """
+    if context_proximity_hours is None:
+        return 0.0
+    if context_proximity_hours >= 48:
+        return 0.0
+    if context_proximity_hours >= 24:
+        return 5.0
+    if context_proximity_hours >= 4:
+        return 10.0
+    return 15.0
+
+
 def score(
     classifier_result: "ClassifierResult",
     commitment,
     proximity_hours: float | None = None,
+    context_proximity_hours: float | None = None,
 ) -> int:
     """Compute a 0-100 priority score from the classifier dimensions.
 
@@ -142,11 +165,13 @@ def score(
         classifier_result: Output of commitment_classifier.classify(commitment).
         commitment: The commitment object (needed for staleness + C3 fields).
         proximity_hours: Hours until next delivery_at event (None = no proximity).
+        context_proximity_hours: Hours until next context event (None = no context).
 
     Returns:
         Integer 0-100 priority score (higher = more urgent to surface).
 
     C3 formula: (base_score + proximity_spike + delivery_state_modifier) * counterparty_multiplier
+    D3 addition: + context_proximity_boost (capped at 15, stacks with but doesn't duplicate delivery)
     """
     total = 0.0
 
@@ -181,6 +206,9 @@ def score(
     # [C3] 8. Delivery state modifier (-10 to 0)
     ds = getattr(commitment, "delivery_state", None)
     total += delivery_state_modifier(ds)
+
+    # [D3] 8b. Context proximity boost (0-15)
+    total += context_proximity_boost(context_proximity_hours)
 
     # [C3] 9. Counterparty multiplier (0.8-1.4)
     ct = getattr(commitment, "counterparty_type", None)

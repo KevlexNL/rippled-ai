@@ -142,6 +142,28 @@ def merge_with_defaults(user_config: dict[str, float] | None) -> dict[str, float
     return result
 
 
+def adjusted_window_hours(base_hours: float, nearest_event_hours: float | None) -> float:
+    """Shorten observation window if a matched calendar event is imminent.
+
+    Phase D3 addition: when a commitment has a matched calendar event
+    approaching, reduce the observation window so it surfaces sooner.
+
+    Args:
+        base_hours: The default observation window in calendar hours.
+        nearest_event_hours: Hours until the nearest matched event (None = no event).
+
+    Returns:
+        Adjusted window hours (may be shorter than base_hours).
+    """
+    if nearest_event_hours is None:
+        return base_hours
+    if nearest_event_hours <= 4:  # Event within 4 hours
+        return min(base_hours, 1.0)  # Cap at 1 hour
+    if nearest_event_hours <= 24:  # Event within 24 hours
+        return min(base_hours, nearest_event_hours * 0.5)
+    return base_hours
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------

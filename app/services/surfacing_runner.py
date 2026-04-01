@@ -77,6 +77,49 @@ def _build_proximity_map(db: Session, commitment_ids: list[str]) -> dict[str, fl
     return result
 
 
+def _build_context_proximity_map(db: Session, commitment_ids: list[str]) -> dict[str, float]:
+    """Pre-compute hours until next 'context' event per commitment.
+
+    Phase D3 addition: context links provide a smaller urgency boost.
+
+    Returns: dict mapping commitment_id → hours_until_context_event
+    Only includes future events (positive hours).
+    """
+    if not commitment_ids:
+        return {}
+
+    now = datetime.now(timezone.utc)
+
+    rows = db.execute(
+        select(
+            CommitmentEventLink.commitment_id,
+            func.min(Event.starts_at).label("next_starts_at"),
+        )
+        .join(Event, Event.id == CommitmentEventLink.event_id)
+        .where(
+            and_(
+                CommitmentEventLink.relationship == "context",
+                Event.status != "cancelled",
+                Event.starts_at > now,
+                CommitmentEventLink.commitment_id.in_(commitment_ids),
+            )
+        )
+        .group_by(CommitmentEventLink.commitment_id)
+    ).all()
+
+    result: dict[str, float] = {}
+    for row in rows:
+        starts_at = row.next_starts_at
+        if starts_at is not None:
+            if starts_at.tzinfo is None:
+                starts_at = starts_at.replace(tzinfo=timezone.utc)
+            hours = (starts_at - now).total_seconds() / 3600
+            if hours > 0:
+                result[row.commitment_id] = hours
+
+    return result
+
+
 def run_surfacing_sweep(db: Session) -> dict:
     """Recompute surfacing state for all non-terminal commitments.
 
@@ -150,6 +193,9 @@ def run_surfacing_sweep(db: Session) -> dict:
     commitment_ids = [c.id for c in commitments]
     proximity_map = _build_proximity_map(db, commitment_ids)
 
+    # [D3] Step 2b: Pre-compute context proximity map
+    context_proximity_map = _build_context_proximity_map(db, commitment_ids)
+
     evaluated = len(commitments)
     changed = 0
     surfaced = 0
@@ -159,7 +205,8 @@ def run_surfacing_sweep(db: Session) -> dict:
 
     for commitment in commitments:
         proximity_hours = proximity_map.get(commitment.id)
-        routing = route(commitment, proximity_hours=proximity_hours)
+        context_hours = context_proximity_map.get(commitment.id)
+        routing = route(commitment, proximity_hours=proximity_hours, context_proximity_hours=context_hours)
         new_surface = routing.surface
         old_surface = commitment.surfaced_as
 

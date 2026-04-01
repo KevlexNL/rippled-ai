@@ -64,17 +64,27 @@ class RoutingResult:
 # Public API
 # ---------------------------------------------------------------------------
 
-def route(commitment, proximity_hours: float | None = None) -> RoutingResult:
+def route(
+    commitment,
+    proximity_hours: float | None = None,
+    context_proximity_hours: float | None = None,
+) -> RoutingResult:
     """Route a commitment to a surface destination.
 
     Args:
         commitment: Any object with Commitment-compatible attributes.
+        proximity_hours: Hours until next delivery_at event.
+        context_proximity_hours: Hours until next context event (D3).
 
     Returns:
         RoutingResult with surface destination, score, and reason.
     """
     classifier_result = classify(commitment)
-    priority = score(classifier_result, commitment, proximity_hours=proximity_hours)
+    priority = score(
+        classifier_result, commitment,
+        proximity_hours=proximity_hours,
+        context_proximity_hours=context_proximity_hours,
+    )
 
     # --- Step 0: Structure completeness gate ---
     structure_complete = getattr(commitment, "structure_complete", True)

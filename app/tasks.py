@@ -845,6 +845,106 @@ def send_daily_digest() -> dict:
     }
 
 
+def _run_calendar_matching(db, user_id: str) -> dict:
+    """Run calendar matching for a user after sync.
+
+    Phase D3: matches recent/upcoming events to active commitments
+    and creates commitment_event_links with appropriate relationship types.
+
+    Args:
+        db: Synchronous SQLAlchemy session.
+        user_id: User ID to match events for.
+
+    Returns:
+        Dict with links_created count.
+    """
+    from datetime import datetime, timedelta, timezone
+    from decimal import Decimal as D
+    import uuid as _uuid
+
+    from sqlalchemy import select, and_
+    from app.models.orm import Commitment, CommitmentEventLink, Event
+    from app.services.calendar_matcher import CalendarMatcher
+
+    now = datetime.now(timezone.utc)
+
+    # Load active commitments for the user
+    commitments = db.execute(
+        select(Commitment).where(
+            and_(
+                Commitment.user_id == user_id,
+                Commitment.lifecycle_state.in_(
+                    ("proposed", "active", "needs_clarification", "confirmed", "in_progress")
+                ),
+            )
+        )
+    ).scalars().all()
+
+    if not commitments:
+        return {"links_created": 0, "signals_created": 0}
+
+    # Load recent/upcoming events (past 7 days + next 30 days)
+    events = db.execute(
+        select(Event).where(
+            and_(
+                Event.user_id == user_id,
+                Event.status != "cancelled",
+                Event.starts_at >= now - timedelta(days=7),
+                Event.starts_at <= now + timedelta(days=30),
+            )
+        )
+    ).scalars().all()
+
+    if not events:
+        return {"links_created": 0, "signals_created": 0}
+
+    # Fetch existing links to avoid duplicates
+    commitment_ids = [c.id for c in commitments]
+    event_ids = [e.id for e in events]
+
+    existing_rows = db.execute(
+        select(CommitmentEventLink.event_id, CommitmentEventLink.commitment_id).where(
+            and_(
+                CommitmentEventLink.commitment_id.in_(commitment_ids),
+                CommitmentEventLink.event_id.in_(event_ids),
+            )
+        )
+    ).all()
+    existing_pairs = {(row[0], row[1]) for row in existing_rows}
+
+    # Run matching
+    matcher = CalendarMatcher(now=now)
+    link_dicts = matcher.match(list(events), list(commitments), existing_pairs=existing_pairs)
+
+    links_created = 0
+    signals_created = 0
+
+    for ld in link_dicts:
+        link = CommitmentEventLink(
+            id=str(_uuid.uuid4()),
+            commitment_id=ld["commitment_id"],
+            event_id=ld["event_id"],
+            relationship=ld["link_type"],
+            confidence=D(str(round(ld["confidence"], 3))),
+            metadata_=ld.get("metadata"),
+        )
+        db.add(link)
+        links_created += 1
+
+        # Note: completion_hint links set signal_role="progress" in metadata.
+        # CommitmentSignal creation requires a source_item_id FK, which calendar
+        # events don't have. Signal creation deferred to future phase if needed.
+
+    if links_created:
+        db.flush()
+
+    logger.info(
+        "Calendar matching: user=%s links_created=%d",
+        user_id, links_created,
+    )
+    return {"links_created": links_created, "signals_created": signals_created}
+
+
 @celery_app.task(name="app.tasks.sync_google_calendar")
 def sync_google_calendar() -> dict:
     """Sync Google Calendar events for the configured user — Phase C3.
@@ -882,7 +982,18 @@ def sync_google_calendar() -> dict:
             return {"status": "skipped", "reason": "user not found"}
 
         connector = GoogleCalendarConnector(settings=settings, db=db)
-        return connector.sync(user.id)
+        result = connector.sync(user.id)
+
+        # [D3] Trigger calendar matching after successful sync
+        if result.get("status") == "synced":
+            try:
+                match_result = _run_calendar_matching(db, user.id)
+                result["matching"] = match_result
+            except Exception:
+                logger.exception("Calendar matching failed for user %s", user.id)
+                result["matching"] = {"status": "error"}
+
+        return result
 
 
 @celery_app.task(name="app.tasks.run_pre_event_nudge")
