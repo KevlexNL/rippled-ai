@@ -1,0 +1,1 @@
+D2 complete: user-configurable auto-close timing — auto_close_config JSONB on user_settings, per-class/internal/external hierarchy, API validation, frontend UI, 26 new tests passing. Built together with D1 in same Claude Code session.
