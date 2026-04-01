@@ -49,3 +49,8 @@ ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS openai_api_key_encrypted TEXT
 -- Done. All columns that have ever been added via Alembic or manual SQL are now
 -- guaranteed to exist. Safe to re-run — all statements are idempotent.
 -- =============================================================================
+
+-- ---------------------------------------------------------------------------
+-- 7. commitments.context_tags (added 2026-04-01 — was in ORM but never migrated)
+-- ---------------------------------------------------------------------------
+ALTER TABLE commitments ADD COLUMN IF NOT EXISTS context_tags JSONB;
