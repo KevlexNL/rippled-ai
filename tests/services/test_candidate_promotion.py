@@ -18,6 +18,7 @@ from unittest.mock import MagicMock, patch, call
 import pytest
 
 from app.models.enums import AmbiguityType
+from app.models.orm import CommitmentSignal
 from app.services.clarification.analyzer import AnalysisResult, analyze_candidate
 from app.services.clarification.promoter import promote_candidate
 
@@ -237,3 +238,72 @@ class TestBatchSweepLogging:
         assert found_log, (
             f"Batch sweep must log enqueued count. Actual log calls: {info_calls}"
         )
+
+
+# ---------------------------------------------------------------------------
+# WO-RIPPLED-SIGNAL-LINK-MISSING: origin signal creation on promotion
+# ---------------------------------------------------------------------------
+
+class TestOriginSignalCreation:
+    """promote_candidate must create a CommitmentSignal with signal_role='origin'
+    linking the new commitment back to its originating source item."""
+
+    def test_promotion_creates_origin_signal(self):
+        """When a candidate has originating_item_id, promotion must create
+        a CommitmentSignal row with signal_role='origin'."""
+        candidate = _make_candidate(
+            originating_item_id="source-item-001",
+            confidence_score=Decimal("0.75"),
+        )
+        db = MagicMock()
+        analysis = AnalysisResult()
+
+        commitment = promote_candidate(candidate, db, analysis)
+
+        # Collect all objects passed to db.add()
+        added_objects = [c.args[0] for c in db.add.call_args_list]
+        signals = [obj for obj in added_objects if isinstance(obj, CommitmentSignal)]
+
+        assert len(signals) == 1, (
+            f"Expected exactly 1 CommitmentSignal, got {len(signals)}. "
+            f"Added types: {[type(o).__name__ for o in added_objects]}"
+        )
+        signal = signals[0]
+        assert signal.signal_role == "origin"
+        assert signal.source_item_id == "source-item-001"
+        assert signal.commitment_id == commitment.id
+        assert signal.user_id == candidate.user_id
+
+    def test_promotion_skips_signal_when_no_originating_item(self):
+        """When originating_item_id is None, no CommitmentSignal should be created."""
+        candidate = _make_candidate(
+            originating_item_id=None,
+            confidence_score=Decimal("0.75"),
+        )
+        db = MagicMock()
+        analysis = AnalysisResult()
+
+        promote_candidate(candidate, db, analysis)
+
+        added_objects = [c.args[0] for c in db.add.call_args_list]
+        signals = [obj for obj in added_objects if isinstance(obj, CommitmentSignal)]
+
+        assert len(signals) == 0, (
+            f"No CommitmentSignal should be created when originating_item_id is None, "
+            f"but got {len(signals)}"
+        )
+
+    def test_origin_signal_has_confidence_from_candidate(self):
+        """The origin signal's confidence should match the candidate's confidence_score."""
+        candidate = _make_candidate(
+            originating_item_id="source-item-002",
+            confidence_score=Decimal("0.85"),
+        )
+        db = MagicMock()
+        analysis = AnalysisResult()
+
+        promote_candidate(candidate, db, analysis)
+
+        added_objects = [c.args[0] for c in db.add.call_args_list]
+        signals = [obj for obj in added_objects if isinstance(obj, CommitmentSignal)]
+        assert signals[0].confidence == Decimal("0.85")

@@ -19,6 +19,7 @@ from app.models.orm import (
     CandidateCommitment,
     Commitment,
     CommitmentAmbiguity,
+    CommitmentSignal,
 )
 from app.services.clarification.analyzer import AnalysisResult
 
@@ -197,6 +198,18 @@ def promote_candidate(
         commitment_id=commitment_id,
     )
     db.add(join_record)
+
+    # Origin signal — link commitment back to its source item
+    if candidate.originating_item_id:
+        signal = CommitmentSignal(
+            commitment_id=commitment_id,
+            source_item_id=candidate.originating_item_id,
+            user_id=candidate.user_id,
+            signal_role="origin",
+            confidence=candidate.confidence_score,
+            interpretation_note=f"Promoted from candidate {candidate.id}",
+        )
+        db.add(signal)
 
     # CommitmentAmbiguity per issue type
     for issue in issue_types:
