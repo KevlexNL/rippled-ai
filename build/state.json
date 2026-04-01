@@ -1,8 +1,8 @@
 {
   "current_cycle": "C",
   "current_phase": "cycle-c-planning",
-  "phase_step": "C1-gap-analysis",
-  "phase_queue": [],
+  "phase_step": "C3-queue-return",
+  "phase_queue": ["D1-observation-windows", "D2-auto-close-config", "D3-calendar-integration", "D4-feedback-loops"],
   "phases_completed": [
     "01-schema",
     "02-api-scaffold",
@@ -25,12 +25,13 @@
     "B1-platform-review",
     "B2-vision-comparison",
     "B3-decision-log",
-    "B4-correction-wo"
+    "B4-correction-wo",
+    "C1-gap-analysis"
   ],
-  "last_action": "Cycle B complete — B2 vision-delta.md committed (ef2f493). B3 review: zero unintentional drift found. B4: no corrections needed. Advancing to Cycle C.",
-  "last_action_time": "2026-04-01T15:00:00Z",
-  "next_action": "C1 gap analysis: identify next 2-4 phases from open items in vision-delta.md (observation window config, auto-close config, calendar integration, feedback loops). Spawn Claude Code to write phase briefs.",
-  "claude_code_session": "rippled-wo-supabase-rls",
+  "last_action": "C2 complete — 4 phase briefs written",
+  "last_action_time": "2026-04-01T16:45:00Z",
+  "next_action": "C3 queue & return: signal Morpheus, return to Cycle A with D1",
+  "claude_code_session": "rippled-c2-briefs",
   "blockers_for_kevin": [],
-  "notes": "Cycle B complete. Parallel WO in progress: WO-RIPPLED-SUPABASE-RLS (Supabase RLS security fix, running in tmux session rippled-wo-supabase-rls). Cycle C phase planning is independent — can proceed. Known gaps for next phases: (1) observation window user-configurability [Briefs 4,9], (2) auto-close timing user-configurability [Brief 10], (3) deeper calendar integration [Brief 4], (4) user feedback loops for adaptive thresholds [Brief 2 Principle 19]."
+  "notes": "Cycle C planning nearly complete. 4 phase briefs written for D1-D4: observation window config, auto-close config, calendar integration, feedback loops. D1 and D2 are quick wins (1-2 days each, modify existing services). D3 is moderate (2-3 days, new matching service). D4 is the most complex (2-3 days, cross-pipeline integration). Recommended order: D1 → D2 → D3 → D4."
 }
