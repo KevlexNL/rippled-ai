@@ -476,6 +476,10 @@ class UserSettings(Base):
     # LLM API key storage (Fernet-encrypted)
     anthropic_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
     openai_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Phase D1 — per-source observation window overrides (calendar hours)
+    observation_window_config: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    # Phase D2 — per-user auto-close timing overrides (hours)
+    auto_close_config: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     # Admin panel access
     is_super_admin: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)

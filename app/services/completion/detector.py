@@ -27,7 +27,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.enums import LifecycleState
-from app.models.orm import Commitment, CommitmentSignal, SourceItem
+from app.models.orm import Commitment, CommitmentSignal, SourceItem, UserSettings
+from app.services.auto_close_config import get_auto_close_hours
 from app.services.completion.matcher import find_matching_commitments
 from app.services.completion.scorer import score_evidence
 from app.services.completion.updater import apply_auto_close, apply_completion_result
@@ -137,6 +138,14 @@ def run_completion_detection(source_item_id: str, db: Session) -> dict:
     }
 
 
+def load_user_auto_close_config(user_id: str, db: Session) -> dict[str, float] | None:
+    """Load auto_close_config for a user from user_settings. Returns None if not set."""
+    row = db.execute(
+        select(UserSettings.auto_close_config).where(UserSettings.user_id == user_id)
+    ).scalar_one_or_none()
+    return row
+
+
 def run_auto_close_sweep(db: Session) -> dict:
     """Close delivered commitments that have exceeded their auto-close threshold.
 
@@ -146,7 +155,7 @@ def run_auto_close_sweep(db: Session) -> dict:
 
     Then applies Python-side checks:
     - confidence_closure >= 0.75
-    - delivered_at <= now() - auto_close_after_hours
+    - delivered_at <= now() - auto_close_hours (resolved via user config hierarchy)
 
     Args:
         db: Synchronous SQLAlchemy Session.
@@ -163,6 +172,9 @@ def run_auto_close_sweep(db: Session) -> dict:
         )
     ).scalars().all()
 
+    # Cache user configs to avoid repeated DB lookups
+    _user_config_cache: dict[str, dict[str, float] | None] = {}
+
     auto_closed = 0
 
     for commitment in delivered_commitments:
@@ -170,7 +182,15 @@ def run_auto_close_sweep(db: Session) -> dict:
         if closure_confidence < _AUTO_CLOSE_CONFIDENCE_THRESHOLD:
             continue
 
-        threshold = commitment.delivered_at + timedelta(hours=commitment.auto_close_after_hours)
+        # Load user config (cached per user)
+        uid = commitment.user_id
+        if uid not in _user_config_cache:
+            _user_config_cache[uid] = load_user_auto_close_config(uid, db)
+
+        user_config = _user_config_cache[uid]
+        hours = get_auto_close_hours(commitment, user_config)
+
+        threshold = commitment.delivered_at + timedelta(hours=hours)
         if now < threshold:
             continue
 

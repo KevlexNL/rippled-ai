@@ -6,6 +6,8 @@ import { listSources } from '../api/sources'
 import type { SourceRead } from '../api/sources'
 import { apiGet } from '../lib/apiClient'
 import IdentitySettingsScreen from './settings/IdentitySettingsScreen'
+import ObservationWindowsSection from './settings/ObservationWindowsSection'
+import AutoCloseTimingSection from './settings/AutoCloseTimingSection'
 
 type SettingsTab = 'general' | 'identity'
 
@@ -223,6 +225,18 @@ export default function SettingsModal() {
         </div>
         <p className="text-xs text-gray-400 italic mt-3">Your API key is encrypted and never exposed in responses.</p>
       </div>
+
+      {/* Divider */}
+      <div className="border-t border-gray-100 mb-10" />
+
+      {/* Observation Windows */}
+      <ObservationWindowsSection />
+
+      {/* Divider */}
+      <div className="border-t border-gray-100 mb-10" />
+
+      {/* Auto-Close Timing */}
+      <AutoCloseTimingSection />
 
       {/* Divider */}
       <div className="border-t border-gray-100 mb-10" />

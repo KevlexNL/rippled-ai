@@ -46,6 +46,24 @@ _DEFAULT_WINDOWS: dict[str, float] = {
 
 _FALLBACK_WINDOW_HOURS = 24.0 * _WORK_TO_CALENDAR  # email_internal default
 
+# The 5 canonical keys users can configure (matches brief spec).
+VALID_WINDOW_KEYS: set[str] = {
+    "slack",
+    "email_internal",
+    "email_external",
+    "meeting_internal",
+    "meeting_external",
+}
+
+# Canonical defaults keyed by VALID_WINDOW_KEYS (for merge_with_defaults).
+_CANONICAL_DEFAULTS: dict[str, float] = {
+    "slack":             2.0 * _WORK_TO_CALENDAR,
+    "email_internal":    24.0 * _WORK_TO_CALENDAR,
+    "email_external":    48.0 * _WORK_TO_CALENDAR,
+    "meeting_internal":  24.0 * _WORK_TO_CALENDAR,
+    "meeting_external":  48.0 * _WORK_TO_CALENDAR,
+}
+
 
 def default_window_hours(source_type: str, external: bool = False) -> float:
     """Return the default observation window in calendar hours.
@@ -75,6 +93,53 @@ def default_window_hours(source_type: str, external: bool = False) -> float:
             return _DEFAULT_WINDOWS[key]
 
     return _FALLBACK_WINDOW_HOURS
+
+
+def get_window_hours(
+    source_type: str,
+    external: bool = False,
+    user_config: dict[str, float] | None = None,
+) -> float:
+    """Return observation window in calendar hours, checking user config first.
+
+    Args:
+        source_type: Source type string (e.g., 'email', 'slack', 'meeting').
+        external: If True, prefer the external variant of the window.
+        user_config: Optional dict from user_settings.observation_window_config.
+            Keys are canonical names (slack, email_internal, etc.). Values are
+            calendar hours. Missing keys fall back to system defaults.
+
+    Returns:
+        Float calendar hours for the observation window.
+    """
+    if user_config:
+        # Build the canonical key the user would have set
+        st = (source_type or "").lower().strip()
+        if external:
+            key = f"{st}_external"
+        else:
+            # Bare source type (e.g., "slack") or internal variant
+            internal_key = f"{st}_internal"
+            key = internal_key if internal_key in user_config else st
+
+        if key in user_config:
+            return float(user_config[key])
+
+    # Fall back to system defaults
+    return default_window_hours(source_type, external)
+
+
+def merge_with_defaults(user_config: dict[str, float] | None) -> dict[str, float]:
+    """Return a full config dict with user overrides merged over system defaults.
+
+    Only canonical keys (VALID_WINDOW_KEYS) appear in the result.
+    """
+    result = dict(_CANONICAL_DEFAULTS)
+    if user_config:
+        for key in VALID_WINDOW_KEYS:
+            if key in user_config:
+                result[key] = float(user_config[key])
+    return result
 
 
 # ---------------------------------------------------------------------------

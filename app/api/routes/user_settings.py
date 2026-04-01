@@ -1,10 +1,10 @@
-"""User settings API routes — Phase C5 + LLM key storage."""
+"""User settings API routes — Phase C5 + LLM key storage + D1 observation windows + D2 auto-close config."""
 from __future__ import annotations
 
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,6 +12,11 @@ from app.connectors.shared.credentials_utils import encrypt_value
 from app.core.dependencies import get_current_user_id
 from app.db.deps import get_db
 from app.models.orm import UserSettings
+from app.services.auto_close_config import (
+    merge_auto_close_defaults,
+    validate_auto_close_config,
+)
+from app.services.observation_window import VALID_WINDOW_KEYS, merge_with_defaults
 
 router = APIRouter(prefix="/user", tags=["user-settings"])
 
@@ -22,6 +27,8 @@ class UserSettingsRead(BaseModel):
     google_connected: bool
     anthropic_key_connected: bool
     openai_key_connected: bool
+    observation_window_config: dict[str, float]
+    auto_close_config: dict[str, float]
 
 
 class UserSettingsPatch(BaseModel):
@@ -29,6 +36,37 @@ class UserSettingsPatch(BaseModel):
     digest_to_email: str | None = None
     anthropic_api_key: str | None = None  # write-only: encrypted before storage
     openai_api_key: str | None = None  # write-only: encrypted before storage
+    observation_window_config: dict[str, float] | None = None
+    auto_close_config: dict[str, float] | None = None
+
+    @field_validator("observation_window_config")
+    @classmethod
+    def validate_observation_window_config(
+        cls, v: dict[str, float] | None,
+    ) -> dict[str, float] | None:
+        if v is None:
+            return None
+        for key, value in v.items():
+            if key not in VALID_WINDOW_KEYS:
+                raise ValueError(
+                    f"Unknown observation window key: {key!r}. "
+                    f"Valid keys: {sorted(VALID_WINDOW_KEYS)}"
+                )
+            if not isinstance(value, (int, float)) or value < 0.5 or value > 168:
+                raise ValueError(
+                    f"Observation window for {key!r} must be between 0.5 and 168 hours, got {value}"
+                )
+        return v
+
+    @field_validator("auto_close_config")
+    @classmethod
+    def validate_auto_close_config(
+        cls, v: dict[str, float] | None,
+    ) -> dict[str, float] | None:
+        if v is None:
+            return None
+        validate_auto_close_config(v)
+        return v
 
 
 async def _get_or_create_user_settings(user_id: str, db: AsyncSession) -> UserSettings:
@@ -51,6 +89,8 @@ def _to_read(us: UserSettings) -> UserSettingsRead:
         google_connected=bool(us.google_refresh_token),
         anthropic_key_connected=bool(us.anthropic_api_key_encrypted),
         openai_key_connected=bool(us.openai_api_key_encrypted),
+        observation_window_config=merge_with_defaults(us.observation_window_config),
+        auto_close_config=merge_auto_close_defaults(us.auto_close_config),
     )
 
 
@@ -86,6 +126,12 @@ async def patch_user_settings(
             us.openai_api_key_encrypted = None
         else:
             us.openai_api_key_encrypted = encrypt_value(body.openai_api_key)
+    # Phase D1: observation window config
+    if "observation_window_config" in body.model_fields_set:
+        us.observation_window_config = body.observation_window_config
+    # Phase D2: auto-close config
+    if "auto_close_config" in body.model_fields_set:
+        us.auto_close_config = body.auto_close_config
     us.updated_at = datetime.now(timezone.utc)
     await db.flush()
     await db.refresh(us)

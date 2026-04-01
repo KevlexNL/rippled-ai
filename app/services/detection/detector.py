@@ -30,24 +30,21 @@ from app.services.detection.patterns import (
     get_suppression_patterns_for_source,
 )
 from app.services.detection.profile_matcher import run_tier1, should_skip_detection
+from app.services.observation_window import get_window_hours
 
 logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# Observation window defaults (working-day approximations in calendar hours)
+# Observation window (delegates to observation_window.py — Phase D1)
 # ---------------------------------------------------------------------------
 
-_OBSERVE_HOURS: dict[str, dict[str, int]] = {
-    "slack": {"internal": 2, "external": 2},
-    "email": {"internal": 8, "external": 48},    # 1 day / 2–3 days
-    "meeting": {"internal": 16, "external": 48},  # 1–2 days / 2–3 days
-}
-
-
-def _compute_observe_until(source_type: str, is_external: bool) -> datetime:
-    hours_map = _OBSERVE_HOURS.get(source_type, {"internal": 24, "external": 48})
-    hours = hours_map["external"] if is_external else hours_map["internal"]
+def _compute_observe_until(
+    source_type: str,
+    is_external: bool,
+    user_config: dict[str, float] | None = None,
+) -> datetime:
+    hours = get_window_hours(source_type, is_external, user_config=user_config)
     return datetime.now(timezone.utc) + timedelta(hours=hours)
 
 
@@ -179,7 +176,11 @@ def _extract_entities(text: str) -> dict[str, Any]:
 # Main detection function
 # ---------------------------------------------------------------------------
 
-def run_detection(source_item_id: str, db: Session) -> list[CommitmentCandidate]:
+def run_detection(
+    source_item_id: str,
+    db: Session,
+    user_config: dict[str, float] | None = None,
+) -> list[CommitmentCandidate]:
     """Detect commitment candidates from a source item.
 
     Creates CommitmentCandidate rows in DB using savepoints for isolation.
@@ -233,7 +234,7 @@ def run_detection(source_item_id: str, db: Session) -> list[CommitmentCandidate]
             source_item_id, tier1_result["matched_phrase"], tier1_result["confidence"],
         )
         is_ext = _is_external(item)
-        observe_until = _compute_observe_until(source_type, is_ext)
+        observe_until = _compute_observe_until(source_type, is_ext, user_config)
         candidate = CommitmentCandidate(
             user_id=item.user_id,
             originating_item_id=item.id,
@@ -319,7 +320,7 @@ def run_detection(source_item_id: str, db: Session) -> list[CommitmentCandidate]
             confidence = _compute_confidence(pattern, is_ext)
             priority = _compute_priority(pattern, is_ext, trigger_text)
             class_hint = _compute_class_hint(pattern, is_ext, trigger_text)
-            observe_until = _compute_observe_until(source_type, is_ext)
+            observe_until = _compute_observe_until(source_type, is_ext, user_config)
             flag_reanalysis = _should_flag_reanalysis(item, trigger_text)
             entities = _extract_entities(trigger_text + " " + ctx.get("post_context", ""))
 

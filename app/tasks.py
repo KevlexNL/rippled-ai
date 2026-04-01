@@ -148,9 +148,16 @@ def detect_commitments(self, source_item_id: str) -> dict:
     )
     try:
         from sqlalchemy import update, func
-        from app.models.orm import SourceItem
+        from app.models.orm import SourceItem, UserSettings
         with get_sync_session() as session:
-            result = run_detection(source_item_id, session)
+            # Phase D1: load user's observation window config
+            item = session.get(SourceItem, source_item_id)
+            user_config = None
+            if item is not None:
+                us = session.get(UserSettings, item.user_id)
+                if us is not None:
+                    user_config = us.observation_window_config
+            result = run_detection(source_item_id, session, user_config=user_config)
             # Stamp seed_processed_at so the detection sweep never re-scans
             # this item (prevents the runaway rescan loop — WO-RIPPLED-DETECTION-RESCAN-LOOP)
             session.execute(

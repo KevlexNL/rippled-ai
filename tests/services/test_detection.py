@@ -625,23 +625,40 @@ class TestApplySuppression:
 
 
 class TestComputeObserveUntil:
-    def test_slack_internal_is_2_hours(self):
+    """D1: detector now delegates to observation_window.py canonical defaults.
+
+    Values are working hours * 1.4 calendar-hour multiplier:
+    - slack: 2 * 1.4 = 2.8h
+    - email_external: 48 * 1.4 = 67.2h
+    - meeting_internal: 24 * 1.4 = 33.6h
+    """
+
+    def test_slack_internal_uses_canonical_default(self):
         now = datetime.now(timezone.utc)
         observe = _compute_observe_until("slack", False)
         delta = observe - now
-        assert 1.9 * 3600 < delta.total_seconds() < 2.1 * 3600
+        # 2 working hours * 1.4 = 2.8 calendar hours
+        assert 2.7 * 3600 < delta.total_seconds() < 2.9 * 3600
 
-    def test_email_external_is_48_hours(self):
+    def test_email_external_uses_canonical_default(self):
         now = datetime.now(timezone.utc)
         observe = _compute_observe_until("email", True)
         delta = observe - now
-        assert 47.5 * 3600 < delta.total_seconds() < 48.5 * 3600
+        # 48 working hours * 1.4 = 67.2 calendar hours
+        assert 67.0 * 3600 < delta.total_seconds() < 67.5 * 3600
 
-    def test_meeting_internal_is_16_hours(self):
+    def test_meeting_internal_uses_canonical_default(self):
         now = datetime.now(timezone.utc)
         observe = _compute_observe_until("meeting", False)
         delta = observe - now
-        assert 15.5 * 3600 < delta.total_seconds() < 16.5 * 3600
+        # 24 working hours * 1.4 = 33.6 calendar hours
+        assert 33.4 * 3600 < delta.total_seconds() < 33.8 * 3600
+
+    def test_user_config_overrides_default(self):
+        now = datetime.now(timezone.utc)
+        observe = _compute_observe_until("slack", False, user_config={"slack": 10.0})
+        delta = observe - now
+        assert 9.9 * 3600 < delta.total_seconds() < 10.1 * 3600
 
 
 class TestComputeConfidence:
