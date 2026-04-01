@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { postCommitment } from '../api/commitments'
 import type { CommitmentCreate } from '../types'
 
@@ -18,6 +18,11 @@ export default function LogCommitmentModal({ onCancel, onSuccess }: LogCommitmen
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const errorRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (error) errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [error])
 
   const sources: { id: LogSource; label: string }[] = [
     { id: 'slack', label: 'Slack' },
@@ -26,7 +31,10 @@ export default function LogCommitmentModal({ onCancel, onSuccess }: LogCommitmen
   ]
 
   async function handleSubmit() {
-    if (!description.trim()) return
+    if (!description.trim()) {
+      setError('Please describe the commitment before saving.')
+      return
+    }
     setError(null)
     setLoading(true)
     try {
@@ -43,7 +51,12 @@ export default function LogCommitmentModal({ onCancel, onSuccess }: LogCommitmen
         onSuccess()
       }, 1500)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to log commitment')
+      const message = err instanceof Error ? err.message : 'Failed to log commitment'
+      if (message === 'Not authenticated') {
+        setError('Session expired — please refresh the page.')
+      } else {
+        setError(message)
+      }
     } finally {
       setLoading(false)
     }
@@ -55,7 +68,7 @@ export default function LogCommitmentModal({ onCancel, onSuccess }: LogCommitmen
         <div className="font-semibold text-[24px] text-[#191919]">Log a commitment</div>
         <div className="text-[14px] text-[#6b7280] mt-1.5">Add something Rippled should track.</div>
       </div>
-      <div className="bg-white border border-[#e8e8e6] rounded-lg p-6 mt-6">
+      <div className="bg-white border border-[#e8e8e6] rounded-lg p-6 mt-6" data-testid="modal-card">
         {success && (
           <div className="mb-4 rounded-md bg-[#f0fdf4] border border-[#bbf7d0] px-4 py-3 text-[13px] text-[#15803d] font-medium">
             Commitment logged. Rippled will track it.
@@ -63,11 +76,12 @@ export default function LogCommitmentModal({ onCancel, onSuccess }: LogCommitmen
         )}
 
         {error && (
-          <div className="mb-4 rounded-md bg-[#fee2e2] border border-[#fca5a5] px-4 py-3 text-[13px] text-[#991b1b] font-medium">
+          <div ref={errorRef} data-testid="modal-error" className="mb-4 rounded-md bg-[#fee2e2] border border-[#fca5a5] px-4 py-3 text-[13px] text-[#991b1b] font-medium">
             {error}
           </div>
         )}
 
+        <div data-testid="modal-fields">
         {/* What did you commit to? */}
         <div className="mb-5">
           <label className="block text-[13px] font-medium text-[#191919] mb-1.5">What did you commit to?</label>
@@ -136,6 +150,7 @@ export default function LogCommitmentModal({ onCancel, onSuccess }: LogCommitmen
           />
         </div>
 
+        </div>
         {/* Actions */}
         <div className="flex items-center gap-3 pt-4 border-t border-[#f0f0ef]">
           <button
