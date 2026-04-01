@@ -527,13 +527,21 @@ def _create_commitment_and_signal(
     }
     commitment_type = raw_type if raw_type in valid_types else "other"
 
-    # Validate speech_act value
+    # Validate speech_act value — default to "self_commitment" when missing/invalid
     _valid_speech_acts = {
         "request", "self_commitment", "acceptance", "status_update",
         "completion", "cancellation", "decline", "reassignment", "informational",
     }
     raw_speech_act = c_data.get("speech_act")
-    speech_act = raw_speech_act if raw_speech_act in _valid_speech_acts else None
+    speech_act = raw_speech_act if raw_speech_act in _valid_speech_acts else "self_commitment"
+
+    # Entity extraction — map LLM fields to commitment structure
+    requester_name = c_data.get("who_committed") or None
+    beneficiary_name = c_data.get("directed_at") or None
+    deliverable = c_data.get("trigger_phrase") or None
+
+    # Structure completeness — requires at minimum a committer and deliverable
+    structure_complete = bool(requester_name and deliverable)
 
     commitment = Commitment(
         user_id=user_id,
@@ -546,6 +554,9 @@ def _create_commitment_and_signal(
         context_type=context_type,
         suggested_owner=c_data.get("who_committed"),
         target_entity=c_data.get("directed_at"),
+        requester_name=requester_name,
+        beneficiary_name=beneficiary_name,
+        structure_complete=structure_complete,
         confidence_commitment=Decimal(str(round(confidence, 3))),
         confidence_actionability=Decimal(str(round(confidence * 0.8, 3))),
         lifecycle_state="proposed",

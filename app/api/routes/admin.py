@@ -1113,6 +1113,8 @@ async def seed_commitment(body: SeedCommitmentRequest, db: AsyncSession = Depend
         lifecycle_state=body.lifecycle_state or "active",
         resolved_deadline=body.resolved_deadline,
         counterparty_type=body.counterparty_type,
+        speech_act="self_commitment",
+        structure_complete=False,
     )
     db.add(commitment)
     await db.flush()
