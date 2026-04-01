@@ -12,7 +12,6 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field, field_validator
 
 from app.connectors.shared.normalized_signal import NormalizedSignal
-from app.db.session import get_sync_session
 from app.services.orchestration.orchestrator import SignalOrchestrator
 
 router = APIRouter(prefix="/debug", tags=["debug"])
@@ -49,8 +48,7 @@ def run_debug_pipeline(body: DebugPipelineRequest) -> dict:
         subject=body.subject,
     )
 
-    with get_sync_session() as db:
-        orchestrator = SignalOrchestrator(db)
-        result = orchestrator.process(signal)
+    orchestrator = SignalOrchestrator(db=None, dry_run=True)
+    result = orchestrator.process(signal)
 
     return result.model_dump()

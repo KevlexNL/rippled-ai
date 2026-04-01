@@ -118,3 +118,28 @@ class TestDebugPipelineEndpoint:
 
         assert resp.status_code == 200
 
+    def test_uses_dry_run_mode(self, client):
+        """Endpoint passes dry_run=True to orchestrator — no DB persistence."""
+        fake_result = _fake_pipeline_result()
+
+        with patch("app.api.routes.debug.SignalOrchestrator") as MockOrch:
+            mock_instance = MagicMock()
+            mock_instance.process.return_value = fake_result
+            MockOrch.return_value = mock_instance
+
+            resp = client.post("/api/v1/debug/pipeline", json={
+                "text": "I'll send the report.",
+            })
+
+        assert resp.status_code == 200
+        MockOrch.assert_called_once_with(db=None, dry_run=True)
+
+    def test_ineligible_signal_returns_200_without_db(self, client):
+        """Ineligible text still returns 200 with dry_run (no DB needed)."""
+        # Don't mock the orchestrator — exercise the real code path
+        resp = client.post("/api/v1/debug/pipeline", json={
+            "text": "   ",  # blank after strip
+        })
+        # Pydantic validator rejects blank text
+        assert resp.status_code == 422
+

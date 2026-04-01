@@ -36,12 +36,29 @@ from app.services.orchestration.stages.routing import compute_routing_decision
 logger = logging.getLogger(__name__)
 
 
+class _NullStageLogger:
+    """No-op logger for dry-run mode — skips all DB persistence."""
+
+    def create_run(self, **kwargs):
+        return None
+
+    def log_stage(self, **kwargs):
+        return None
+
+    def complete_run(self, *args, **kwargs):
+        return None
+
+    def create_candidate_record(self, *args, **kwargs):
+        return None
+
+
 class SignalOrchestrator:
     """Runs the staged orchestration pipeline on a NormalizedSignal."""
 
-    def __init__(self, db: Session):
+    def __init__(self, db: Session | None, dry_run: bool = False):
         self._db = db
-        self._logger = StageLogger(db)
+        self._dry_run = dry_run
+        self._logger = _NullStageLogger() if dry_run else StageLogger(db)
         self._config = get_orchestration_config()
 
     def process(self, signal: NormalizedSignal) -> PipelineResult:
@@ -52,7 +69,7 @@ class SignalOrchestrator:
             normalized_signal_id=signal_id,
             pipeline_version=self._config.pipeline_version,
         )
-        run_id = run.id or str(uuid.uuid4())
+        run_id = f"dry-run-{uuid.uuid4()}" if run is None else (run.id or str(uuid.uuid4()))
 
         result = PipelineResult(
             run_id=run_id,
