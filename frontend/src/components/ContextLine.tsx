@@ -54,7 +54,7 @@ export default function ContextLine({ commitment: c, now = new Date(), contextNa
 
   // Priority 3: acknowledged
   if (c.delivery_state === 'acknowledged') {
-    return <p className="text-xs text-blue-600 mt-0.5">Acknowledged · waiting on you</p>
+    return <p className="text-xs text-blue-600 mt-0.5">Acknowledged · may need your input</p>
   }
 
   // Priority 4: draft_sent
@@ -85,7 +85,7 @@ export default function ContextLine({ commitment: c, now = new Date(), contextNa
 
   // Priority 7: external client
   if (c.counterparty_type === 'external_client') {
-    return <p className="text-xs text-gray-500 mt-0.5">External commitment</p>
+    return <p className="text-xs text-gray-500 mt-0.5">Likely external</p>
   }
 
   // Priority 8: context name

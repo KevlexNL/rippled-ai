@@ -207,7 +207,7 @@ function StageDetail({ stage }: { stage: TraceStage }) {
             <div><span className="text-[#6b7280]">Owner:</span> {(cm.resolved_owner || '?') as string} &middot; <span className="text-[#6b7280]">Surfaced:</span> {String(cm.is_surfaced)}</div>
           </div>
         ))}
-        {commitments.length === 0 && <div className="text-[#9ca3af] text-[11px]">No commitment created.</div>}
+        {commitments.length === 0 && <div className="text-[#9ca3af] text-[11px]">Nothing detected yet.</div>}
       </div>
     )
   }

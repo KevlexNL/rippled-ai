@@ -2,9 +2,9 @@
  * Confidence-aware suggestion language utilities.
  *
  * Renders commitment fields with tentative language scaled to confidence:
- * - High confidence (>= 0.85): more direct ("Likely owner: Kevin")
- * - Medium confidence (>= 0.70): moderate hedging ("May be owned by Kevin")
- * - Low confidence (< 0.70): full hedging ("Possibly owned by Kevin")
+ * - High confidence (>= 0.85): more direct ("Looks like Kevin")
+ * - Medium confidence (>= 0.65): moderate hedging ("Seems like Kevin")
+ * - Low confidence (< 0.65): full hedging ("Possibly Kevin")
  *
  * Suggested (AI-inferred) values use tentative language.
  * Confirmed (user-set) values display directly.
@@ -39,21 +39,21 @@ export function ownerLabel(
   // AI-suggested: apply confidence-scaled hedging
   const conf = confidence ? parseFloat(confidence) : 0
   if (conf >= 0.85) {
-    return { text: `Likely ${name}`, isSuggested: true }
+    return { text: `Looks like ${name}`, isSuggested: true }
   }
-  if (conf >= 0.70) {
-    return { text: `May be ${name}`, isSuggested: true }
+  if (conf >= 0.65) {
+    return { text: `Seems like ${name}`, isSuggested: true }
   }
   return { text: `Possibly ${name}`, isSuggested: true }
 }
 
 /** Confidence label with tentative language. */
 export function confidenceLabel(score: string | null | undefined): string {
-  if (!score) return 'Possible commitment'
+  if (!score) return 'Possibly a commitment'
   const n = parseFloat(score)
-  if (n >= 0.85) return 'Likely a commitment'
-  if (n >= 0.70) return 'May be a commitment'
-  return 'Possible commitment'
+  if (n >= 0.85) return 'Looks like a commitment'
+  if (n >= 0.65) return 'Seems like a commitment'
+  return 'Possibly a commitment'
 }
 
 /** Format a deadline with tentative language when not user-confirmed. */

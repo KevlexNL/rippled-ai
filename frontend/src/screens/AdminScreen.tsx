@@ -287,7 +287,7 @@ function SignalReviewTab() {
               <p className="text-[12px] text-[#9ca3af] italic">
                 {current.parsed_result === null
                   ? 'No extraction data — this item was processed before logging was enabled. Re-run seed pass to populate.'
-                  : 'No commitments extracted from this item.'}
+                  : 'Nothing detected in this item.'}
               </p>
             )}
           </div>

@@ -7,8 +7,8 @@ type Tab = 'active' | 'commitments'
 type GroupMode = 'status' | 'client' | 'source' | 'context'
 
 type BadgeType =
-  | 'At risk'
-  | 'Needs review'
+  | 'Likely needs attention'
+  | 'May need a look'
   | 'Worth confirming'
   | 'Good catch'
   | 'Likely missing detail'
@@ -60,7 +60,7 @@ const ACTIVE_COMMITMENTS: Commitment[] = [
     source: 'Slack',
     date: 'Last Thursday',
     person: 'David Park',
-    badge: 'At risk',
+    badge: 'Likely needs attention',
     confidence: 91,
     status: 'at-risk',
     context_name: 'Acme onboarding',
@@ -84,7 +84,7 @@ const ACTIVE_COMMITMENTS: Commitment[] = [
     source: 'Meetings',
     date: 'Yesterday, 3:42 PM',
     person: 'Sarah Chen',
-    badge: 'Needs review',
+    badge: 'May need a look',
     confidence: 87,
     status: 'needs-review',
     context_name: 'Vertex legal / NDA',
@@ -114,7 +114,7 @@ const BEST_NEXT_MOVES: BestNextGroup[] = [
         source: 'Email',
         date: '3 days ago',
         rationale: 'Quick confirmation may unblock follow-up',
-        badge: 'Needs review',
+        badge: 'May need a look',
         confidence: 79,
         person: 'Maria Reyes',
         status: 'needs-review',
@@ -150,7 +150,7 @@ const BEST_NEXT_MOVES: BestNextGroup[] = [
         source: 'Email',
         date: 'Monday',
         rationale: 'External promise — no response detected',
-        badge: 'Needs review',
+        badge: 'May need a look',
         confidence: 74,
         person: 'Rachel Kim',
         status: 'needs-review',
@@ -239,7 +239,7 @@ const ALL_COMMITMENTS: Commitment[] = [
     source: 'Email',
     date: '3 days ago',
     person: 'Maria Reyes',
-    badge: 'Needs review',
+    badge: 'May need a look',
     confidence: 79,
     status: 'needs-review',
     context_name: 'Q1 finance review',
@@ -263,7 +263,7 @@ const ALL_COMMITMENTS: Commitment[] = [
     source: 'Email',
     date: 'Monday',
     person: 'Rachel Kim',
-    badge: 'Needs review',
+    badge: 'May need a look',
     confidence: 74,
     status: 'needs-review',
     context_name: 'Acme onboarding',
@@ -525,8 +525,8 @@ function sourceIcon(source: Commitment['source']) {
 
 function badgeClasses(badge: BadgeType): string {
   switch (badge) {
-    case 'Needs review': return 'bg-[#fef3c7] text-[#92400e]'
-    case 'At risk': return 'bg-[#fee2e2] text-[#991b1b]'
+    case 'May need a look': return 'bg-[#fef3c7] text-[#92400e]'
+    case 'Likely needs attention': return 'bg-[#fee2e2] text-[#991b1b]'
     case 'Worth confirming': return 'bg-[#eff6ff] text-[#1d4ed8]'
     case 'Good catch': return 'bg-[#f0fdf4] text-[#15803d]'
     case 'Likely missing detail': return 'bg-[#f5f3ff] text-[#6d28d9]'
@@ -996,7 +996,7 @@ function CommitmentsTabContent({ onOpen, selectedId }: { onOpen: (id: string) =>
     { id: 'context', label: 'Context' },
   ]
 
-  const statusOrder: BadgeType[] = ['Needs review', 'Worth confirming', 'At risk', 'Delivered', 'Dismissed']
+  const statusOrder: BadgeType[] = ['May need a look', 'Worth confirming', 'Likely needs attention', 'Delivered', 'Dismissed']
   const clientGroups: Record<string, string[]> = {
     'Acme Corp': ['1', '3'],
     'Vertex Partners': ['2', '6'],

@@ -78,7 +78,7 @@ export default function Log() {
       <div className="px-4">
         {groupEntries.length === 0 && (
           <p className="text-sm text-gray-400 text-center py-12">
-            No commitments from this source.
+            Nothing surfaced from this source yet.
           </p>
         )}
         {groupEntries.map(([entity, commitments]) => (

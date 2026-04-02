@@ -27,8 +27,8 @@ function badgeFromState(c: CommitmentRead): { label: string; classes: string; st
   if (state === 'dormant') return { label: 'Not Now', classes: 'bg-[#f9fafb] text-[#9ca3af] border border-[#e8e8e6]', status: 'dormant' }
   if (state === 'discarded' || state === 'closed') return { label: 'Dismissed', classes: 'bg-[#f9fafb] text-[#6b7280] border border-[#e8e8e6]', status: 'dismissed' }
   const conf = c.confidence_commitment ? parseFloat(c.confidence_commitment) : 0
-  if (conf >= 0.85) return { label: 'At risk', classes: 'bg-[#fee2e2] text-[#991b1b]', status: 'at-risk' }
-  if (conf >= 0.70) return { label: 'Needs review', classes: 'bg-[#fef3c7] text-[#92400e]', status: 'needs-review' }
+  if (conf >= 0.85) return { label: 'Likely needs attention', classes: 'bg-[#fee2e2] text-[#991b1b]', status: 'at-risk' }
+  if (conf >= 0.65) return { label: 'May need a look', classes: 'bg-[#fef3c7] text-[#92400e]', status: 'needs-review' }
   if (conf >= 0.55) return { label: 'Worth confirming', classes: 'bg-[#eff6ff] text-[#1d4ed8]', status: 'worth-confirming' }
   return { label: 'Low signal', classes: 'bg-[#f9fafb] text-[#6b7280] border border-[#e8e8e6]', status: 'default' }
 }
@@ -484,9 +484,9 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
   function renderGrouped() {
     if (groupMode === 'status') {
       const statusOrder: { label: string; filter: (c: CommitmentRead) => boolean; hidden?: () => boolean }[] = [
-        { label: 'Needs review', filter: c => { const b = badgeFromState(c); return b.label === 'Needs review' } },
+        { label: 'May need a look', filter: c => { const b = badgeFromState(c); return b.label === 'May need a look' } },
         { label: 'Worth confirming', filter: c => { const b = badgeFromState(c); return b.label === 'Worth confirming' } },
-        { label: 'At risk', filter: c => { const b = badgeFromState(c); return b.label === 'At risk' } },
+        { label: 'Likely needs attention', filter: c => { const b = badgeFromState(c); return b.label === 'Likely needs attention' } },
         { label: 'Confirmed', filter: c => c.lifecycle_state === 'confirmed' },
         { label: 'Delivered', filter: c => c.lifecycle_state === 'delivered' },
         { label: 'Not Now', filter: c => c.lifecycle_state === 'dormant', hidden: () => !showDormant },
@@ -721,7 +721,7 @@ export default function CommitmentsScreen({ activeTab, onTabChange }: Commitment
                       <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
                     </svg>
                   </div>
-                  <div className="text-[14px] text-[#6b7280] mb-1.5">No commitments tracked yet.</div>
+                  <div className="text-[14px] text-[#6b7280] mb-1.5">Nothing flagging your attention right now.</div>
                   <div className="text-[13px] text-[#9ca3af]">Rippled will surface items as they're detected from your connected sources.</div>
                 </div>
               ) : renderGrouped()}

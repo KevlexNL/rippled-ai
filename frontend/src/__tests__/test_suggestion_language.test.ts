@@ -36,14 +36,14 @@ describe('ownerLabel', () => {
     expect(result).toEqual({ text: 'Kevin', isSuggested: false })
   })
 
-  it('shows "Likely" prefix for high confidence suggested owner', () => {
+  it('shows "Looks like" prefix for high confidence suggested owner', () => {
     const result = ownerLabel(null, 'Alice', '0.90')
-    expect(result).toEqual({ text: 'Likely Alice', isSuggested: true })
+    expect(result).toEqual({ text: 'Looks like Alice', isSuggested: true })
   })
 
-  it('shows "May be" prefix for medium confidence suggested owner', () => {
+  it('shows "Seems like" prefix for medium confidence suggested owner', () => {
     const result = ownerLabel(null, 'Alice', '0.72')
-    expect(result).toEqual({ text: 'May be Alice', isSuggested: true })
+    expect(result).toEqual({ text: 'Seems like Alice', isSuggested: true })
   })
 
   it('shows "Possibly" prefix for low confidence suggested owner', () => {
@@ -53,18 +53,18 @@ describe('ownerLabel', () => {
 
   it('resolves "recipient" to sender fallback', () => {
     const result = ownerLabel(null, 'recipient', '0.90', 'Bob')
-    expect(result).toEqual({ text: 'Likely Bob', isSuggested: true })
+    expect(result).toEqual({ text: 'Looks like Bob', isSuggested: true })
   })
 
   it('resolves "recipient" to "You" when no fallback', () => {
     const result = ownerLabel(null, 'Recipient', '0.90')
-    expect(result).toEqual({ text: 'Likely You', isSuggested: true })
+    expect(result).toEqual({ text: 'Looks like You', isSuggested: true })
   })
 
   it('treats resolved_owner same as suggested when they match (AI-suggested, not user-confirmed)', () => {
     const result = ownerLabel('Alice', 'Alice', '0.80')
     expect(result!.isSuggested).toBe(true)
-    expect(result!.text).toBe('May be Alice')
+    expect(result!.text).toBe('Seems like Alice')
   })
 
   it('handles null confidence as low', () => {
@@ -75,23 +75,23 @@ describe('ownerLabel', () => {
 
 describe('confidenceLabel', () => {
   it('returns tentative label for high confidence', () => {
-    expect(confidenceLabel('0.90')).toBe('Likely a commitment')
+    expect(confidenceLabel('0.90')).toBe('Looks like a commitment')
   })
 
   it('returns tentative label for medium confidence', () => {
-    expect(confidenceLabel('0.75')).toBe('May be a commitment')
+    expect(confidenceLabel('0.75')).toBe('Seems like a commitment')
   })
 
   it('returns tentative label for low confidence', () => {
-    expect(confidenceLabel('0.50')).toBe('Possible commitment')
+    expect(confidenceLabel('0.50')).toBe('Possibly a commitment')
   })
 
   it('returns tentative label for null', () => {
-    expect(confidenceLabel(null)).toBe('Possible commitment')
+    expect(confidenceLabel(null)).toBe('Possibly a commitment')
   })
 
   it('returns tentative label for undefined', () => {
-    expect(confidenceLabel(undefined)).toBe('Possible commitment')
+    expect(confidenceLabel(undefined)).toBe('Possibly a commitment')
   })
 })
 

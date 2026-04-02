@@ -13,8 +13,8 @@ function badgeFromState(c: CommitmentRead): { label: string; classes: string } {
   if (state === 'discarded' || state === 'closed') return { label: 'Dismissed', classes: 'bg-[#f9fafb] text-[#6b7280] border border-[#e8e8e6]' }
 
   const conf = c.confidence_commitment ? parseFloat(c.confidence_commitment) : 0
-  if (conf >= 0.85) return { label: 'At risk', classes: 'bg-[#fee2e2] text-[#991b1b]' }
-  if (conf >= 0.70) return { label: 'Needs review', classes: 'bg-[#fef3c7] text-[#92400e]' }
+  if (conf >= 0.85) return { label: 'Likely needs attention', classes: 'bg-[#fee2e2] text-[#991b1b]' }
+  if (conf >= 0.65) return { label: 'May need a look', classes: 'bg-[#fef3c7] text-[#92400e]' }
   if (conf >= 0.55) return { label: 'Worth confirming', classes: 'bg-[#eff6ff] text-[#1d4ed8]' }
   return { label: 'Low signal', classes: 'bg-[#f9fafb] text-[#6b7280] border border-[#e8e8e6]' }
 }
