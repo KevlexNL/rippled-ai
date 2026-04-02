@@ -176,3 +176,4 @@ class PipelineResult(BaseModel):
     escalation: EscalationResolution | None = None
     final_routing: RoutingDecision | None = None
     error: str | None = None
+    stage_errors: dict[str, str] = Field(default_factory=dict)

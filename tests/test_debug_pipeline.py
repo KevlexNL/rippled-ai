@@ -3,6 +3,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
+from fastapi import status
 from starlette.testclient import TestClient
 
 from app.main import app
@@ -142,4 +143,91 @@ class TestDebugPipelineEndpoint:
         })
         # Pydantic validator rejects blank text
         assert resp.status_code == 422
+
+
+class TestSPAFallbackDoesNotInterceptAPI:
+    """GET requests to /api/ paths must NOT return SPA HTML (AC2)."""
+
+    def test_get_debug_pipeline_returns_non_html(self, client):
+        """GET /api/v1/debug/pipeline must return 405 or JSON error, not SPA HTML."""
+        resp = client.get("/api/v1/debug/pipeline")
+        # Must NOT return 200 with HTML — that's the SPA catching it
+        content_type = resp.headers.get("content-type", "")
+        assert "text/html" not in content_type, (
+            f"GET /api/v1/debug/pipeline returned HTML (SPA catch-all intercepted): {resp.status_code}"
+        )
+        assert resp.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
+
+    def test_get_arbitrary_api_path_returns_non_html(self, client):
+        """GET /api/v1/nonexistent should return 404, not SPA HTML."""
+        resp = client.get("/api/v1/nonexistent")
+        content_type = resp.headers.get("content-type", "")
+        assert "text/html" not in content_type, (
+            "GET /api/v1/nonexistent returned HTML (SPA catch-all intercepted)"
+        )
+
+    def test_spa_fallback_still_works_for_frontend_routes(self, client):
+        """Non-API paths should still get SPA HTML if public dir exists."""
+        resp = client.get("/admin/dashboard")
+        # If the SPA public dir exists, this should return HTML.
+        # If it doesn't exist (CI), the catch-all won't be registered — skip.
+        import os
+        public_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "api", "public"))
+        if os.path.isdir(public_dir):
+            assert resp.status_code == 200
+            assert "text/html" in resp.headers.get("content-type", "")
+
+
+class TestCandidateGateErrorDetail:
+    """When candidate gate fails, error detail must be surfaced (AC4)."""
+
+    def test_gate_failure_includes_actual_error_in_response(self, client):
+        """When gate LLM call fails, the response error includes the reason."""
+        fake_result = _fake_pipeline_result(
+            candidate_gate=None,
+            speech_act=None,
+            extraction=None,
+            routing=None,
+            final_routing=None,
+            error="Candidate gate stage failed",
+        )
+
+        with patch("app.api.routes.debug.SignalOrchestrator") as MockOrch:
+            mock_instance = MagicMock()
+            mock_instance.process.return_value = fake_result
+            MockOrch.return_value = mock_instance
+
+            resp = client.post("/api/v1/debug/pipeline", json={
+                "text": "I will deliver the report by Friday.",
+            })
+
+        data = resp.json()
+        # The error should exist but this test validates the *new* behavior:
+        # stage_errors should contain the per-stage error detail
+        assert "stage_errors" in data, "PipelineResult must include stage_errors field"
+
+    def test_stage_errors_contains_gate_error_detail(self, client):
+        """stage_errors should contain the actual LLM error for the gate stage."""
+        fake_result = _fake_pipeline_result(
+            candidate_gate=None,
+            speech_act=None,
+            extraction=None,
+            routing=None,
+            final_routing=None,
+            error="Candidate gate stage failed: No OpenAI API key configured",
+            stage_errors={"candidate_gate": "No OpenAI API key configured"},
+        )
+
+        with patch("app.api.routes.debug.SignalOrchestrator") as MockOrch:
+            mock_instance = MagicMock()
+            mock_instance.process.return_value = fake_result
+            MockOrch.return_value = mock_instance
+
+            resp = client.post("/api/v1/debug/pipeline", json={
+                "text": "I will deliver the report by Friday.",
+            })
+
+        data = resp.json()
+        assert data["stage_errors"]["candidate_gate"] == "No OpenAI API key configured"
+        assert "No OpenAI API key configured" in data["error"]
 

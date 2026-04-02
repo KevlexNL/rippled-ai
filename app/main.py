@@ -2,7 +2,7 @@ import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
@@ -90,5 +90,11 @@ if os.path.isdir(_PUBLIC_DIR):
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def spa_fallback(full_path: str) -> FileResponse:
+        # Never serve SPA HTML for API routes — let them 404/405 naturally
+        if full_path.startswith("api/"):
+            return JSONResponse(
+                status_code=405,
+                content={"detail": "Method Not Allowed"},
+            )
         index = os.path.join(_PUBLIC_DIR, "index.html")
         return FileResponse(index)

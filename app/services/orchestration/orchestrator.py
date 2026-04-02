@@ -95,23 +95,29 @@ class SignalOrchestrator:
                 return result
 
             # ── Stage 1: Candidate gate ──
-            gate_result = self._run_candidate_gate(run_id, signal)
+            gate_result, gate_error = self._run_candidate_gate(run_id, signal)
             result.candidate_gate = gate_result
 
             if gate_result is None:
-                result.error = "Candidate gate stage failed"
+                detail = gate_error or "unknown"
+                result.error = f"Candidate gate stage failed: {detail}"
+                result.stage_errors["candidate_gate"] = detail
                 self._logger.complete_run(run, "failed", error={"stage": "candidate_gate", "error": result.error})
                 return result
 
             # ── Stage 2: Speech-act classification ──
-            speech_act_result = self._run_speech_act(run_id, signal, gate_result)
+            speech_act_result, speech_error = self._run_speech_act(run_id, signal, gate_result)
             result.speech_act = speech_act_result
+            if speech_error:
+                result.stage_errors["speech_act"] = speech_error
 
             # ── Stage 3: Commitment extraction (conditional) ──
             extraction_result = None
             if speech_act_result and should_run_extraction(gate_result, speech_act_result):
-                extraction_result = self._run_extraction(run_id, signal, gate_result, speech_act_result)
+                extraction_result, extraction_error = self._run_extraction(run_id, signal, gate_result, speech_act_result)
                 result.extraction = extraction_result
+                if extraction_error:
+                    result.stage_errors["extraction"] = extraction_error
 
             # ── Stage 4: Deterministic routing ──
             routing = compute_routing_decision(gate_result, speech_act_result, extraction_result)
@@ -133,10 +139,12 @@ class SignalOrchestrator:
             # ── Stage 5: Escalation (if routing says so) ──
             final_routing = routing
             if routing.action == RoutingAction.escalate_model:
-                escalation = self._run_escalation(
+                escalation, escalation_error = self._run_escalation(
                     run_id, signal, gate_result, speech_act_result, extraction_result,
                 )
                 result.escalation = escalation
+                if escalation_error:
+                    result.stage_errors["escalation"] = escalation_error
 
                 if escalation and escalation.resolved:
                     # Apply overrides
@@ -196,7 +204,7 @@ class SignalOrchestrator:
 
     def _run_candidate_gate(
         self, run_id: str, signal: NormalizedSignal,
-    ) -> CandidateGateResult | None:
+    ) -> tuple[CandidateGateResult | None, str | None]:
         llm_result: LLMCallResult = gate_executor.execute_candidate_gate(signal)
         prompt_meta = gate_executor.get_prompt_metadata()
 
@@ -216,14 +224,16 @@ class SignalOrchestrator:
             error={"error": llm_result.error} if llm_result.error else None,
         )
 
-        return llm_result.parsed if llm_result.success else None
+        if llm_result.success:
+            return llm_result.parsed, None
+        return None, llm_result.error
 
     def _run_speech_act(
         self,
         run_id: str,
         signal: NormalizedSignal,
         gate_result: CandidateGateResult,
-    ) -> SpeechActResult | None:
+    ) -> tuple[SpeechActResult | None, str | None]:
         llm_result = speech_act_executor.execute_speech_act(signal, gate_result)
         prompt_meta = speech_act_executor.get_prompt_metadata()
 
@@ -243,7 +253,9 @@ class SignalOrchestrator:
             error={"error": llm_result.error} if llm_result.error else None,
         )
 
-        return llm_result.parsed if llm_result.success else None
+        if llm_result.success:
+            return llm_result.parsed, None
+        return None, llm_result.error
 
     def _run_extraction(
         self,
@@ -251,7 +263,7 @@ class SignalOrchestrator:
         signal: NormalizedSignal,
         gate_result: CandidateGateResult,
         speech_act_result: SpeechActResult,
-    ) -> CommitmentExtractionResult | None:
+    ) -> tuple[CommitmentExtractionResult | None, str | None]:
         llm_result = extraction_executor.execute_extraction(signal, gate_result, speech_act_result)
         prompt_meta = extraction_executor.get_prompt_metadata()
 
@@ -274,7 +286,9 @@ class SignalOrchestrator:
             error={"error": llm_result.error} if llm_result.error else None,
         )
 
-        return llm_result.parsed if llm_result.success else None
+        if llm_result.success:
+            return llm_result.parsed, None
+        return None, llm_result.error
 
     def _run_escalation(
         self,
@@ -283,7 +297,7 @@ class SignalOrchestrator:
         gate_result: CandidateGateResult,
         speech_act_result: SpeechActResult | None,
         extraction_result: CommitmentExtractionResult | None,
-    ) -> EscalationResolution | None:
+    ) -> tuple[EscalationResolution | None, str | None]:
         llm_result = escalation_executor.execute_escalation(
             signal, gate_result, speech_act_result, extraction_result,
         )
@@ -309,4 +323,6 @@ class SignalOrchestrator:
             error={"error": llm_result.error} if llm_result.error else None,
         )
 
-        return llm_result.parsed if llm_result.success else None
+        if llm_result.success:
+            return llm_result.parsed, None
+        return None, llm_result.error

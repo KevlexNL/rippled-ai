@@ -183,4 +183,51 @@ class TestOrchestratorErrorHandling:
 
         assert result.eligibility.eligible is True
         assert result.candidate_gate is None
-        assert result.error == "Candidate gate stage failed"
+        assert "Candidate gate stage failed" in result.error
+
+    @patch("app.services.orchestration.stages.llm_caller.OpenAI")
+    @patch("app.services.orchestration.stages.llm_caller.get_settings")
+    def test_gate_failure_populates_stage_errors(self, mock_settings, mock_openai_cls):
+        """stage_errors dict must contain the actual LLM error for diagnostics (AC4)."""
+        mock_settings.return_value = MagicMock(openai_api_key="sk-test", openai_model="gpt-test")
+
+        mock_client = MagicMock()
+        mock_openai_cls.return_value = mock_client
+        mock_client.chat.completions.create.side_effect = Exception("Connection timeout")
+
+        db = MagicMock()
+        orchestrator = SignalOrchestrator(db)
+        result = orchestrator.process(_make_signal())
+
+        assert result.stage_errors is not None
+        assert "candidate_gate" in result.stage_errors
+        assert "Connection timeout" in result.stage_errors["candidate_gate"]
+
+    @patch("app.services.orchestration.stages.llm_caller.OpenAI")
+    @patch("app.services.orchestration.stages.llm_caller.get_settings")
+    def test_gate_failure_error_includes_detail(self, mock_settings, mock_openai_cls):
+        """result.error must include the actual LLM error, not just generic message."""
+        mock_settings.return_value = MagicMock(openai_api_key="sk-test", openai_model="gpt-test")
+
+        mock_client = MagicMock()
+        mock_openai_cls.return_value = mock_client
+        mock_client.chat.completions.create.side_effect = Exception("Connection timeout")
+
+        db = MagicMock()
+        orchestrator = SignalOrchestrator(db)
+        result = orchestrator.process(_make_signal())
+
+        assert "Candidate gate stage failed" in result.error
+        assert "Connection timeout" in result.error
+
+    @patch("app.services.orchestration.stages.llm_caller.get_settings")
+    def test_missing_api_key_surfaces_in_stage_errors(self, mock_settings):
+        """Missing API key error must be visible in stage_errors."""
+        mock_settings.return_value = MagicMock(openai_api_key="", openai_model="gpt-test")
+
+        orchestrator = SignalOrchestrator(db=None, dry_run=True)
+        result = orchestrator.process(_make_signal())
+
+        assert result.stage_errors is not None
+        assert "candidate_gate" in result.stage_errors
+        assert "API key" in result.stage_errors["candidate_gate"]
