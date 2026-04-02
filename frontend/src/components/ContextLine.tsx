@@ -1,4 +1,5 @@
 import type { CommitmentRead } from '../types'
+import { deadlinePrefix, dueDateLabel, overdueLabel } from '../utils/suggestionLanguage'
 
 interface Props {
   commitment: CommitmentRead
@@ -64,19 +65,19 @@ export default function ContextLine({ commitment: c, now = new Date(), contextNa
   // Priority 5: overdue
   if (c.resolved_deadline) {
     const days = daysUntil(c.resolved_deadline, now)
+    const dlType = deadlinePrefix(c.resolved_deadline, c.lifecycle_state)
     if (days < 0) {
       return (
-        <p className="text-xs text-red-600 mt-0.5">
-          Overdue · {Math.round(Math.abs(days))} day{Math.round(Math.abs(days)) !== 1 ? 's' : ''}
+        <p className={`text-xs mt-0.5 ${dlType === 'suggested' ? 'text-red-400 italic' : 'text-red-600'}`}>
+          {overdueLabel(days, dlType)}
         </p>
       )
     }
     // Priority 6: due within 3 days
     if (days <= 3) {
-      const d = Math.ceil(days)
       return (
-        <p className="text-xs text-yellow-600 mt-0.5">
-          Due in {d} day{d !== 1 ? 's' : ''}
+        <p className={`text-xs mt-0.5 ${dlType === 'suggested' ? 'text-yellow-500 italic' : 'text-yellow-600'}`}>
+          {dueDateLabel(days, dlType)}
         </p>
       )
     }

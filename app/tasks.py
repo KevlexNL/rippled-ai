@@ -130,6 +130,11 @@ celery_app.conf.update(
             "task": "app.tasks.recompute_feedback_thresholds_all",
             "schedule": crontab(hour=3, minute=0),  # 3am UTC daily
         },
+        # C2 — re-analysis sweep for flagged candidates
+        "reanalysis-sweep": {
+            "task": "app.tasks.run_reanalysis_sweep",
+            "schedule": 600.0,  # 10 minutes
+        },
     },
 )
 
@@ -728,6 +733,64 @@ def run_model_detection_batch(limit: int = 50) -> dict:
         run_model_detection_pass.delay(str(cid))
         enqueued += 1
 
+    return {"enqueued": enqueued}
+
+
+@celery_app.task(name="app.tasks.run_reanalysis_sweep")
+def run_reanalysis_sweep(limit: int = 50) -> dict:
+    """Re-analysis sweep — C2 correction.
+
+    Queries candidates with flag_reanalysis=true that have not been
+    promoted or discarded, enqueues each for model detection, then
+    clears the flag.
+
+    Scheduled every 10 minutes via Celery Beat.
+
+    Args:
+        limit: Maximum number of candidates to process per sweep.
+
+    Returns:
+        Dict with 'enqueued' count.
+    """
+    from sqlalchemy import select, update, and_
+    from app.models.orm import CommitmentCandidate
+
+    if not settings.model_detection_enabled:
+        return {"enqueued": 0, "reason": "model_detection_enabled=false"}
+
+    enqueued = 0
+    with get_sync_session() as db:
+        stmt = (
+            select(CommitmentCandidate.id)
+            .where(
+                and_(
+                    CommitmentCandidate.flag_reanalysis.is_(True),
+                    CommitmentCandidate.was_promoted.is_(False),
+                    CommitmentCandidate.was_discarded.is_(False),
+                )
+            )
+            .order_by(CommitmentCandidate.created_at.asc())
+            .limit(limit)
+        )
+        candidate_ids = db.execute(stmt).scalars().all()
+
+    if not candidate_ids:
+        return {"enqueued": 0}
+
+    for cid in candidate_ids:
+        run_model_detection_pass.delay(str(cid))
+        enqueued += 1
+
+    # Clear the flag for processed candidates
+    with get_sync_session() as db:
+        db.execute(
+            update(CommitmentCandidate)
+            .where(CommitmentCandidate.id.in_(candidate_ids))
+            .values(flag_reanalysis=False)
+        )
+        db.commit()
+
+    logger.info("Reanalysis sweep: enqueued %d candidates for re-classification", enqueued)
     return {"enqueued": enqueued}
 
 

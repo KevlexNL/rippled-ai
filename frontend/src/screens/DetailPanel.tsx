@@ -3,16 +3,9 @@ import type { CommitmentRead, CommitmentSignalRead } from '../types'
 import { getSignals, patchCommitment, skipCommitment } from '../api/commitments'
 import { getContexts } from '../api/contexts'
 import type { CommitmentContextRead } from '../api/contexts'
+import { confidenceLabel, ownerLabel } from '../utils/suggestionLanguage'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
-
-function confidenceLabel(score: string | null | undefined): string {
-  if (!score) return 'Some uncertainty'
-  const n = parseFloat(score)
-  if (n >= 0.85) return 'High confidence'
-  if (n >= 0.70) return 'Medium confidence'
-  return 'Some uncertainty'
-}
 
 function badgeFromState(c: CommitmentRead): { label: string; classes: string } {
   const state = c.lifecycle_state
@@ -197,13 +190,14 @@ export default function DetailPanel({ commitment, allCommitments = [], onClose, 
   }
 
   const badge = commitment ? badgeFromState(commitment) : { label: '', classes: '' }
-  const person = (() => {
+  const personInfo = (() => {
     if (!commitment) return null
-    const raw = commitment.resolved_owner || commitment.suggested_owner || null
-    if (raw && raw.toLowerCase() === 'recipient') {
-      return commitment.source_sender_name || commitment.counterparty_name || 'You'
-    }
-    return raw
+    return ownerLabel(
+      commitment.resolved_owner,
+      commitment.suggested_owner,
+      commitment.confidence_commitment,
+      commitment.source_sender_name || commitment.counterparty_name,
+    )
   })()
 
   // Context: find related commitments sharing the same context_id
@@ -333,8 +327,12 @@ export default function DetailPanel({ commitment, allCommitments = [], onClose, 
           <div className="px-5 py-3 border-b border-[#f0f0ef]">
             <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1.5">Related</div>
             <div className="text-[13px] text-[#191919]">
-              {person ? (
-                <>{person} <span className="text-[#9ca3af]">· {sourceLabel(commitment.context_type)}</span></>
+              {personInfo ? (
+                <>
+                  <span className={personInfo.isSuggested ? 'italic text-[#6b7280]' : ''}>{personInfo.text}</span>
+                  {' '}<span className="text-[#9ca3af]">· {sourceLabel(commitment.context_type)}</span>
+                  {personInfo.isSuggested && <span className="ml-1.5 text-[10px] text-[#9ca3af] bg-[#f5f5f4] rounded px-1 py-0.5">suggested</span>}
+                </>
               ) : (
                 <span className="text-[#9ca3af]">—</span>
               )}
@@ -352,8 +350,11 @@ export default function DetailPanel({ commitment, allCommitments = [], onClose, 
           {/* Suggested next step */}
           {commitment.suggested_next_step && (
             <div className="px-5 py-3 flex-1">
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1.5">Suggested next move</div>
-              <div className="text-[13px] text-[#191919] leading-relaxed">{commitment.suggested_next_step}</div>
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1.5">
+                Suggested next move
+                <span className="ml-1.5 normal-case font-normal text-[10px] bg-[#f5f5f4] rounded px-1 py-0.5">suggested</span>
+              </div>
+              <div className="text-[13px] text-[#6b7280] leading-relaxed italic">{commitment.suggested_next_step}</div>
             </div>
           )}
 

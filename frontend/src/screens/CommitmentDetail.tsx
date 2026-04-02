@@ -10,6 +10,7 @@ import ErrorBanner from '../components/ErrorBanner'
 import PostEventBanner from '../components/PostEventBanner'
 import DeliveryActions from '../components/DeliveryActions'
 import ContextSelector from '../components/ContextSelector'
+import { confidenceLabel } from '../utils/suggestionLanguage'
 
 const SIGNAL_ROLE_LABELS: Record<string, string> = {
   origin: 'Origin',
@@ -184,10 +185,13 @@ export default function CommitmentDetail() {
       {commitment.commitment_explanation && (
         <div className="mx-4 mb-5 p-4 rounded-xl bg-gray-50">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
-            Interpretation
+            Rippled's interpretation
           </p>
-          <p className="text-sm text-gray-700 leading-relaxed">
+          <p className="text-sm text-gray-700 leading-relaxed italic">
             {commitment.commitment_explanation}
+          </p>
+          <p className="text-[10px] text-gray-400 mt-1">
+            {confidenceLabel(commitment.confidence_commitment)}
           </p>
         </div>
       )}

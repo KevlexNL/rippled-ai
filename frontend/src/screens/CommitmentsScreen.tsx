@@ -10,6 +10,7 @@ import { listSources } from '../api/sources'
 import type { CommitmentRead } from '../types'
 import { useAuth } from '../lib/auth'
 import { filterMineAndTriage, filterOthers } from '../utils/ownershipFilter'
+import { confidenceLabel as getConfidenceLabel, ownerLabel } from '../utils/suggestionLanguage'
 import DetailPanel from './DetailPanel'
 import LogCommitmentModal from './LogCommitmentModal'
 import SettingsModal from './SettingsModal'
@@ -138,11 +139,7 @@ function IconXMark() {
 }
 
 function confidenceLabel(score: string | null | undefined): string {
-  if (!score) return 'Some uncertainty'
-  const n = parseFloat(score)
-  if (n >= 0.85) return 'High confidence'
-  if (n >= 0.70) return 'Medium confidence'
-  return 'Some uncertainty'
+  return getConfidenceLabel(score)
 }
 
 function IconSkip() {
@@ -177,13 +174,12 @@ function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDism
   const isDismissed = commitment.lifecycle_state === 'discarded' || commitment.lifecycle_state === 'closed'
   const isDormant = commitment.lifecycle_state === 'dormant'
   const isClosed = isDelivered || isDismissed || isDormant
-  const person = (() => {
-    const raw = commitment.resolved_owner || commitment.suggested_owner || null
-    if (raw && raw.toLowerCase() === 'recipient') {
-      return commitment.source_sender_name || commitment.counterparty_name || 'You'
-    }
-    return raw
-  })()
+  const personInfo = ownerLabel(
+    commitment.resolved_owner,
+    commitment.suggested_owner,
+    commitment.confidence_commitment,
+    commitment.source_sender_name || commitment.counterparty_name,
+  )
 
   return (
     <div
@@ -220,10 +216,11 @@ function CompactCommitmentRow({ commitment, selected, onClick, onConfirm, onDism
               )}
               <span>·</span>
               <span>{formatDate(commitment.source_occurred_at || commitment.created_at)}</span>
-              {person && (
+              {personInfo && (
                 <>
                   <span>·</span>
-                  <span>{person}</span>
+                  <span className={personInfo.isSuggested ? 'italic' : ''}>{personInfo.text}</span>
+                  {personInfo.isSuggested && <span className="text-[10px] bg-[#f5f5f4] rounded px-1 py-0">suggested</span>}
                 </>
               )}
               {contextName && (

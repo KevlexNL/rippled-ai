@@ -12,6 +12,7 @@ import { patchCommitment, skipCommitment } from '../api/commitments'
 import { apiGet } from '../lib/apiClient'
 import { useAuth } from '../lib/auth'
 import { filterMine } from '../utils/ownershipFilter'
+import { confidenceLabel as getConfidenceLabel, ownerLabel } from '../utils/suggestionLanguage'
 import type { CommitmentRead } from '../types'
 import DetailPanel from './DetailPanel'
 import LogCommitmentModal from './LogCommitmentModal'
@@ -20,11 +21,7 @@ import SettingsModal from './SettingsModal'
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
 function confidenceLabel(score: string | null | undefined): string {
-  if (!score) return 'Some uncertainty'
-  const n = parseFloat(score)
-  if (n >= 0.85) return 'High confidence'
-  if (n >= 0.70) return 'Medium confidence'
-  return 'Some uncertainty'
+  return getConfidenceLabel(score)
 }
 
 function badgeFromState(c: CommitmentRead): { label: string; classes: string; status: string } {
@@ -251,14 +248,14 @@ function sourceIcon(contextType: string | null | undefined) {
   }
 }
 
-/** Resolve display owner — never show "recipient" as a name (Fix 5). */
-function resolveOwner(c: CommitmentRead): string | null {
-  const raw = c.resolved_owner || c.suggested_owner || null
-  if (raw && raw.toLowerCase() === 'recipient') {
-    // Fall back to source sender, counterparty, or "You"
-    return c.source_sender_name || c.counterparty_name || 'You'
-  }
-  return raw
+/** Resolve display owner with tentative language (C1 suggestion language pass). */
+function resolveOwner(c: CommitmentRead): { text: string; isSuggested: boolean } | null {
+  return ownerLabel(
+    c.resolved_owner,
+    c.suggested_owner,
+    c.confidence_commitment,
+    c.source_sender_name || c.counterparty_name,
+  )
 }
 
 /** Get the source attribution line: who sent it + when (Fix 3 & 4). */
