@@ -1,571 +1,453 @@
-# Rippled.ai — Current State (2026-04-01)
+# Rippled.ai — Current State (2026-04-02)
 
 ## Summary
 
-**Status:** Cycle A complete (9 phases) → Cycle C complete (C1–C6) → Cycle D fix-iteration complete (RI-F01 through RI-F11) → Cycle B platform review in progress (B1)
+**Status:** Cycle A (9 phases) + Cycle C (C1-C6) + Cycle D fix-iteration (RI-F01 through RI-F11) + Cycle D features (D1-D4) complete. Cycle B2 vision review in progress.
 
-**Last validated:** 2026-04-01 — All Cycle D fixes confirmed deployed. Production healthy at `rippled-ai-production.up.railway.app`.
+**Test count:** 1750 tests collected, all passing.
 
 **Architecture:** FastAPI (Python 3.11+) + PostgreSQL (Supabase) + Celery (Redis) + React frontend (Vite) + Twilio/Gemini voice bridge. Deployed on Railway.
 
 ---
 
-## Architecture Delivered
+## Backend Services (app/services/)
 
-### Phase 01 — Schema
-**Completion:** 2026-03-09
+### Detection & Classification
+| Service | File | Purpose |
+|---------|------|---------|
+| Deterministic Detector | `detection/detector.py` | Pattern-matching commitment detection |
+| Seed Detector | `detection/seed_detector.py` | Initial seed pass for historical data |
+| Detection Patterns | `detection/patterns.py` | Detection heuristics and patterns |
+| Detection Context | `detection/context.py` | Context window management |
+| Profile Matcher | `detection/profile_matcher.py` | Identity/profile matching during detection |
+| Detection Audit | `detection/audit.py` | Audit logging for detection decisions |
+| Learning Loop | `detection/learning_loop.py` | Feedback-driven detection improvement |
+| Model Detection | `model_detection.py` | GPT-4-mini model-assisted re-classification |
+| Hybrid Detection | `hybrid_detection.py` | Combines deterministic + model results |
+| Commitment Classifier | `commitment_classifier.py` | Big promise vs small commitment classification |
 
-Database schema for commitments, sources, candidates, lifecycle, evidence tracking.
+### Clarification
+| Service | File | Purpose |
+|---------|------|---------|
+| Analyzer | `clarification/analyzer.py` | Detects ambiguity types |
+| Suggestions | `clarification/suggestions.py` | Generates suggested values |
+| Clarifier | `clarification/clarifier.py` | Main clarification orchestrator |
+| Promoter | `clarification/promoter.py` | Promotes candidates to commitments |
 
-**Key objects:**
-- `commitments` — core domain object (id, owner, description, class, state, confidence, dates, evidence links, context_tags JSONB, speech_act, structure_complete, due_precision)
-- `commitment_candidates` — raw signals before promotion to commitment (trigger_class, confidence_score, source link, observe_until)
-- `commitment_evidence` — linked evidence items per commitment (message_id, transcript_id, channel, timestamp)
-- `commitment_sources` — abstract source items (email, Slack message, meeting)
-- `commitment_source_items` — cross-source unification layer (abstract edges across email ↔ Slack ↔ meetings)
-- `commitment_signals` — origin signal records created on candidate promotion (fixes timestamp display)
-- `clarifications` — ambiguity objects awaiting resolution (field, type, candidates, status)
-- `audit_log` — immutable record of all state transitions
-- `normalized_signals` — standardized signal format across all connectors
-- `raw_signal_ingests` — raw inbound data before normalization
-- `normalization_runs` — tracking for normalization batch runs
-- `users` — user model for auth and identity
-- `common_terms` — term/alias vocabulary for entity resolution
+### Completion Detection
+| Service | File | Purpose |
+|---------|------|---------|
+| Detector | `completion/detector.py` | Detects delivery/completion signals |
+| Matcher | `completion/matcher.py` | Matches signals to commitments |
+| Updater | `completion/updater.py` | State transitions on completion |
+| Scorer | `completion/scorer.py` | Completion confidence scoring |
 
-**Decision highlights:**
-- Hybrid schema: explicit columns for queryable/filterable fields, JSONB for unstructured context
-- `confidence_score` NUMERIC(4,3) — enables fine-grained sorting
-- `observe_until` TIMESTAMPTZ on candidates — supports observation window compliance
-- `context_tags` JSONB on commitments — flexible context metadata
-- `due_precision` enum — captures date specificity (day, week, month, quarter)
-- `structure_complete` boolean — gates promotion eligibility
-- Reversible state transitions per lifecycle rules
-- Full audit trail per row
+### Normalization & Ingestion
+| Service | File | Purpose |
+|---------|------|---------|
+| Email Normalization | `normalization/email_normalization_service.py` | Raw email to normalized signal |
+| Email Raw Ingest | `normalization/email_raw_ingest_service.py` | Raw email payload handling |
+| Participant Resolver | `normalization/participant_resolver.py` | Email participant resolution |
+| Quoted Text Parser | `normalization/quoted_text_parser.py` | Quoted email content parsing |
+| Replay Runner | `normalization/replay_runner.py` | Signal replay for re-processing |
+| Normalization Repo | `normalization/normalization_repository.py` | Data access layer |
 
-**Migrations:** Alembic with migration tracking mechanism (applied + verified on deploy).
+### Orchestration Pipeline (6-stage)
+| Service | File | Purpose |
+|---------|------|---------|
+| Orchestrator | `orchestration/orchestrator.py` | Main pipeline controller |
+| Eligibility | `orchestration/stages/eligibility.py` | Stage 0: deterministic eligibility |
+| Candidate Gate | `orchestration/stages/candidate_gate.py` | Stage 1: binary relevance |
+| Speech Act | `orchestration/stages/speech_act.py` | Stage 2: speech-act classification |
+| Extraction | `orchestration/stages/extraction.py` | Stage 3: commitment field extraction |
+| Routing | `orchestration/stages/routing.py` | Stage 4: deterministic routing |
+| Escalation | `orchestration/stages/escalation.py` | Stage 5: strong model escalation |
+| LLM Caller | `orchestration/stages/llm_caller.py` | Shared LLM call logic |
+| Config | `orchestration/config.py` | Model routing configuration |
+| Stage Logger | `orchestration/stage_logger.py` | Per-stage logging |
+| Contracts | `orchestration/contracts.py` | Data contracts for stages |
+| Prompts | `orchestration/prompts/` | LLM prompts for each stage |
 
----
+### Surfacing & Prioritization
+| Service | File | Purpose |
+|---------|------|---------|
+| Surfacing Runner | `surfacing_runner.py` | Main surfacing sweep orchestrator |
+| Surfacing Router | `surfacing_router.py` | Routes to Main/Shortlist/Clarifications |
+| Priority Scorer | `priority_scorer.py` | 0-100 multi-dimensional scoring |
+| Observation Window | `observation_window.py` | D1: Configurable observation windows |
+| Auto-Close Config | `auto_close_config.py` | D2: Configurable auto-close timing |
 
-### Phase 02 — API Scaffold
-**Completion:** 2026-03-09
+### Events & Calendar
+| Service | File | Purpose |
+|---------|------|---------|
+| Event Linker | `event_linker.py` | D3: Links calendar events to commitments |
+| Calendar Matcher | `calendar_matcher.py` | D3: Calendar-as-evidence matching |
+| Post-Event Resolver | `post_event_resolver.py` | D3: Delivery state after events |
+| Nudge | `nudge.py` | D3: Pre-event nudging |
 
-FastAPI REST API with structured request/response models, dependency injection, error handling.
+### Digest & Reporting
+| Service | File | Purpose |
+|---------|------|---------|
+| Digest | `digest.py` | Daily digest aggregation and delivery |
+| LLM Judge | `llm_judge.py` | Weekly LLM quality evaluation |
 
-**Key endpoints (original):**
-- `POST /commitments` — create new commitment manually
-- `GET /commitments` — list (main/shortlist/clarifications surfaces)
-- `GET /commitments/:id` — retrieve one
-- `PATCH /commitments/:id` — update state/fields
-- `DELETE /commitments/:id` — soft delete
-- `GET /commitments/:id/history` — full audit trail
-- `POST /webhook/email` — inbound email signal webhook
-- `POST /webhook/slack` — inbound Slack signal webhook
-- `POST /webhook/meetings` — inbound meeting transcript webhook
-- `GET /health` — readiness check
+### Identity & Context
+| Service | File | Purpose |
+|---------|------|---------|
+| Owner Resolver | `identity/owner_resolver.py` | Commitment owner resolution |
+| Term Resolver | `identity/term_resolver.py` | Domain term/jargon resolution |
+| Context Assigner | `context_assigner.py` | Auto-assigns commitments to contexts |
 
-**Additional endpoints (Cycles C–D):**
-- `GET /api/v1/admin/*` — admin dashboard, review queue, audit sampling
-- `GET /api/v1/digest/*` — daily digest generation
-- `GET /api/v1/events/*` — event timeline, post-event resolution
-- `GET /api/v1/stats/*` — commitment stats and counts
-- `GET /api/v1/contexts/*` — context management
-- `GET /api/v1/identity/*` — identity/entity resolution settings
-- `GET /api/v1/terms/*` — common terms vocabulary CRUD
-- `GET /api/v1/user-settings/*` — user preferences
-- `GET /api/v1/surface/*` — surfacing views
-- `GET /api/v1/lab/*` — Signal Lab / trace inspector UI
-- `POST /api/v1/voice/query` — voice query endpoint
-- `POST /api/v1/debug/pipeline` — debug pipeline endpoint (diagnose detection flow)
-- `GET /api/v1/report/*` — reporting
+### Feedback & Adaptation
+| Service | File | Purpose |
+|---------|------|---------|
+| Feedback Adapter | `feedback_adapter.py` | D4: User feedback → threshold adjustment |
 
-**Structured models:**
-- Pydantic for all request/response contracts
-- Enum types for states, classes, priority dimensions, due_precision
-- Validation rules baked into models
-
-**Error handling:**
-- Custom exception handlers (400, 404, 422, 500, etc.)
-- Structured error responses with request_id tracing
-- Auth error clarity improvements (Cycle D)
-
-**Documentation:**
-- Auto-generated OpenAPI/Swagger at `/docs`
-
----
-
-### Phase 03 — Detection Pipeline
-**Completion:** 2026-03-11 | **Enhanced:** Cycle C1 (model detection) + Cycle D (fixes)
-
-Core commitment signal detection. Takes raw Slack/email/meeting text and identifies commitment candidates.
-
-**Delivered (original — deterministic):**
-- `DetectionAnalyzer` — pattern matching + heuristics for commitment signals
-- Signal types: explicit commitments ("I'll do X"), implicit signals ("will handle"), edge cases ("I'll try")
-- Confidence scoring: 0.85 (explicit + external), 0.75 (explicit internal), 0.50–0.60 (implicit), 0.35–0.45 (edge)
-- `observe_until` window assignment (1–3 days depending on source/direction)
-- Batched Celery ingestion (`detect_commitments` task)
-
-**Enhanced (Cycle C1 — model-assisted detection):**
-- `model_detection.py` — LLM-based commitment detection alongside deterministic
-- `hybrid_detection.py` — hybrid pipeline combining deterministic + model results
-- `llm_judge.py` — LLM judge for confidence calibration
-- Entity extraction: always-on (Cycle D fix — previously intermittent)
-- `speech_act`, `structure_complete`, `deliverable` fields populated on promotion
-- Fragment gate: rejects short text fragments (<10 chars) from promotion
-- `seed_processed_at` stamping prevents detection rescan loops
-- Meeting-specific LLM detection pipeline
-
-**Decision:**
-- Hybrid approach: deterministic for speed, model for nuance
-- Entity extraction runs on every candidate (not gated behind conditions)
-- `resolved_owner` fallback ensures owner is always populated
+### Other
+| Service | File | Purpose |
+|---------|------|---------|
+| Lifecycle Transitions | `lifecycle_transitions.py` | Allowed state transitions |
+| Ad-hoc Matcher | `adhoc_matcher.py` | Text similarity signal matching |
+| Tracer | `trace/tracer.py` | Signal trace debugging |
+| Eval Runner | `eval/runner.py` | Evaluation harness |
+| Voice STT | `voice/stt_service.py` | Speech-to-text |
+| Voice TTS | `voice/tts_service.py` | Text-to-speech |
+| Voice Intent | `voice/intent_parser.py` | Voice intent parsing |
+| Voice Query | `voice/query_service.py` | Voice query service |
 
 ---
 
-### Phase 04 — Clarification
-**Completion:** 2026-03-12
+## API Endpoints (all under /api/v1)
 
-Identifies ambiguous candidates and surfaces resolution workflow.
+### Commitments (commitments.py)
+- `GET /commitments` — List commitments (supports surface filter)
+- `POST /commitments` — Create commitment
+- `GET /commitments/{id}` — Get commitment
+- `PATCH /commitments/{id}` — Update commitment
+- `DELETE /commitments/{id}` — Soft delete
+- `POST /commitments/{id}/skip` — Skip commitment
+- `GET /commitments/{id}/signals` — List signals
+- `POST /commitments/{id}/signals` — Add signal
+- `GET /commitments/{id}/ambiguities` — List ambiguities
+- `POST /commitments/{id}/ambiguities` — Add ambiguity
+- `PATCH /commitments/{id}/ambiguities/{aid}` — Update ambiguity
+- `PATCH /commitments/{id}/delivery-state` — Update delivery state
+- `GET /commitments/{id}/events` — List linked events
+- `POST /commitments/{id}/events` — Link event
+- `POST /commitments/{id}/feedback` — Submit feedback (D4)
 
-**Delivered:**
-- `ClarificationAnalyzer` — detects ambiguity types (owner resolution, object inference, deadline ambiguity, etc.)
-- Candidate promotion rules: promote only if confidence ≥ 0.55 OR complexity permits clarification
-- Clarification suggestion engine: field-specific candidate values + null/empty/optional flags
-- Celery integration: scheduled clarification sweep jobs
-- Observation windows honored (no premature surfacing)
+### Candidates (candidates.py)
+- `GET /candidates` — List candidates
+- `GET /candidates/{id}` — Get candidate
 
-**Key rules:**
-- "We" ownership never auto-resolves (stays null)
-- Deadline inference only on explicit date signals
-- Candidates below 0.55 that are complex → clarification (not discarded)
+### Contexts (contexts.py)
+- `GET /contexts` — List contexts
+- `POST /contexts` — Create context
+- `GET /contexts/{id}/commitments` — Context commitments
+- `POST /contexts/auto-assign` — Auto-assign
 
----
+### Surface (surface.py)
+- `GET /surface/main` — Main surface
+- `GET /surface/shortlist` — Shortlist surface
+- `GET /surface/clarifications` — Clarifications surface
+- `GET /surface/best-next-moves` — Best next moves with reasoning
+- `GET /surface/internal` — Internal/system surface
 
-### Phase 05 — Completion Detection
-**Completion:** 2026-03-12
+### Digest (digest.py)
+- `POST /digest/trigger` — Trigger digest
+- `GET /digest/log` — Digest log
+- `GET /digest/preview` — Preview digest
 
-Infers when commitments have been delivered or closed.
+### Clarifications (clarifications.py)
+- `GET /clarifications` — List clarifications
+- `POST /clarifications/{id}/respond` — Respond to clarification
 
-**Delivered:**
-- `CompletionMatcher` — searches evidence for delivery signals
-- `CompletionScorer` — assigns confidence to completion candidates
-- `CompletionUpdater` — moves commitment from `active` → `delivered` → `closed` (with reversibility)
-- Evidence-based state transition rules per lifecycle brief
-- Celery sweep job for continuous completion detection
-- Audit trail for every transition
+### Sources (sources.py)
+- `POST /sources/test/email` — Test email connection
+- `POST /sources/test/slack` — Test Slack connection
+- `GET /sources/onboarding-status` — Onboarding status
+- `POST /sources/setup/email` — Setup email
+- `POST /sources/setup/slack` — Setup Slack
+- `POST /sources/setup/meeting` — Setup meeting
+- `POST /sources/{id}/regenerate-secret` — Regenerate secret
+- `GET /sources` — List sources
+- `POST /sources` — Create source
+- `GET /sources/{id}` — Get source
+- `PATCH /sources/{id}` — Update source
+- `DELETE /sources/{id}` — Delete source
 
-**Key decision:**
-- Delivery ≠ Closure: distinct states with distinct thresholds
-- Reversibility supported (back to `active` if new evidence contradicts closure)
+### Source Items (source_items.py)
+- `POST /source-items` — Create item
+- `POST /source-items/batch` — Batch create (207 multi-status)
+- `GET /source-items/{id}` — Get item
 
----
+### Webhooks
+- `POST /webhooks/email/inbound` — Email inbound
+- `POST /webhooks/slack/events` — Slack events
+- `POST /webhooks/meetings/transcript` — Meeting transcript
 
-### Phase 06 — Surfacing & Prioritization
-**Completion:** 2026-03-13 | **Enhanced:** Cycle D (fixes)
+### Events (events.py)
+- `GET /events` — List events
+- `POST /events` — Create event
+- `GET /events/{id}` — Get event
+- `PATCH /events/{id}` — Update event
 
-Determines which commitments get shown to the user and in what order.
+### Integrations (integrations.py)
+- `GET /integrations/google/auth` — Google OAuth
+- `GET /integrations/google/callback` — Google callback
+- `GET /integrations/google/status` — Google status
+- `DELETE /integrations/google/disconnect` — Disconnect Google
+- `GET /integrations/slack/oauth/start` — Slack OAuth start
+- `GET /integrations/slack/oauth/callback` — Slack callback
 
-**Delivered:**
-- `CommitmentClassifier` — routes each commitment to Main / Shortlist / Clarifications surface
-- `CommitmentScorer` / `priority_scorer.py` — multi-dimensional scoring (urgency, consequence, visibility, time-until-due)
-- `surfacing_router.py` + `surfacing_runner.py` — distributes commitments across surfaces
-- `structure_complete` gating — only fully structured commitments are surfaced (Cycle D fix)
-- Confidence scoring threshold enforcement (Cycle D fix)
-- Stale discard sweep + routing backlog cleanup (Cycle D fix)
-- `surfacing_audit` with `user_id` column for audit tracking
+### Identity (identity.py)
+- `GET /identity/profile` — List profiles
+- `POST /identity/seed` — Seed profiles
+- `POST /identity/confirm` — Confirm profile
+- `POST /identity/manual` — Manual entry
+- `DELETE /identity/{id}` — Delete profile
+- `GET /identity/status` — Status
+- `POST /identity/backfill` — Backfill
 
-**Key outputs:**
-- `/commitments?surface=main` returns ordered main view
-- `/commitments?surface=shortlist` returns ordered shortlist
-- `/commitments?surface=clarifications` returns unresolved items
-- Each surface sorted by priority score (desc)
+### Terms (terms.py)
+- `GET /identity/terms` — List terms
+- `POST /identity/terms` — Create term
+- `PATCH /identity/terms/{id}` — Update term
+- `DELETE /identity/terms/{id}` — Delete term
+- `POST /identity/terms/{id}/aliases` — Add alias
+- `DELETE /identity/terms/{id}/aliases/{aid}` — Delete alias
 
----
+### User Settings (user_settings.py)
+- `GET /user/settings` — Get settings
+- `PATCH /user/settings` — Update settings (includes D1 observation windows, D2 auto-close, D4 feedback thresholds)
+- `GET /user/feedback-stats` — Feedback statistics (D4)
 
-### Phase 07 — Connectors (Source Integrations)
-**Completion:** 2026-03-13 | **Enhanced:** Cycle C + D
+### Stats & Reports
+- `GET /stats` — Platform stats
+- `GET /report/weekly-summary` — Weekly summary
 
-Multi-source ingestion: email (IMAP + webhook), Slack (Events API + thread enrichment), meeting transcripts (webhook + LLM pipeline).
+### Admin (admin.py)
+- `GET /admin/health` — Health check
+- `GET/PATCH /admin/commitments` — Commitment management
+- `GET/PATCH /admin/candidates` — Candidate management
+- `GET /admin/surfacing-audit` — Surfacing audit
+- `GET /admin/events` — Events
+- `GET /admin/digests` — Digests
+- `POST /admin/pipeline/*` — Pipeline execution (detection, surfacing, linker, nudge, digest, resolver)
+- `POST /admin/seed-detection`, `POST /admin/seed-reset` — Seed operations
+- `POST /admin/test/seed-commitment` — Test commitment
+- `DELETE /admin/test/cleanup` — Cleanup
+- `POST/GET /admin/eval/*` — Evaluation harness
+- `POST/GET /admin/adhoc-signals` — Ad-hoc signal management
+- `POST /admin/backfill-source` — Source backfill
 
-**Delivered:**
+### Admin Review (admin_review.py)
+- `GET /admin/review/signals` — Detection signals
+- `POST /admin/review/signals/{id}` — Review signal
+- `GET /admin/review/outcomes` — Commitment outcomes
+- `POST /admin/review/outcomes/{id}` — Review outcome
+- `GET /admin/review/stats` — Review stats
+- `GET /admin/review/audit-sample` — Audit sample
 
-**Email:**
-- Bidirectional: IMAP for historical fetch + webhook for real-time ingest
-- Newsletter/noreply sender filter (widened in Cycle D to catch plurals/prefixed patterns)
-- Source error isolation for email processing failures
+### Lab & Debug
+- `GET /lab/source-items` — Source items listing
+- `POST /lab/trace` — Trace functionality
+- `POST /debug/pipeline` — Debug pipeline execution
 
-**Slack:**
-- Events API integration
-- Slack-specific prompt overlay for LLM detection
-- Thread enrichment — fetches full thread context for better detection
-- Auto-source-creation per workspace + channel
-
-**Meetings:**
-- Webhook ingest for external transcript files
-- Meeting-specific LLM detection pipeline
-- Speaker attribution from transcript metadata
-- `NormalizedSignal` WO fields populated in meeting normalizers
-
-**Google Calendar:**
-- `google_calendar.py` connector (event integration)
-
-**Shared:**
-- `NormalizedSignal` model — standardized format across all sources
-- `normalization/` service layer for signal normalization
-- Idempotent source creation (no duplicates per endpoint)
-- Error handling with retry (Celery tasks)
-- Webhook signature validation
-
----
-
-### Phase 08 — Frontend
-**Completion:** 2026-03-13 | **Enhanced:** Cycles C3–C6
-
-React + TypeScript dashboard for Rippled.
-
-**Delivered (original):**
-- **Dashboard:** Main / Shortlist / Clarifications tabs with surface filtering
-- **Commitment Review:** Detail view for each item (full evidence, history, state machine buttons)
-- **Commitment Log:** Historical view of all resolved/closed items
-- **Supabase Auth:** Sign-up / Login / OAuth integration
-
-**Enhanced (Cycles C–D):**
-- **Event timeline:** Linked events view with post-event banner
-- **Admin panel:** Admin review queue, audit sampling
-- **User settings:** Preferences page
-- **Identity settings:** Entity resolution configuration
-- **Common terms vocabulary:** Term/alias management UI
-- **Signal Lab / Trace Inspector:** Debug UI for tracing signal detection flow
-- **Onboarding tour:** Interactive onboarding component
-- **Context selector:** Context assignment UI
-- **Delivery actions + badge:** Delivery state management in UI
-- **Validation feedback:** Auth error clarity in Log Commitment modal
-- **Source badges + grouping:** Visual source identification
-
-**Tech stack:**
-- Vite + React 18 + TypeScript
-- Tailwind CSS
-- Supabase client for auth
-- Axios for API calls
-
----
-
-### Phase 09 — Onboarding
-**Completion:** 2026-03-15 (approx)
-
-User onboarding flow for first-time setup.
-
-**Delivered:**
-- `OnboardingTour.tsx` component — interactive walkthrough
-- Source connection setup guidance
-- Initial commitment surface orientation
-
----
-
-### Cycle C — Feature Phases
-
-#### C1 — Model Detection
-LLM-assisted commitment detection running alongside deterministic pipeline. See Phase 03 enhanced section.
-
-#### C2 — Daily Digest
-- `digest.py` service — generates daily commitment digest
-- `/api/v1/digest/*` endpoints
-- Admin review integration for digest approval
-
-#### C3 — Events
-- `events.py` route — event timeline endpoints
-- `event_linker.py` — links events to commitments
-- `post_event_resolver.py` — resolves commitments after events occur
-- `PostEventBanner.tsx` — UI for post-event resolution
-- Meeting webhook improvements for C6
-
-#### C4 — Admin
-- `admin.py` + `admin_review.py` routes — admin dashboard and review queue
-- Audit sampling endpoints
-- Stats endpoint for commitment counts
-
-#### C5 — User UI
-- `user_settings.py` route — user preferences
-- `clarifications.py` route — clarification management
-- Delivery state management
-- Linked events in user views
-
-#### C6 — Fixes
-- Meeting webhook fixes
-- Celery readiness improvements
-- Various bug fixes across the platform
+### Voice
+- `POST /voice/*` — Voice processing endpoints
 
 ---
 
-### Cycle D — Fix Iteration (RI-F01 through RI-F11)
-**Completion:** 2026-04-01
+## Database Models (app/models/)
 
-Systemic fix cycle addressing production issues discovered during real usage.
+### Core
+| Model | Table | Key Fields |
+|-------|-------|------------|
+| User | users | id, email, display_name |
+| Commitment | commitments | id, user_id, resolved_owner, owner_candidates, deliverable, commitment_type, lifecycle_state, delivery_state, priority_class, speech_act, confidence_*, surfaced_as, priority_score, observation_window_hours (D1), observe_until (D1), context_id, structure_complete, post_event_reviewed, due_precision |
+| CommitmentCandidate | commitment_candidates | id, trigger_class, confidence_score, is_explicit, priority_hint, commitment_class_hint, source_type, observe_until, context_window, linked_entities |
+| CommitmentSignal | commitment_signals | id, commitment_id, source_item_id, signal_role (origin/clarification/progress/delivery/closure/conflict/reopening) |
+| CommitmentAmbiguity | commitment_ambiguities | id, commitment_id, field, type, candidates, status |
+| CommitmentEventLink | commitment_event_links | id, commitment_id, event_id, metadata (D3) |
+| CommitmentContext | commitment_contexts | id, name, user_id |
+| CandidateCommitment | candidate_commitments | Maps candidates to promoted commitments |
+| Clarification | clarifications | id, commitment_id, issue_types, suggested_values |
 
-**Fixes delivered:**
-- **RI-F01:** Entity extraction made always-on + resolved_owner fallback
-- **RI-F02:** Confidence surfacing and threshold corrections
-- **RI-F03:** `structure_complete` backfill for 373 blocked commitments + migration
-- **RI-F04:** Routing backlog cleanup — stale discard sweep, ValueError handling
-- **RI-F05:** Fragment gate — reject <10 char text from promotion
-- **RI-F06:** Eligibility filter corrections
-- **RI-F07:** Signal link schema — CommitmentSignal created on promotion (fixes timestamps)
-- **RI-F08:** Classification/extraction pipeline fixes (speech_act, structure_complete, deliverable populated)
-- **RI-F09:** Newsletter/noreply sender filter widened
-- **RI-F10:** Context UX fix — context_tags JSONB, auto-assignment
-- **RI-F11:** Debug pipeline endpoint (`POST /api/v1/debug/pipeline`)
+### Sources & Signals
+| Model | Table | Key Fields |
+|-------|-------|------------|
+| Source | sources | id, user_id, source_type, credentials, last_synced_at |
+| SourceItem | source_items | id, source_id, body, sender, recipients, metadata |
+| RawSignalIngest | raw_signal_ingests | id, provider, raw_payload |
+| NormalizedSignalORM | normalized_signals | id, canonical signal format |
+| NormalizationRun | normalization_runs | id, audit of runs |
 
-**Additional operational work:**
-- Full DB reset + comprehensive re-seed
-- Migration tracking mechanism
-- Detection rescan loop fix (seed_processed_at stamping)
-- Validation feedback and auth error clarity
-- `python-multipart` dependency for voice route
+### Events & Lifecycle
+| Model | Table | Key Fields |
+|-------|-------|------------|
+| Event | events | id, user_id, title, start_time, end_time, recurrence |
+| LifecycleTransition | lifecycle_transitions | id, commitment_id, from_state, to_state, reason |
+| SurfacingAudit | surfacing_audits | id, user_id, commitment_id, action |
 
----
+### User & Settings
+| Model | Table | Key Fields |
+|-------|-------|------------|
+| UserSettings | user_settings | id, user_id, observation_window_config (D1), auto_close_config (D2), feedback_thresholds (D4) |
+| UserCommitmentProfile | user_commitment_profiles | id, user_id, contact info |
+| CommonTerm | common_terms | id, term, user_id |
+| Alias | aliases | id, term_id, alias_value |
 
-## Running State
-
-### Database
-- PostgreSQL via Supabase (connection string in `.env`)
-- All migrations applied via Alembic with migration tracking mechanism
-- Production catchup migrations for `context_tags`, `due_precision`, `structure_complete`
-
-### API Server
-- FastAPI + Uvicorn
-- Startup command: `uvicorn app.main:app --reload` (dev) or `--host 0.0.0.0 --port 8000` (prod)
-- OpenAPI docs at `/docs`
-- Health check at `/health`
-- Debug pipeline at `/api/v1/debug/pipeline`
-
-### Background Jobs
-- Celery worker + Redis
-- Scheduled tasks:
-  - Commitment candidate detection (per-source-item)
-  - Model-assisted detection (hybrid pipeline)
-  - Clarification analysis (every 5 min)
-  - Completion detection sweep (every 10 min)
-  - Surface routing + scoring (every 15 min)
-  - Observation window expiry checks (every 30 min)
-  - Stale discard sweep (routing backlog cleanup)
-  - Daily digest generation
-
-### Frontend
-- Built with `npm run build` → static assets to `/frontend/dist`
-- Dev server: `npm run dev` in `/frontend`
-- Served from root `/` via FastAPI `StaticFiles` (production)
-
-### Voice Bridge
-- Twilio ↔ Gemini Live voice bridge service
-- `app/voice_bridge/` — standalone service (audio_pipe, gemini_client, twilio_handler)
-- `POST /api/v1/voice/query` — voice query endpoint
-
-### Deployment
-- Railway.app integration
-- Production URL: `rippled-ai-production.up.railway.app`
-- Env vars set in Railway dashboard (never in `.env`)
-- Auto-deploy on push to `main`
-- Worker processes: API + Celery (separate dynos)
+### Audit & Evaluation
+| Model | Table | Key Fields |
+|-------|-------|------------|
+| DetectionAudit | detection_audits | id, decision, reasoning |
+| LLMJudgeRun | llm_judge_runs | id, results, run_at |
 
 ---
 
-## Testing
+## Celery Tasks (app/tasks.py)
 
-**Coverage:**
-- 131 test files across API, database, services, connectors, integration, and voice layers
-- Unit tests: detection heuristics, confidence scoring, state transitions, entity extraction
-- Integration tests: end-to-end flows (ingest → detect → promote → clarify → surface)
-- API tests: all webhook endpoints, CRUD operations, admin, digest, events, debug
-- Cycle D regression tests: routing backlog, structure_complete backfill, entity extraction always-on, debug pipeline
+### Periodic (Beat Schedule)
+| Task | Frequency | Purpose |
+|------|-----------|---------|
+| `run_detection_sweep` | Every 5 min | Catch missed source items |
+| `run_clarification_batch` | Every 5 min | Process clarification queue |
+| `run_completion_sweep` | Every 10 min | Evidence sweep + auto-close |
+| `run_model_detection_batch` | Every 10 min | Model-assisted re-classification |
+| `sync_google_calendar` | Every 15 min | Google Calendar sync (D3) |
+| `recompute_surfacing` | Every 30 min | Re-score and re-route surfaces |
+| `run_adhoc_signal_match_check` | Every 30 min | Ad-hoc signal matching |
+| `run_pre_event_nudge` | Hourly at :00 | Pre-event nudging (D3) |
+| `run_post_event_resolution` | Hourly at :30 | Post-event delivery (D3) |
+| `run_stale_candidate_discard` | Every 6 hours | Stale candidate cleanup |
+| `send_daily_digest` | Daily 8 AM UTC | Daily digest email |
+| `recompute_feedback_thresholds_all` | Daily 3 AM UTC | Feedback threshold recalc (D4) |
+| `run_llm_judge` | Weekly Mon 8 AM | LLM quality evaluation |
 
-**Test runner:** pytest
-
-**Current status:** All tests passing as of Cycle D completion (2026-04-01).
+### On-Demand
+| Task | Trigger | Purpose |
+|------|---------|---------|
+| `detect_commitments` | Source item creation | Per-item detection |
+| `run_clarification_task` | Per candidate | With retry, max 3 |
+| `run_model_detection_pass` | Per candidate | Model re-classification |
+| `process_slack_event` | Slack webhook | Process Slack events |
+| `poll_email_imap` | Every 5 min | IMAP polling |
+| `run_source_backfill` | Manual | Per user/source backfill |
+| `run_seed_pass_task` | Manual | Seed pass per user |
+| `update_profile_after_model_detection` | Post-model | Profile update |
+| `update_profile_after_dismissal` | On dismissal | Profile update |
+| `run_eval_task` | Manual | Evaluation runs |
+| `cleanup_routing_backlog` | Manual | Routing cleanup |
 
 ---
 
-## Known Limitations (Current)
+## Frontend Components (frontend/src/)
 
-1. **Multi-user:** Not fully scoped; single primary user per deployment assumed
-2. **Connectors:** Email IMAP requires relay; Slack requires app token; meetings require webhook POST
-3. **Observation windows:** Hard-coded per source type (no customization yet)
-4. **Frontend:** Functional but basic — no advanced filtering, export, or custom views
-5. **Voice bridge:** Early stage — Twilio/Gemini integration, not yet production-hardened
-6. **Google Calendar:** Connector exists but integration depth TBD
+### Screens (19)
+| Screen | File | Purpose |
+|--------|------|---------|
+| Dashboard | `Dashboard.tsx` | Main dashboard with surface tabs |
+| Commitments | `CommitmentsScreen.tsx` | Commitments list view |
+| Commitment Detail | `CommitmentDetail.tsx` | Full detail panel |
+| Detail Panel | `DetailPanel.tsx` | Generic detail panel |
+| Active | `ActiveScreen.tsx` | Active commitments |
+| Review | `Review.tsx` | Review/approval screen |
+| Log | `Log.tsx` | Event log |
+| Log Commitment Modal | `LogCommitmentModal.tsx` | Manual commitment entry |
+| Settings Modal | `SettingsModal.tsx` | Settings interface |
+| Prototype Dashboard | `PrototypeDashboard.tsx` | Experimental dashboard |
+| Signal Lab | `SignalLabScreen.tsx` | Signal debugging |
+| Admin | `AdminScreen.tsx` | Admin panel |
+| Architecture | `ArchitectureScreen.tsx` | System diagram |
+| Onboarding | `OnboardingScreen.tsx` | Onboarding flow |
+| Onboarding Identity | `OnboardingIdentityScreen.tsx` | Identity setup |
+| Login | `LoginScreen.tsx` | Login |
+| Sign Up | `SignUpScreen.tsx` | Registration |
+| Forgot Password | `ForgotPasswordScreen.tsx` | Password recovery |
+| Reset Password | `ResetPasswordScreen.tsx` | Password reset |
+
+### Settings Screens
+| Screen | File | Purpose |
+|--------|------|---------|
+| Sources Settings | `SourcesSettingsScreen.tsx` | Source configuration |
+| Integrations Settings | `IntegrationsSettingsScreen.tsx` | OAuth integrations |
+| Identity Settings | `IdentitySettingsScreen.tsx` | Identity/profile management |
+| Account Settings | `AccountSettingsScreen.tsx` | Account settings |
+| Observation Windows | `ObservationWindowsSection.tsx` | D1: Window config UI |
+| Auto-Close Timing | `AutoCloseTimingSection.tsx` | D2: Auto-close config UI |
+
+### Reusable Components (13)
+CommitmentRow, ContextSelector, ContextLine, SourceGroup, SourceBadge, StatusDot, DeliveryBadge, DeliveryActions, PostEventBanner, OnboardingTour, BottomBar, ErrorBanner, LoadingSpinner
 
 ---
 
-## Code Organization
+## External Integrations
 
-```
-app/
-  main.py                          # FastAPI app entry
-  core/
-    config.py                      # Pydantic settings
-  api/
-    routes/
-      commitments.py               # CRUD
-      webhooks/                    # Email/Slack/meetings ingest
-      admin.py                     # Admin dashboard
-      admin_review.py              # Review queue
-      candidates.py                # Candidate management
-      clarifications.py            # Clarification views
-      contexts.py                  # Context management
-      debug.py                     # Debug pipeline
-      digest.py                    # Daily digest
-      events.py                    # Event timeline
-      identity.py                  # Identity/entity settings
-      integrations.py              # Integration management
-      lab.py                       # Signal Lab / Trace Inspector
-      report.py                    # Reporting
-      source_items.py              # Source item views
-      sources.py                   # Source management
-      stats.py                     # Stats endpoints
-      surface.py                   # Surfacing views
-      terms.py                     # Common terms vocabulary
-      user_settings.py             # User preferences
-      voice.py                     # Voice query endpoint
-  connectors/
-    email/                         # Email IMAP + webhook
-    slack/                         # Slack Events API + thread enrichment
-    meeting/                       # Meeting transcript webhook
-    google_calendar.py             # Google Calendar connector
-    shared/                        # Shared connector utilities
-  models/
-    commitment.py                  # Core domain model
-    commitment_candidate.py        # Candidate model
-    commitment_signal.py           # Signal model (origin tracking)
-    normalized_signal.py           # Standardized signal format
-    raw_signal_ingest.py           # Raw inbound data
-    normalization_run.py           # Normalization tracking
-    user.py                        # User model
-    enums.py                       # State/class enums
-    schemas.py                     # Pydantic schemas
-    ...                            # Additional domain models
-  services/
-    detection/                     # Commitment detection (deterministic)
-    model_detection.py             # LLM-assisted detection
-    hybrid_detection.py            # Hybrid pipeline
-    llm_judge.py                   # LLM confidence judge
-    clarification/                 # Ambiguity resolution
-    completion/                    # Completion inference
-    surfacing_router.py            # Surface routing
-    surfacing_runner.py            # Surfacing execution
-    priority_scorer.py             # Priority scoring
-    commitment_classifier.py       # Commitment classification
-    context_assigner.py            # Context auto-assignment
-    digest.py                      # Daily digest generation
-    event_linker.py                # Event-commitment linking
-    post_event_resolver.py         # Post-event resolution
-    lifecycle_transitions.py       # State machine
-    observation_window.py          # Window management
-    nudge.py                       # Nudge service
-    identity/                      # Identity/entity resolution
-    normalization/                 # Signal normalization
-    orchestration/                 # Pipeline orchestration
-    trace/                         # Signal trace inspector
-    voice/                         # Voice query service
-    eval/                          # Evaluation utilities
-    adhoc_matcher.py               # Ad-hoc signal matching
-  tasks.py                         # Celery tasks (all scheduled jobs)
-  voice_bridge/                    # Twilio ↔ Gemini Live bridge
-    main.py                        # Bridge entry point
-    twilio_handler.py              # Twilio WebSocket handler
-    gemini_client.py               # Gemini Live client
-    audio_pipe.py                  # Audio stream pipeline
-    config.py                      # Bridge configuration
+| Integration | Connector | Status |
+|-------------|-----------|--------|
+| Email (IMAP) | `connectors/email/imap_poller.py` | Active — polling + webhook |
+| Email (Webhook) | `api/routes/webhooks/email.py` | Active |
+| Slack (Events API) | `connectors/slack/normalizer.py` | Active — events + thread enrichment |
+| Slack (OAuth) | `api/routes/integrations.py` | Active |
+| Meetings (ReadAI) | `connectors/meeting/readai_client.py` | Active — transcript webhook |
+| Google Calendar | `connectors/google_calendar.py` | Active — D3: 15-min sync + OAuth |
+| Twilio Voice | `voice_bridge/twilio_handler.py` | Experimental |
+| Gemini Live | `voice_bridge/gemini_client.py` | Experimental |
+| Supabase Auth | `frontend/src/lib/auth.tsx` | Active |
 
-migrations/
-  alembic/
-    versions/                      # Timestamped migration files
+---
 
-tests/
-  api/                             # API endpoint tests
-  connectors/                      # Connector tests
-  core/                            # Core config tests
-  integration/                     # End-to-end flow tests
-  models/                          # Model tests
-  scripts/                         # Script tests
-  services/                        # Service logic tests
-  unit/                            # Unit tests
-  voice_bridge/                    # Voice bridge tests
-  test_*.py                        # Cycle D regression tests (root level)
+## Test Coverage Summary
 
-frontend/
-  src/
-    App.tsx                        # Root component
-    pages/
-      Dashboard.tsx                # Main view
-      CommitmentDetail.tsx         # Detail page
-      HistoryLog.tsx               # Closed items
-    components/
-      CommitmentRow.tsx            # List item
-      ContextSelector.tsx          # Context picker
-      ContextLine.tsx              # Context display
-      DeliveryActions.tsx          # Delivery state controls
-      DeliveryBadge.tsx            # Delivery status badge
-      ErrorBanner.tsx              # Error display
-      LoadingSpinner.tsx           # Loading state
-      OnboardingTour.tsx           # Onboarding walkthrough
-      PostEventBanner.tsx          # Post-event resolution
-      SourceBadge.tsx              # Source type indicator
-      SourceGroup.tsx              # Source grouping
-      StatusDot.tsx                # Status indicator
-      BottomBar.tsx                # Navigation bar
-    api/
-      client.ts                    # Axios instance
-      types.ts                     # Response models
-    auth/                          # Supabase auth
-```
+**Total tests:** 1750 collected, all passing (2026-04-02)
+
+| Area | Test Files | Coverage |
+|------|------------|----------|
+| API endpoints | ~16 files in tests/api/ | Webhooks, CRUD, surfacing, admin, events, identity |
+| Services | ~16 files in tests/services/ | Detection, completion, digest, events, nudge, audit, orchestration (10 files) |
+| Connectors | ~18 files in tests/connectors/ | Email, Slack, meeting normalizers; IMAP; Google Calendar; participant resolution |
+| Integration | ~12 files in tests/integration/ | End-to-end flows, detection pipeline, contexts, learning loop |
+| Feature/regression | ~20 files in tests/ (root) | Cycle C/D features, lifecycle, feedback, admin, celery readiness |
+| Frontend | 4 test files | Context selector, architecture screen, log commitment modal |
+| Voice | tests/voice_bridge/ | Voice bridge tests |
+
+---
+
+## Migrations
+
+**40 migration files** in migrations/versions/ tracking full schema evolution from Phase 01 through Cycle D4.
+
+Key Cycle D migrations:
+- `t4u5v6w7x8y9_add_observation_window_config.py` — D1
+- `u5v6w7x8y9z0_add_auto_close_config.py` — D2
+- `v6w7x8y9z0a1_add_metadata_to_commitment_event_links.py` — D3
+- `w7x8y9z0a1b2_d4_user_feedback_thresholds.py` — D4
 
 ---
 
 ## Deliverables Status
 
-| Phase | Name | Status | Validated | Notes |
-|-------|------|--------|-----------|-------|
-| 01 | Schema | ✅ | 2026-03-09 | Core domain model, migrations |
-| 02 | API Scaffold | ✅ | 2026-03-09 | REST endpoints, error handling |
-| 03 | Detection | ✅ | 2026-03-11 | Commitment signal detection pipeline |
-| 04 | Clarification | ✅ | 2026-03-12 | Ambiguity analysis + suggestions |
-| 05 | Completion | ✅ | 2026-03-12 | State machine + evidence tracking |
-| 06 | Surfacing | ✅ | 2026-03-13 | Prioritization + surface routing |
-| 07 | Connectors | ✅ | 2026-03-13 | Email/Slack/meetings integration |
-| 08 | Frontend | ✅ | 2026-03-13 | Dashboard, detail, history views |
-| 09 | Onboarding | ✅ | 2026-03-15 | Onboarding tour + setup flow |
-| C1 | Model Detection | ✅ | 2026-03-20 | LLM-assisted hybrid detection |
-| C2 | Daily Digest | ✅ | 2026-03-21 | Digest generation + admin review |
-| C3 | Events | ✅ | 2026-03-22 | Event timeline + post-event resolution |
-| C4 | Admin | ✅ | 2026-03-23 | Admin dashboard + review queue |
-| C5 | User UI | ✅ | 2026-03-24 | Settings, clarifications, delivery UX |
-| C6 | Fixes | ✅ | 2026-03-25 | Bug fixes across platform |
-| — | Context UX Fix | ✅ | 2026-03-28 | context_tags JSONB, auto-assignment |
-| — | Entity Extraction Fix | ✅ | 2026-03-29 | Always-on extraction + fallback |
-| — | Cycle D Fix Iteration | ✅ | 2026-04-01 | RI-F01–F11: systemic production fixes |
+| Phase | Name | Status | Notes |
+|-------|------|--------|-------|
+| 01 | Schema | Done | Core domain model, 40 migrations |
+| 02 | API Scaffold | Done | REST endpoints, error handling |
+| 03 | Detection | Done | Deterministic + model-assisted hybrid |
+| 04 | Clarification | Done | Ambiguity analysis + suggestions |
+| 05 | Completion | Done | State machine + evidence tracking |
+| 06 | Surfacing | Done | Prioritization + surface routing |
+| 07 | Connectors | Done | Email/Slack/meetings/Google Calendar |
+| 08 | Frontend | Done | Dashboard, detail, history, settings |
+| 09 | Onboarding | Done | Onboarding tour + setup flow |
+| C1 | Model Detection | Done | LLM-assisted hybrid detection |
+| C2 | Daily Digest | Done | Digest generation + delivery |
+| C3 | Events | Done | Event timeline + post-event resolution |
+| C4 | Admin | Done | Admin dashboard + review queue |
+| C5 | User UI | Done | Settings, clarifications, delivery UX |
+| C6 | Fixes | Done | Bug fixes across platform |
+| D1 | Observation Windows | Done | Configurable per-source windows |
+| D2 | Auto-Close Config | Done | Configurable auto-close timing |
+| D3 | Calendar Integration | Done | Calendar-as-evidence matching |
+| D4 | Feedback Loops | Done | User feedback → adaptive thresholds |
 
----
-
-## Next Steps (B1 → B2)
-
-**B1:** Document current state ✅ **COMPLETE** (2026-04-01)
-
-**B2 (next):** Compare to vision
-- Read original briefs (01-10)
-- Compare delivered state against product vision
-- Identify gaps, deviations, drift
-- Document in `vision-delta.md`
-
-**B3:** Assess decisions
-- For each gap: intentional or drift?
-- Decisions: document rationale in `decisions.md`
-- Drift: flag for correction
-
-**B4:** Corrections work order
-- If gaps found: create + execute WO
-- Do not advance until corrections complete
-
-Then → Next cycle planning or deploy.
-
----
-
-*This document is a snapshot of what's been delivered as of 2026-04-01. Read it with the original briefs (briefs/ folder) to assess completeness.*
+*This document is a snapshot of what exists as of 2026-04-02, post-Cycle-D completion.*

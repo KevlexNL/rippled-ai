@@ -1,7 +1,7 @@
 {
-  "current_cycle": "D",
-  "current_phase": "cycle-D-complete",
-  "phase_step": "A1",
+  "current_cycle": "C",
+  "current_phase": "cycle-c-planning",
+  "phase_step": "C1",
   "phase_queue": [],
   "phases_completed": [
     "01-schema",
@@ -31,12 +31,13 @@
     "D1-observation-windows",
     "D2-auto-close-config",
     "D3-calendar-integration",
-    "D4-feedback-loops"
+    "D4-feedback-loops",
+    "B2-vision-review-post-D"
   ],
-  "last_action": "D4 feedback loops complete — 25 new tests, feedback_adapter service, Celery recompute task, pipeline integration (detector/surfacing/scorer), API endpoints, frontend action bar",
-  "last_action_time": "2026-04-02T16:00:00Z",
-  "next_action": "Cycle D complete — all 4 phases delivered. Next: plan cycle E or review.",
-  "claude_code_session": "rippled-d4-build",
+  "last_action": "Cycle B complete — vision review done",
+  "last_action_time": "2026-04-02T10:20:00Z",
+  "next_action": "C1: Gap analysis for next phase batch",
+  "claude_code_session": "rippled-cycle-c",
   "blockers_for_kevin": [],
-  "notes": "D4 adds user feedback loops: dismiss/confirm/mark_not_commitment actions on CommitmentRow, feedback_adapter computes per-user threshold adjustments (detection, surfacing, completion deltas), Celery recompute on every 10 events + daily sweep. All deltas capped +/-0.15, minimum 20 events guard. Cycle D (observation windows, auto-close config, calendar integration, feedback loops) is now complete."
+  "notes": "Cycle B2 vision review complete. 98% MVP scope delivered. Two drift corrections identified: frontend suggestion language pass + re-analysis workflow wiring. Correction WO created. Moving to Cycle C planning."
 }

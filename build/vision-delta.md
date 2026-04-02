@@ -1,476 +1,261 @@
-# Vision Delta Analysis — Rippled.ai (2026-04-01)
+# Vision Delta — Briefs vs Reality (2026-04-02)
 
-**Scope:** Compare post-Cycle-D production state (Phases 01–09, Cycles C1–C6, Cycle D RI-F01–F11) against original product vision (Briefs 1–10)
+Post-Cycle-D (D1-D4) vision review. Compares all 10 briefs against current platform state.
 
-**Result:** All MVP scope delivered. Model-assisted detection (Brief 8 deviation) has been resolved in Cycle C1. Two minor deviations remain: observation windows still hardcoded, auto-close behavior not yet configurable. No critical gaps requiring correction.
+**Prior review:** 2026-04-01 (post-Cycle-D fix iteration, pre-D1-D4 features)
+**This review:** 2026-04-02 (post-D1 observation windows, D2 auto-close config, D3 calendar integration, D4 feedback loops)
 
 ---
 
 ## Executive Summary
 
-**Completeness:** ~97% of specified MVP scope delivered and operational in production.
+**Completeness:** ~98% of specified MVP scope delivered and operational. The two gaps flagged in the prior review (hardcoded observation windows, non-configurable auto-close) are now resolved by D1 and D2.
 
-**Resolved since last review (2026-03-13):**
-- Model-assisted detection — previously deferred, now delivered via Cycle C1 (hybrid pipeline: deterministic + LLM + LLM judge)
-- Daily digest — delivered in Cycle C2
-- Event timeline + post-event resolution — delivered in Cycle C3
-- Admin review queue + audit sampling — delivered in Cycle C4
-- User settings, delivery UX, clarification management — delivered in Cycle C5
-- 11 systemic production fixes (Cycle D) addressing real-usage issues
-
-**Remaining deviations (2, both intentional):**
-1. Observation windows remain hardcoded (configurable later per Brief 4/9)
-2. Auto-close inactivity window not yet user-configurable (Brief 10 specifies "configurable")
-
-**Drift:** None detected. All deviations are documented trade-offs.
-
-**Recommendation:** No corrections needed before next phase planning. The two remaining deviations are explicitly marked as "configurable later" in the briefs and do not block MVP validity.
+**Remaining gaps are primarily UX-layer concerns** (suggestion language, push notifications, compact bundling) rather than architectural or domain model deficiencies. The backend comprehensively implements the vision; the frontend presentation layer has not been systematically audited against brief language standards.
 
 ---
 
-## Brief-by-Brief Assessment
+## Brief 1: Product Vision
+
+### Planned
+Single-user commitment intelligence from meetings/Slack/email. Reduce cognitive load. NOT a task manager. Capture broadly, surface selectively. Big promises (Main) vs small commitments (Shortlist). Suggestion-first, trust over cleverness.
+
+### Built — Aligned
+- Single-user architecture
+- Three sources with working connectors
+- Big promise vs small commitment classification
+- Selective surfacing with observation windows
+
+### Gaps
+| # | Gap | Severity |
+|---|-----|----------|
+| 1.1 | **Suggestion language in frontend** — Brief demands "likely," "seems," "may need" throughout. Frontend presents commitments more factually than tentatively. | Medium |
 
 ---
 
-### Brief 1 — Product Vision ✅ Complete
+## Brief 2: Product Principles (20 Principles)
 
-**Specified:** Personal AI support layer that helps people forget fewer work commitments without maintaining another task system. Quiet observation, preserve ambiguity, reduce cognitive burden, focus on follow-through.
-
-**Delivered:**
-- Single-user personal assistant model ✅
-- Quiet observation before surfacing (observation windows enforced) ✅
-- Preserve ambiguity over false certainty (clarification system, "we" stays unresolved) ✅
-- Reduce cognitive burden without creating new systems ✅
-- Focus on follow-through, not exhaustive capture ✅
-- Communication-native (meetings, Slack, email) ✅
-- Big promises (Main) vs small commitments (Shortlist) distinction ✅
-- Three-surface model (Main / Shortlist / Clarifications) ✅
-- Lifecycle: active / delivered / closed with reversibility ✅
-
-**Gaps:** None.
-
-**Status:** ✅ ALIGNED
-
----
-
-### Brief 2 — Product Principles ✅ Complete
-
-**Specified:** 20 non-negotiable product principles governing behavior, UX, copy, and prioritization.
-
-**Delivered — all 20 principles verified:**
+### Alignment by Principle
 
 | # | Principle | Status |
 |---|-----------|--------|
-| 1 | Reduce cognitive load, not just missed deadlines | ✅ Big + small commitment tracking |
-| 2 | Capture broadly, surface selectively | ✅ Candidate table >> surfaced commitments |
-| 3 | Infer more than you assert | ✅ Suggestion-first language in API |
-| 4 | Trust is more important than cleverness | ✅ Confidence thresholds, no over-promotion |
-| 5 | Live where work already happens | ✅ Meetings/Slack/email native |
-| 6 | Commitment > task | ✅ Core domain model is commitment, not task |
-| 7 | Small commitments matter (cumulative burden) | ✅ Shortlist surface exists |
-| 8 | Prioritization reflects consequence and burden | ✅ Multi-dimensional scoring |
-| 9 | Priority and confidence are separate | ✅ Separate dimensions in scorer |
-| 10 | Preserve ambiguity instead of fabricating clarity | ✅ Clarifications system, null owners |
-| 11 | "We" is not a person | ✅ Enforced: "we" never auto-resolves |
-| 12 | Observe before interrupting | ✅ Source-aware observation windows |
-| 13 | Interruptions must earn their place | ✅ Surfacing thresholds enforced |
-| 14 | Suggestions should feel helpful, not accusatory | ✅ Suggestion language throughout |
-| 15 | Delivery and closure are not the same thing | ✅ Distinct states in lifecycle |
-| 16 | Later signals update, not erase history | ✅ Evidence trail preserved, audit_log |
-| 17 | External commitments deserve stricter treatment | ✅ External scoring weight higher |
-| 18 | Completion inferred from evidence | ✅ CompletionMatcher + evidence scoring |
-| 19 | Age gracefully from uncertainty to usefulness | ✅ Confidence thresholds, hybrid detection |
-| 20 | User should feel lighter, not more managed | ✅ Compact surfaces, low interruption |
+| 1 | Reduce cognitive load | Aligned |
+| 2 | Capture broadly, surface selectively | Aligned |
+| 3 | Infer more than assert | Aligned |
+| 4 | Trust > cleverness | Aligned |
+| 5 | Live where work happens | Aligned |
+| 6 | Commitment > task | Aligned |
+| 7 | Small commitments matter | Aligned |
+| 8 | Priority = consequence + burden | Aligned |
+| 9 | Priority != confidence | Aligned |
+| 10 | Preserve ambiguity | Aligned |
+| 11 | "We" not a person | Aligned |
+| 12 | Observe before interrupting | Aligned (D1) |
+| 13 | Interruptions earn their place | Partial — no push system |
+| 14 | Helpful not accusatory | Partial — depends on frontend language |
+| 15 | Delivery != closure | Aligned |
+| 16 | Later signals update, not erase | Aligned |
+| 17 | External stricter | Aligned |
+| 18 | Completion inferred from evidence | Aligned |
+| 19 | Age gracefully from uncertainty | Aligned |
+| 20 | User feels lighter | No direct measurement |
 
-**Gaps:** None.
-
-**Status:** ✅ ALIGNED
-
----
-
-### Brief 3 — Commitment Domain Model ✅ Complete
-
-**Specified:** Core domain model: commitment as primary object, evidence, ambiguity as first-class, suggested values, confidence dimensions, ownership model, timing model, delivery/closure distinction.
-
-**Delivered:**
-- `commitments` table with all specified fields ✅
-  - id, owner, description, class, state, confidence_score, evidence links
-  - `context_tags` JSONB for unstructured context (Cycle D addition)
-  - `speech_act`, `structure_complete`, `deliverable` fields (Cycle D)
-  - `due_precision` enum for date specificity ✅
-- `commitment_candidates` — provisional interpretation layer ✅
-- `commitment_evidence` — linked evidence items ✅
-- `commitment_signals` — origin signal tracking (Cycle D fix) ✅
-- `clarifications` — ambiguity objects with field/type/candidates ✅
-- `audit_log` — immutable state transition record ✅
-- Confidence dimensions: commitment, owner, deadline, delivery, actionability ✅
-- Suggested values in clarification objects ✅
-- Ownership model: resolved_owner + likely_owner suggestion + "we" stays null ✅
-  - `resolved_owner` fallback ensures owner always populated when possible (Cycle D) ✅
-- Timing model: deadline candidates, vague time preservation, `due_precision` ✅
-- Delivery vs closure: distinct states with distinct thresholds ✅
-- Source relationship: one commitment, many signals across sources ✅
-
-**Gaps:** None.
-
-**Status:** ✅ ALIGNED
+### Gaps
+| # | Gap | Severity |
+|---|-----|----------|
+| 2.1 | **Push/notification system** — No push mechanism beyond daily digest. Brief says "interruptions rarer than in-app visibility" implying a push layer exists. | Medium |
+| 2.2 | **Frontend tone audit** — Principles 3, 14 require suggestion language throughout UI. Not systematically applied. | Medium |
 
 ---
 
-### Brief 4 — Source Model ✅ Complete
+## Brief 3: Commitment Domain Model
 
-**Specified:** Meetings, Slack, email as first-class sources. Each can serve as origin, clarification, progress, delivery, closure, reopening. Cross-source unification. Internal vs external distinction. Silent observation windows. Suggested values by source.
+### Built — Substantially Aligned
+- Commitment object with full field set: ownership, timing, deliverable, lifecycle, confidence dimensions, evidence
+- Owner model: `resolved_owner`, `owner_candidates`, `ownership_ambiguity`
+- Timing model: `resolved_deadline`, `deadline_candidates`, `timing_ambiguity`, `due_precision`
+- Signal roles: all 7 roles (origin, clarification, progress, delivery, closure, conflict, reopening)
+- Ambiguity as first-class: `CommitmentAmbiguity` model
+- Confidence dimensions: 6 separate fields
 
-**Delivered:**
-
-| Source | Origin | Clarification | Progress | Delivery | Closure | Reopening |
-|--------|--------|--------------|----------|----------|---------|-----------|
-| Meetings | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Slack | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Email | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-
-- `NormalizedSignal` model across all sources ✅
-- `commitment_sources` + `commitment_source_items` cross-source unification ✅
-- Internal vs external classification ✅
-- Thread/context preservation (Slack threads, email threads, meeting segments) ✅
-- Webhook signature validation ✅
-- Newsletter/noreply sender filter (widened in Cycle D) ✅
-- Quoted email text exclusion from fresh extraction ✅
-- Slack thread enrichment (full thread context fetch) ✅
-- Meeting-specific LLM detection pipeline ✅
-- Google Calendar connector exists (early stage) ✅
-- Observation windows implemented per source type ✅
-
-**Deviation:** Observation windows are hardcoded per source type, not yet user-configurable. Brief 4 states: "These defaults should be configurable later." This is an accepted MVP constraint.
-
-**Status:** ✅ ALIGNED (minor configurable-later item deferred)
+### Gaps
+| # | Gap | Severity |
+|---|-----|----------|
+| 3.1 | **Explanation fields** — Brief specifies "why Rippled thinks it's a commitment" and "what's missing" as commitment fields. These exist implicitly through audit/clarification but not as first-class commitment fields. | Low |
+| 3.2 | **Version history** — No explicit versioning beyond lifecycle transitions + signal history. | Low |
 
 ---
 
-### Brief 5 — Commitment Lifecycle ✅ Complete
+## Brief 4: Source Model
 
-**Specified:** Six states (proposed, needs_clarification, active, delivered, closed, discarded). Flexible state machine with reversible transitions. Evidence-based transitions.
+### Built — Aligned
+- Three first-class sources: email (IMAP + webhook), Slack (Events API + threads), meetings (ReadAI)
+- Cross-source signal linking to unified commitment
+- Internal/external classification via `participant_classifier.py`
+- D1 configurable observation windows per source type
+- Slack thread enrichment, DMs/private channels in scope
+- Email quoted text stripping
+- Message edit handling
 
-**Delivered:**
-- All six states implemented ✅
-  - `proposed` — newly detected, high uncertainty ✅
-  - `needs_clarification` — missing critical info ✅
-  - `active` — in progress ✅
-  - `delivered` — work complete, not yet closed ✅
-  - `closed` — resolved ✅
-  - `discarded` — not a commitment ✅
-- All specified transitions implemented ✅
-  - proposed → active / needs_clarification / discarded ✅
-  - needs_clarification → active / discarded ✅
-  - active → delivered / closed / needs_clarification ✅
-  - delivered → closed / active ✅
-  - closed → active ✅
-- Evidence-based state transitions ✅
-- Full audit trail per transition ✅
-- Reversibility supported ✅
-- `structure_complete` gating before surfacing (Cycle D) ✅
-- Stale discard sweep for routing backlog (Cycle D) ✅
-
-**Gaps:** None.
-
-**Status:** ✅ ALIGNED
+### Gaps
+| # | Gap | Severity |
+|---|-----|----------|
+| 4.1 | **Cross-source merge logic** — Signal linking supports multi-source commitments, but no active heuristic automatically links a Slack "done" to a meeting-originated commitment about the same topic. Depends on ad-hoc matching rather than dedicated cross-source linker. | Medium |
+| 4.2 | **Attachment content matching** — Basic metadata only. Brief 7 explicitly allows simplification here. | Low |
 
 ---
 
-### Brief 6 — Surfacing & Prioritization ✅ Complete
+## Brief 5: Commitment Lifecycle
 
-**Specified:** Three surfaces (Main, Shortlist, Clarifications). Multi-dimensional priority scoring. Observation before surfacing. Compact bundles. Suggestion-first language. Confidence vs priority separation. External > internal strictness.
+### Built — Aligned with Extension
+- Six specified states present: proposed, needs_clarification, active, delivered, closed, discarded
+- Flexible non-linear transitions supported
+- Delivered != closed enforced
+- Reversibility (delivered → active, closed → active)
+- Full audit trail via `LifecycleTransition`
 
-**Delivered:**
-- Three-surface model ✅
-  - `/commitments?surface=main` — big promises, external ✅
-  - `/commitments?surface=shortlist` — small commitments ✅
-  - `/commitments?surface=clarifications` — unresolved items ✅
-- `CommitmentClassifier` routes to correct surface ✅
-- `CommitmentScorer` / `priority_scorer.py` — multi-dimensional scoring ✅
-  - Urgency, consequence, visibility, time-until-due ✅
-- `surfacing_router.py` + `surfacing_runner.py` ✅
-- `structure_complete` gating — only fully structured commitments surfaced (Cycle D) ✅
-- Confidence scoring threshold enforcement (Cycle D) ✅
-- Stale discard sweep + routing backlog cleanup (Cycle D) ✅
-- Observation windows honored before surfacing ✅
-- External commitments score higher and surface faster ✅
-- Priority and confidence are separate dimensions ✅
-- Suggestion-first language in API responses ✅
-- Daily digest for compact bundles (Cycle C2) ✅
-- `surfacing_audit` with user_id for tracking ✅
-
-**Gaps:** None.
-
-**Status:** ✅ ALIGNED
+### Deviation
+| # | Item | Severity |
+|---|------|----------|
+| 5.1 | **Additional lifecycle states** — Platform has `dormant`, `confirmed`, `in_progress`, `completed`, `canceled` beyond the 6 specified. Brief locks exactly 6 MVP states. | Medium — needs B3 classification |
 
 ---
 
-### Brief 7 — MVP Scope ✅ Complete
+## Brief 6: Surfacing & Prioritization
 
-**This is the master constraint brief. All 12 in-scope items assessed:**
+### Built — Aligned
+- Three primary surfaces: Main, Shortlist, Clarifications
+- Multi-dimensional priority scoring (externality, timing, consequence, confidence, actionability)
+- D1 configurable observation windows before surfacing
+- Surfacing audit trail
+- Extended with `best-next-moves` and `internal` surfaces
 
-| # | In-Scope Item | Status |
-|---|---------------|--------|
-| 1 | Source coverage (meetings, Slack, email) | ✅ All three first-class |
-| 2 | Commitment intelligence pipeline | ✅ Ingest → normalize → detect → candidate → link → clarify → score → surface |
-| 3 | Unified commitment model | ✅ Single object, multi-source signals |
-| 4 | Commitment classes (big/small) | ✅ Main vs Shortlist routing |
-| 5 | Missing information + clarification | ✅ Silent observation + clarification engine |
-| 6 | Confidence model | ✅ Multi-dimensional (commitment, owner, deadline, delivery, actionability) |
-| 7 | Lifecycle/state handling | ✅ Active/delivered/closed + reversibility |
-| 8 | Completion/delivery detection | ✅ Evidence-based inference |
-| 9 | Surfaced product views | ✅ Main/Shortlist/Clarifications tabs |
-| 10 | Suggestion-first language | ✅ Throughout API and UI |
-| 11 | Internal vs external strictness | ✅ External scored higher |
-| 12 | Traceability and auditability | ✅ Raw payloads, normalized signals, evidence, audit_log |
-
-**Out-of-scope items correctly excluded:**
-- Full task manager (kanban, projects, dependencies) ✅ Excluded
-- Multi-user team workspaces ✅ Excluded
-- Enterprise RBAC ✅ Excluded
-- Native meeting bot/recorder ✅ Excluded
-- Many source integrations (only 3 + calendar stub) ✅ Excluded
-- Advanced workflow automation ✅ Excluded
-- Large-scale analytics ✅ Excluded
-- Heavy personalization/learning ✅ Excluded
-
-**Beyond-MVP features delivered (Cycles C–D):**
-- Model-assisted detection (hybrid pipeline) — ahead of MVP spec
-- Daily digest — ahead of MVP spec
-- Event timeline + post-event resolution — ahead of MVP spec
-- Admin review queue + audit sampling — ahead of MVP spec
-- Signal Lab / trace inspector — ahead of MVP spec
-- Voice query endpoint + Twilio/Gemini bridge — ahead of MVP spec
-- Identity/entity resolution — ahead of MVP spec
-- Common terms vocabulary — ahead of MVP spec
-
-**Status:** ✅ MVP COMPLETE + BEYOND-MVP FEATURES DELIVERED
+### Gaps
+| # | Gap | Severity |
+|---|-----|----------|
+| 6.1 | **Push notification layer** — Same as 2.1. No push mechanism. Digest is only outbound. | Medium |
+| 6.2 | **Compact bundles** — Surfaces are lists, not prioritized "good catch" bundles. | Low |
+| 6.3 | **Suggestion language** — Same as 1.1. Surfaces present items factually. | Medium |
 
 ---
 
-### Brief 8 — Commitment Detection ✅ Complete
+## Brief 7: MVP Scope
 
-**Specified:** Broad detection net across meetings, Slack, email. Deterministic heuristics combined with model assistance. Explicit + implicit + delegated + small practical commitments. Context windows. Detection categories. Priority hints. Observation flags.
+### In-Scope Checklist
+| # | Requirement | Status |
+|---|-------------|--------|
+| 1 | Three sources first-class | Done |
+| 2 | Commitment intelligence pipeline | Done |
+| 3 | Unified commitment model | Done |
+| 4 | Commitment classes (big/small) | Done |
+| 5 | Missing info & clarification | Done |
+| 6 | Confidence model (structured) | Done |
+| 7 | Lifecycle/state handling | Done (extended) |
+| 8 | Completion/delivery detection | Done |
+| 9 | Main/Shortlist/Clarifications views | Done |
+| 10 | Suggestion-first language | Partial (backend yes, frontend gap) |
+| 11 | Internal vs external strictness | Done |
+| 12 | Traceability & auditability | Done |
 
-**Delivered:**
-- `DetectionAnalyzer` — deterministic pattern matching + heuristics ✅
-- `model_detection.py` — LLM-based detection ✅ **(resolved from Cycle A deferral)**
-- `hybrid_detection.py` — hybrid pipeline combining both ✅
-- `llm_judge.py` — LLM confidence calibration ✅
-- Signal types detected: ✅
-  - Explicit commitments ("I'll do X") ✅
-  - Implicit signals ("will handle") ✅
-  - Edge cases ("I'll try") ✅
-  - Delegated commitments ✅
-  - Small practical commitments ✅
-  - Client-facing promises ✅
-  - Clarifying/modifying signals ✅
-  - Status-bearing signals (done, sent, handled) ✅
-- Confidence scoring calibrated (0.35–0.85 range) ✅
-- `observe_until` window assignment (1–3 days per source) ✅
-- Context windows stored on candidates ✅
-- Entity extraction: always-on (Cycle D fix) ✅
-- `speech_act`, `structure_complete`, `deliverable` populated on promotion ✅
-- Fragment gate: rejects <10 char text from promotion (Cycle D) ✅
-- Seed_processed_at stamping prevents rescan loops (Cycle D) ✅
-- Meeting-specific LLM detection pipeline ✅
-- Slack-specific prompt overlay ✅
-- Thread enrichment for better detection ✅
+### Out-of-Scope Items (properly excluded)
+Task manager, multi-user workspace, enterprise permissions, native integration breadth, native bot, highly polished UI, heavy automation, large analytics, full attachment understanding. **All correctly excluded.**
 
-**Previous deviation resolved:** Model-assisted detection was deferred in Cycle A (documented as D-03-04). Now fully delivered via Cycle C1 hybrid pipeline. The brief's spec for "combine deterministic heuristics with model assistance" is now met.
+### Intentional Scope Creep
+| Feature | Rationale |
+|---------|-----------|
+| D4 feedback loops | Brief 7 marks "advanced learning/personalization" out of scope. D4 intentionally starts this early. |
+| Google Calendar (D3) | Calendar not in original MVP brief scope. Added for calendar-as-evidence value. |
+| Voice bridge | Exploratory, experimental. |
+| Admin panel (C4) | Operational tooling not in briefs but operationally necessary. |
 
-**Gaps:** None.
-
-**Status:** ✅ ALIGNED (previous deviation resolved)
-
----
-
-### Brief 9 — Clarification ✅ Complete
-
-**Specified:** Handle incomplete/ambiguous/low-confidence commitments. Silent observation before interrupting. Suggest, don't assert. External commitments get earlier clarification. "We" stays unresolved. Compact clarification bundles. Issue categories. Clarification object structure.
-
-**Delivered:**
-- `ClarificationAnalyzer` — detects ambiguity types ✅
-  - Missing owner / vague owner ✅
-  - Missing deadline / vague deadline ✅
-  - Unclear deliverable ✅
-  - Uncertain commitment ✅
-  - Conflicting signals ✅
-  - Completion ambiguity ✅
-- Silent observation windows enforced per source ✅
-- Suggestion language throughout ✅
-- "We" never auto-resolves ✅
-- External commitments get stricter/earlier clarification ✅
-- Candidate promotion rules: confidence ≥ 0.55 OR complexity permits clarification ✅
-- Clarification suggestion engine with field-specific candidates ✅
-- Celery scheduled clarification sweep ✅
-- Observation windows honored (no premature surfacing) ✅
-- Clarifications as separate surface (not mixed into Main) ✅
-
-**Deviation:** Observation windows hardcoded per source type, not yet user-configurable. Brief 9 states these are "provisional defaults and should be configurable later." Accepted MVP constraint.
-
-**Status:** ✅ ALIGNED (configurable-later item deferred)
+### MVP Reality Check
+| Criterion | Verdict |
+|-----------|---------|
+| "I forgot fewer things" | Architecture supports — observation windows + surfacing |
+| "Fewer 'oh shit I promised that' moments" | Supported — detection captures across 3 sources |
+| "Didn't maintain another task system" | Achieved — no task management features |
+| "Suggestions felt useful more than annoying" | Depends on frontend language gap (1.1) |
 
 ---
 
-### Brief 10 — Completion Detection ✅ Complete
+## Brief 8: Commitment Detection
 
-**Specified:** Infer completion from communication signals. Delivery vs closure distinct. Reversibility. Channel-specific rules. Completion confidence model. Matching logic. Auto-close behavior. Evidence preservation.
+### Built — Aligned
+- Deterministic + model-assisted hybrid detection
+- Explicit, implicit, delegated, small practical, client-facing, modifying, status signals
+- Source-specific rules (Slack overlays, meeting LLM pipeline, email normalizer)
+- Context windows stored per candidate
+- Priority hints + commitment class hints
+- Observation flags + re-analysis flags
+- Seed pass for historical data
+- Learning loop (D4)
 
-**Delivered:**
-- `CompletionMatcher` — searches evidence for delivery signals ✅
-- `CompletionScorer` — assigns confidence to completion candidates ✅
-- `CompletionUpdater` — moves active → delivered → closed ✅
-- Channel-specific completion rules: ✅
-  - Email: outbound email as strong completion evidence ✅
-  - Slack: "done", "sent", "handled" language ✅
-  - Meetings: verbal completion statements ✅
-- Delivery vs closure: distinct states ✅
-- Reversibility: delivered → active, closed → active ✅
-- Evidence-based state transitions ✅
-- Quoted email text excluded from completion evidence ✅
-- Attachment handling ✅
-- Direct reply detection ✅
-- Completion confidence varies by commitment type ✅
-- Celery sweep job for continuous completion detection ✅
-- Full audit trail for every transition ✅
-
-**Deviation:** Auto-close inactivity window is not yet user-configurable. Brief 10 specifies "configurable" auto-close. Current implementation uses system defaults. Accepted MVP constraint — brief explicitly marks this as "MVP default, not permanent truth."
-
-**Status:** ✅ ALIGNED (configurable-later item deferred)
+### Gaps
+| # | Gap | Severity |
+|---|-----|----------|
+| 8.1 | **14 detection categories completeness** — Brief lists 14 specific trigger classes. Most appear implemented but completeness needs pattern-level audit. | Low |
+| 8.2 | **Re-analysis workflow** — `flag_reanalysis` column exists but no task/workflow consumes it. Flagged candidates sit unprocessed. | Medium |
 
 ---
 
-## Gap Summary Table
+## Brief 9: Clarification
 
-| Area | Brief Source | Specified | Delivered | Status | Notes |
-|------|-------------|-----------|-----------|--------|-------|
-| Model-assisted detection | Brief 8 | Deterministic + model | Hybrid pipeline (C1) | ✅ Complete | Was deferred in Cycle A, resolved in C1 |
-| Observation window config | Briefs 4, 9 | Configurable later | Hardcoded defaults | ⚠️ Deferred | Briefs explicitly mark as "configurable later" |
-| Auto-close config | Brief 10 | Configurable | System defaults only | ⚠️ Deferred | Brief marks as "MVP default, not permanent" |
-| Calendar integration | Brief 4, 7 | Out of MVP scope | Google Calendar connector exists | ✅ Ahead | Stub exists, deeper integration TBD |
-| Multi-user support | Brief 7 | Explicitly excluded | Single-user | ✅ Correct | MVP is single-user by design |
-| Attachment understanding | Brief 7, 10 | Lightweight matching OK | Attachment metadata used | ✅ Adequate | Brief permits simplification |
-| Daily digest | Brief 6 | Compact bundles | Digest service (C2) | ✅ Complete | Beyond MVP spec |
-| Admin/review | Not in briefs | Not specified | Admin panel + review queue (C4) | ✅ Bonus | Beyond original vision |
-| Voice query | Not in briefs | Not specified | Voice bridge + query endpoint | ✅ Bonus | Beyond original vision |
-| Signal Lab / tracing | Not in briefs | Not specified | Trace inspector UI | ✅ Bonus | Beyond original vision |
-| Identity/entity resolution | Brief 3 (implied) | Owner candidates | Identity settings + common terms | ✅ Bonus | Beyond original vision |
+### Built — Aligned
+- Ambiguity type detection (multiple types)
+- D1 configurable observation windows
+- Clarifications surface + endpoint
+- Suggested value generation
+- Candidate promotion pipeline
+- External commitments prioritized
 
----
-
-## Deviation Summary
-
-### D1: Observation Windows Hardcoded (Retained from Cycle A)
-
-**What:** Observation windows (Slack 2hrs, email 1–3 days, meetings 1–3 days) are hardcoded per source type.
-
-**Brief source:** Brief 4 ("should be configurable later"), Brief 9 ("provisional defaults and should be configurable later").
-
-**Impact:** Users cannot customize observation windows. Defaults are applied uniformly.
-
-**Assessment:** Acceptable. Briefs explicitly defer configurability to post-MVP. No correction needed now.
-
-### D2: Auto-Close Not User-Configurable (New)
-
-**What:** Auto-close inactivity window after delivery uses system defaults, not user-configurable settings.
-
-**Brief source:** Brief 10 ("Allow closure after a user-configurable inactivity period following likely delivery").
-
-**Impact:** Auto-close timing cannot be tuned per user or per commitment type.
-
-**Assessment:** Acceptable for current state. Brief 10 calls these "MVP defaults, not permanent truths." User settings infrastructure exists (Cycle C5) to support this later.
-
-### D1-Resolved: Model-Assisted Detection (Resolved in Cycle C1)
-
-**What:** Previously deterministic-only detection. Now hybrid pipeline with LLM-assisted detection, LLM judge, and meeting-specific LLM pipeline.
-
-**Resolution:** Cycle C1 delivered `model_detection.py`, `hybrid_detection.py`, `llm_judge.py`. Brief 8's specification for "combine deterministic heuristics with model assistance" is now fully met.
+### Gaps
+| # | Gap | Severity |
+|---|-----|----------|
+| 9.1 | **Clarification object completeness** — Brief specifies `why_this_matters`, `observation_window_status`, `surface_recommendation`, `suggested_clarification_prompt`. Model likely partial. | Low |
+| 9.2 | **4-tier escalation** — Brief defines do-nothing/internal/review/escalate as distinct behaviors. System may not implement full ladder. | Low-Medium |
+| 9.3 | **Clarification bundling** — List not bundled by priority/urgency as "good catch" moments. | Low |
 
 ---
 
-## Drift Assessment
+## Brief 10: Completion Detection
 
-**Question:** Are there any gaps between vision and implementation that were NOT intentional design decisions?
+### Built — Aligned
+- Evidence-based delivery inference pipeline (detector → matcher → scorer → updater)
+- D2 configurable auto-close timing
+- Reopening supported (delivered → active)
+- D3 post-event resolution adds calendar-as-evidence
+- External strictness in priority scoring
 
-**Finding:** None detected.
-
-All deviations in current-state.md:
-- Observation windows hardcoded → Explicitly marked "configurable later" in briefs ✅
-- Auto-close not configurable → Explicitly marked "MVP default" in Brief 10 ✅
-- Model-assisted detection → Previously deferred, now resolved ✅
-- No "surprise" gaps found → Code aligns with documented decisions ✅
-
-**Status:** ZERO UNINTENTIONAL DRIFT
-
----
-
-## Quality Assessment
-
-### Test Coverage
-- 131 test files across API, database, services, connectors, integration, and voice layers ✅
-- Cycle D regression tests for all systemic fixes ✅
-- All tests passing as of 2026-04-01 ✅
-
-### Production Health
-- Deployed and running at `rippled-ai-production.up.railway.app` ✅
-- Full DB reset + comprehensive re-seed completed in Cycle D ✅
-- All migrations applied with tracking mechanism ✅
-
-### Beyond-MVP Delivery
-The project has delivered significant functionality beyond the original 10-brief MVP specification:
-- Model-assisted hybrid detection (C1)
-- Daily digest generation (C2)
-- Event timeline + post-event resolution (C3)
-- Admin review queue + audit sampling (C4)
-- User settings + delivery UX (C5)
-- Signal Lab / trace inspector
-- Voice query + Twilio/Gemini bridge
-- Identity/entity resolution settings
-- Common terms vocabulary
-- Context management with auto-assignment
-- Debug pipeline endpoint
-- 11 systemic production fixes (Cycle D)
+### Gaps
+| # | Gap | Severity |
+|---|-----|----------|
+| 10.1 | **Cross-channel matching** — Brief describes rich matching (actor, recipient, deliverable, topic, time, thread). Cross-channel matching (email delivery matching meeting promise) may be shallow. | Medium |
+| 10.2 | **Type-specific completion** — Brief defines 5 commitment types (send/reply/review/create/coordinate) with different detection difficulty. No evidence of type-specific scoring paths. | Low-Medium |
 
 ---
 
-## Recommendation
+## Consolidated Gap Summary
 
-### For Kevin
+### Recurring Theme: Frontend Suggestion Language (1.1 / 2.2 / 6.3 / 7.1)
+The single most consistent gap across briefs. The backend correctly implements confidence scores and suggested values. The frontend does not systematically use tentative language ("looks like," "seems likely," "may need") when displaying commitments. This is a UX pass, not an architectural change.
 
-**Status:** Vision alignment is strong. All MVP requirements met. Two minor configurability items remain deferred (observation windows, auto-close) — both explicitly permitted by the briefs.
+### Medium Gaps Requiring Decision
+| # | Gap | Action Needed |
+|---|-----|---------------|
+| 1.1 | Suggestion language in frontend | Frontend UX pass |
+| 2.1 / 6.1 | Push/notification system | Architectural decision — build or defer? |
+| 4.1 | Cross-source merge logic | Detection improvement |
+| 5.1 | Extra lifecycle states | Classify: intentional or drift? |
+| 8.2 | Re-analysis workflow | Wire up existing flag |
+| 10.1 | Cross-channel completion matching | Detection improvement |
 
-**Key change since last review:** Model-assisted detection deviation is now resolved. The project has moved beyond MVP completeness into production hardening and feature expansion.
+### Low Gaps (acceptable for MVP)
+3.1, 3.2, 4.2, 6.2, 8.1, 9.1, 9.2, 9.3, 10.2
 
-**Not required:**
-- Correctional work orders
-- Architecture changes
-- Scope adjustments
-
-**Recommended for next phase planning:**
-- User-configurable observation windows (Briefs 4, 9)
-- User-configurable auto-close timing (Brief 10)
-- Deeper calendar integration (Brief 4 open question)
-- User feedback loops for adaptive thresholds (Brief 2, Principle 19)
-
----
-
-## Corrections Work Order
-
-**Created:** None needed.
-
-All delivered features align with vision. Remaining deviations are explicitly deferred by the briefs themselves. Production is healthy and operational.
+### Resolved Since Last Review
+- Observation windows hardcoded → D1 made configurable
+- Auto-close not configurable → D2 made configurable
 
 ---
 
-## Sign-Off
-
-**Reviewed by:** Trinity (Product Lead)
-**Date:** 2026-04-01
-**Cycle:** B (Platform Review) — Phase B2 Complete
-**Coverage:** Full brief comparison (Briefs 1–10) against post-Cycle-D production state
-
-**Next:** B3 (Decision Log Review) or proceed to next cycle planning.
-
-*Vision Delta analysis complete. No corrections required. Ready for next phase planning.*
+*This delta is honest about gaps while acknowledging the platform substantially delivers on the vision across all 10 briefs. The remaining gaps are primarily UX-layer and detection-sophistication concerns, not architectural deficiencies.*
