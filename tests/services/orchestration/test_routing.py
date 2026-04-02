@@ -101,6 +101,80 @@ class TestRoutingExtractionRules:
         assert result.action == RoutingAction.observe_quietly
 
 
+class TestRoutingExtractionCompletenessGate:
+    """Extraction completeness: high confidence but empty text → discard."""
+
+    def test_high_confidence_but_both_texts_empty_discards(self):
+        """owner_conf=0.8, deliverable_conf=0.8 but no actual text → discard."""
+        result = compute_routing_decision(
+            _gate(), _speech(),
+            _extraction(
+                owner_conf=0.8, deliverable_conf=0.8,
+                owner_text=None, deliverable_text=None,
+            ),
+        )
+        assert result.action == RoutingAction.discard
+        assert result.reason_code == "extraction_text_empty"
+
+    def test_high_confidence_empty_strings_discards(self):
+        """Empty strings (not just None) also trigger the gate."""
+        result = compute_routing_decision(
+            _gate(), _speech(),
+            _extraction(
+                owner_conf=0.8, deliverable_conf=0.8,
+                owner_text="", deliverable_text="",
+            ),
+        )
+        assert result.action == RoutingAction.discard
+        assert result.reason_code == "extraction_text_empty"
+
+    def test_whitespace_only_texts_discards(self):
+        """Whitespace-only text is effectively empty."""
+        result = compute_routing_decision(
+            _gate(), _speech(),
+            _extraction(
+                owner_conf=0.8, deliverable_conf=0.8,
+                owner_text="   ", deliverable_text="  ",
+            ),
+        )
+        assert result.action == RoutingAction.discard
+        assert result.reason_code == "extraction_text_empty"
+
+    def test_owner_text_present_deliverable_empty_promotes(self):
+        """At least one text field present → still promotable."""
+        result = compute_routing_decision(
+            _gate(), _speech(),
+            _extraction(
+                owner_conf=0.8, deliverable_conf=0.8,
+                owner_text="Alice", deliverable_text=None,
+            ),
+        )
+        assert result.action == RoutingAction.create_candidate_record
+
+    def test_deliverable_text_present_owner_empty_promotes(self):
+        """Deliverable present but no owner → still promotable."""
+        result = compute_routing_decision(
+            _gate(), _speech(),
+            _extraction(
+                owner_conf=0.8, deliverable_conf=0.8,
+                owner_text=None, deliverable_text="the report",
+            ),
+        )
+        assert result.action == RoutingAction.create_candidate_record
+
+    def test_both_texts_present_promotes(self):
+        """Normal case: both texts present → promotes as before."""
+        result = compute_routing_decision(
+            _gate(), _speech(),
+            _extraction(
+                owner_conf=0.8, deliverable_conf=0.8,
+                owner_text="Alice", deliverable_text="the report",
+            ),
+        )
+        assert result.action == RoutingAction.create_candidate_record
+        assert result.reason_code == "strong_extraction"
+
+
 class TestRoutingEscalationRules:
     def test_mid_confidence_with_escalate_flag(self):
         result = compute_routing_decision(

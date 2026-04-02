@@ -78,6 +78,7 @@ class EligibilityReason(str, enum.Enum):
     unsupported_source = "unsupported_source"
     missing_text = "missing_text"
     invalid_normalized_signal = "invalid_normalized_signal"
+    bulk_mail_content = "bulk_mail_content"
 
 
 # ---------------------------------------------------------------------------

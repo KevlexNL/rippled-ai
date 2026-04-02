@@ -87,6 +87,23 @@ def compute_routing_decision(
         has_deliverable = extraction_result.deliverable_confidence >= sufficiency.deliverable_confidence_min
 
         if has_owner and has_deliverable:
+            # Extraction completeness gate: at least one of owner_text or
+            # deliverable_text must be non-empty. High confidence with no
+            # actual extracted text is a hallucination from marketing content.
+            owner_text_present = bool(
+                extraction_result.owner_text and extraction_result.owner_text.strip()
+            )
+            deliverable_text_present = bool(
+                extraction_result.deliverable_text and extraction_result.deliverable_text.strip()
+            )
+
+            if not owner_text_present and not deliverable_text_present:
+                return RoutingDecision(
+                    action=RoutingAction.discard,
+                    reason_code="extraction_text_empty",
+                    summary="High confidence but no actual owner or deliverable text extracted",
+                )
+
             return RoutingDecision(
                 action=RoutingAction.create_candidate_record,
                 reason_code="strong_extraction",
