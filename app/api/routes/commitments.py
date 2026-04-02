@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user_id
 from app.db.deps import get_db
-from app.models.orm import CandidateCommitment, Commitment, CommitmentAmbiguity, CommitmentCandidate, CommitmentContext, CommitmentEventLink, CommitmentSignal, Event, LifecycleTransition, SourceItem, SurfacingAudit
+from app.models.orm import CandidateCommitment, Commitment, CommitmentAmbiguity, CommitmentCandidate, CommitmentContext, CommitmentEventLink, CommitmentSignal, Event, LifecycleTransition, SourceItem, SurfacingAudit, UserFeedback
 from app.models.schemas import (
     CommitmentAmbiguityCreate,
     CommitmentAmbiguityRead,
@@ -660,3 +660,127 @@ async def create_commitment_event_link(
     await db.flush()
     await db.refresh(link)
     return CommitmentEventLinkRead.model_validate(link)
+
+
+# ---------------------------------------------------------------------------
+# [D4] User Feedback
+# ---------------------------------------------------------------------------
+
+_VALID_FEEDBACK_ACTIONS = frozenset({
+    "dismiss", "confirm", "correct_owner", "correct_deadline",
+    "correct_description", "mark_not_commitment", "mark_delivered", "reopen",
+})
+
+# Actions that transition the commitment to discarded
+_DISCARD_ACTIONS = frozenset({"dismiss", "mark_not_commitment"})
+
+
+class FeedbackBody(BaseModel):
+    action: str
+    field_changed: str | None = None
+    old_value: str | None = None
+    new_value: str | None = None
+
+
+class FeedbackRead(BaseModel):
+    id: str
+    user_id: str
+    commitment_id: str
+    action: str
+    field_changed: str | None
+    old_value: str | None
+    new_value: str | None
+    source_type: str | None
+    trigger_class: str | None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+@router.post("/{commitment_id}/feedback", response_model=FeedbackRead, status_code=201)
+async def submit_feedback(
+    commitment_id: str,
+    body: FeedbackBody,
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> FeedbackRead:
+    """Submit user feedback on a commitment (dismiss/confirm/correct/etc)."""
+    if body.action not in _VALID_FEEDBACK_ACTIONS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid action: {body.action!r}. Must be one of {sorted(_VALID_FEEDBACK_ACTIONS)}",
+        )
+
+    commitment = await _get_commitment_or_404(commitment_id, user_id, db)
+
+    # Denormalize source_type and trigger_class from originating candidate
+    candidate_map = await _fetch_origin_candidate_map([commitment_id], db)
+    candidate = candidate_map.get(commitment_id)
+    source_type = candidate.source_type if candidate else None
+    trigger_class = candidate.trigger_class if candidate else None
+
+    feedback = UserFeedback(
+        user_id=user_id,
+        commitment_id=commitment_id,
+        action=body.action,
+        field_changed=body.field_changed,
+        old_value=body.old_value,
+        new_value=body.new_value,
+        source_type=source_type,
+        trigger_class=trigger_class,
+    )
+    db.add(feedback)
+
+    # Lifecycle side effects
+    if body.action in _DISCARD_ACTIONS:
+        allowed = VALID_TRANSITIONS.get(commitment.lifecycle_state, [])
+        if "discarded" in allowed:
+            old_state = commitment.lifecycle_state
+            commitment.lifecycle_state = "discarded"
+            commitment.state_changed_at = datetime.now(timezone.utc)
+            db.add(LifecycleTransition(
+                commitment_id=commitment_id, user_id=user_id,
+                from_state=old_state, to_state="discarded",
+                trigger_reason="user_feedback",
+            ))
+    elif body.action == "confirm":
+        allowed = VALID_TRANSITIONS.get(commitment.lifecycle_state, [])
+        if "confirmed" in allowed:
+            old_state = commitment.lifecycle_state
+            commitment.lifecycle_state = "confirmed"
+            commitment.state_changed_at = datetime.now(timezone.utc)
+            db.add(LifecycleTransition(
+                commitment_id=commitment_id, user_id=user_id,
+                from_state=old_state, to_state="confirmed",
+                trigger_reason="user_feedback",
+            ))
+    elif body.action == "mark_delivered":
+        allowed = VALID_TRANSITIONS.get(commitment.lifecycle_state, [])
+        if "delivered" in allowed:
+            old_state = commitment.lifecycle_state
+            commitment.lifecycle_state = "delivered"
+            commitment.state_changed_at = datetime.now(timezone.utc)
+            db.add(LifecycleTransition(
+                commitment_id=commitment_id, user_id=user_id,
+                from_state=old_state, to_state="delivered",
+                trigger_reason="user_feedback",
+            ))
+
+    await db.flush()
+    await db.refresh(feedback)
+
+    # Check if recompute threshold is needed (every 10 events)
+    from sqlalchemy import func as sqlfunc
+    count_result = await db.execute(
+        select(sqlfunc.count()).select_from(UserFeedback).where(UserFeedback.user_id == user_id)
+    )
+    total_count = count_result.scalar()
+    if total_count and total_count % 10 == 0:
+        try:
+            from app.tasks import recompute_feedback_thresholds
+            recompute_feedback_thresholds.delay(user_id)
+        except Exception:
+            pass  # Celery unavailable in tests — non-critical
+
+    return FeedbackRead.model_validate(feedback)

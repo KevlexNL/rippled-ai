@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.connectors.shared.credentials_utils import encrypt_value
 from app.core.dependencies import get_current_user_id
 from app.db.deps import get_db
-from app.models.orm import UserSettings
+from app.models.orm import UserCommitmentProfile, UserFeedback, UserSettings
 from app.services.auto_close_config import (
     merge_auto_close_defaults,
     validate_auto_close_config,
@@ -136,3 +136,66 @@ async def patch_user_settings(
     await db.flush()
     await db.refresh(us)
     return _to_read(us)
+
+
+# ---------------------------------------------------------------------------
+# [D4] Feedback stats
+# ---------------------------------------------------------------------------
+
+class FeedbackStatsRead(BaseModel):
+    total_feedback_count: int
+    threshold_adjustments: dict | None
+    feedback_summary: dict
+
+
+@router.get("/feedback-stats", response_model=FeedbackStatsRead)
+async def get_feedback_stats(
+    user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+) -> FeedbackStatsRead:
+    """Return per-user feedback stats and current threshold adjustments."""
+    from sqlalchemy import func as sqlfunc
+
+    # Load profile
+    profile_result = await db.execute(
+        select(UserCommitmentProfile).where(UserCommitmentProfile.user_id == user_id)
+    )
+    profile = profile_result.scalar_one_or_none()
+    threshold_adjustments = profile.threshold_adjustments if profile else None
+
+    # Count feedback by category
+    dismiss_result = await db.execute(
+        select(sqlfunc.count()).select_from(UserFeedback).where(
+            UserFeedback.user_id == user_id,
+            UserFeedback.action.in_(["dismiss", "mark_not_commitment"]),
+        )
+    )
+    dismiss_count = dismiss_result.scalar() or 0
+
+    confirm_result = await db.execute(
+        select(sqlfunc.count()).select_from(UserFeedback).where(
+            UserFeedback.user_id == user_id,
+            UserFeedback.action == "confirm",
+        )
+    )
+    confirm_count = confirm_result.scalar() or 0
+
+    correct_result = await db.execute(
+        select(sqlfunc.count()).select_from(UserFeedback).where(
+            UserFeedback.user_id == user_id,
+            UserFeedback.action.in_(["correct_owner", "correct_deadline", "correct_description"]),
+        )
+    )
+    correct_count = correct_result.scalar() or 0
+
+    total = dismiss_count + confirm_count + correct_count
+
+    return FeedbackStatsRead(
+        total_feedback_count=total,
+        threshold_adjustments=threshold_adjustments,
+        feedback_summary={
+            "dismiss_count": dismiss_count,
+            "confirm_count": confirm_count,
+            "correct_count": correct_count,
+        },
+    )

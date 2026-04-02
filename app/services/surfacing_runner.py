@@ -27,7 +27,7 @@ from decimal import Decimal
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import Session
 
-from app.models.orm import Commitment, CommitmentEventLink, Event, SurfacingAudit
+from app.models.orm import Commitment, CommitmentEventLink, Event, SurfacingAudit, UserCommitmentProfile
 from app.services.surfacing_router import route
 
 logger = logging.getLogger(__name__)
@@ -203,6 +203,17 @@ def run_surfacing_sweep(db: Session) -> dict:
     surfaced_main = 0
     surfaced_shortlist = 0
 
+    # [D4] Pre-load user profiles for feedback-driven surfacing adjustments
+    from app.services.feedback_adapter import apply_surfacing_adjustment
+    profile_map: dict[str, UserCommitmentProfile] = {}
+    if user_ids:
+        profile_rows = db.execute(
+            select(UserCommitmentProfile).where(
+                UserCommitmentProfile.user_id.in_(list(user_ids))
+            )
+        ).scalars().all()
+        profile_map = {p.user_id: p for p in profile_rows}
+
     for commitment in commitments:
         proximity_hours = proximity_map.get(commitment.id)
         context_hours = context_proximity_map.get(commitment.id)
@@ -216,7 +227,10 @@ def run_surfacing_sweep(db: Session) -> dict:
         commitment.business_consequence = classifier.business_consequence
         commitment.cognitive_burden = classifier.cognitive_burden
         commitment.confidence_for_surfacing = Decimal(str(round(classifier.confidence_for_surfacing, 3)))
-        commitment.priority_score = Decimal(str(routing.priority_score))
+        # [D4] Apply per-user surfacing adjustment
+        user_profile = profile_map.get(commitment.user_id)
+        adjusted_priority = apply_surfacing_adjustment(routing.priority_score, user_profile)
+        commitment.priority_score = Decimal(str(adjusted_priority))
         commitment.surfacing_reason = routing.reason[:255] if routing.reason else None
 
         # Only write audit + update surfaced_as if destination changed

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { CommitmentRead } from '../types'
 import type { ClarificationRead } from '../api/clarifications'
 import { respondToClarification } from '../api/clarifications'
+import { submitFeedback } from '../api/commitments'
 import { getStatusColor } from '../types'
 import StatusDot from './StatusDot'
 import ContextLine from './ContextLine'
@@ -19,6 +20,7 @@ interface Props {
 export default function CommitmentRow({ commitment, onClick, showReasoning = false, openClarification, contextName }: Props) {
   const color = getStatusColor(commitment)
   const [answerLoading, setAnswerLoading] = useState(false)
+  const [feedbackLoading, setFeedbackLoading] = useState<string | null>(null)
   const queryClient = useQueryClient()
 
   const hasClarification =
@@ -34,6 +36,16 @@ export default function CommitmentRow({ commitment, onClick, showReasoning = fal
       await queryClient.invalidateQueries({ queryKey: ['surface'] })
     } finally {
       setAnswerLoading(false)
+    }
+  }
+
+  async function handleFeedback(action: string) {
+    setFeedbackLoading(action)
+    try {
+      await submitFeedback(commitment.id, action)
+      await queryClient.invalidateQueries({ queryKey: ['surface'] })
+    } finally {
+      setFeedbackLoading(null)
     }
   }
 
@@ -99,7 +111,32 @@ export default function CommitmentRow({ commitment, onClick, showReasoning = fal
               )}
             </div>
           ) : (
-            <ContextLine commitment={commitment} contextName={contextName} />
+            <>
+              <ContextLine commitment={commitment} contextName={contextName} />
+              <div className="flex items-center gap-2 mt-1.5">
+                <button
+                  type="button"
+                  disabled={feedbackLoading !== null}
+                  onClick={(e) => { e.stopPropagation(); handleFeedback('dismiss') }}
+                  className="px-1.5 py-0.5 rounded text-xs text-gray-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                  title="Dismiss"
+                >✕</button>
+                <button
+                  type="button"
+                  disabled={feedbackLoading !== null}
+                  onClick={(e) => { e.stopPropagation(); handleFeedback('confirm') }}
+                  className="px-1.5 py-0.5 rounded text-xs text-gray-400 hover:text-green-600 hover:bg-green-50 disabled:opacity-50 transition-colors"
+                  title="Confirm"
+                >✓</button>
+                <button
+                  type="button"
+                  disabled={feedbackLoading !== null}
+                  onClick={(e) => { e.stopPropagation(); handleFeedback('mark_not_commitment') }}
+                  className="px-1.5 py-0.5 rounded text-xs text-gray-400 hover:text-orange-600 hover:bg-orange-50 disabled:opacity-50 transition-colors"
+                  title="Not a commitment"
+                >⊘</button>
+              </div>
+            </>
           )}
 
           {showReasoning && (

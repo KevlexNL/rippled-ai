@@ -165,6 +165,7 @@ def _compute_artifact_match_confidence(
 def score_evidence(
     commitment: Any,
     evidence: CompletionEvidence,
+    user_profile: Any | None = None,
 ) -> CompletionScore:
     """Compute multi-dimensional confidence scores for a commitment/evidence pair.
 
@@ -179,6 +180,12 @@ def score_evidence(
 
     delivery = _compute_delivery_confidence(commitment, evidence)
     completion = _compute_completion_confidence(delivery, commitment_type)
+
+    # [D4] Apply per-user completion confidence adjustment
+    if user_profile is not None:
+        from app.services.feedback_adapter import apply_completion_adjustment
+        completion = apply_completion_adjustment(completion, user_profile)
+
     recipient = _compute_recipient_match_confidence(evidence, commitment)
     artifact = _compute_artifact_match_confidence(evidence, commitment)
 

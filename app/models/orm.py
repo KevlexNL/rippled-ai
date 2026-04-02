@@ -503,7 +503,25 @@ class UserCommitmentProfile(Base):
     total_commitments_found: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
     last_seed_pass_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    # Phase D4 — per-user feedback-driven threshold adjustments
+    threshold_adjustments: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class UserFeedback(Base):
+    """Phase D4 — lightweight user feedback on commitments (dismiss/confirm/correct)."""
+    __tablename__ = "user_feedback"
+
+    id: Mapped[str] = mapped_column(_uuid(), primary_key=True, server_default=func.gen_random_uuid())
+    user_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    commitment_id: Mapped[str] = mapped_column(_uuid(), ForeignKey("commitments.id", ondelete="CASCADE"), nullable=False)
+    action: Mapped[str] = mapped_column(Text, nullable=False)
+    field_changed: Mapped[str | None] = mapped_column(Text, nullable=True)
+    old_value: Mapped[str | None] = mapped_column(Text, nullable=True)
+    new_value: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_type: Mapped[str | None] = mapped_column(Text, nullable=True)
+    trigger_class: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class DigestLog(Base):

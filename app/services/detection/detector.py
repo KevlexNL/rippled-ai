@@ -318,6 +318,14 @@ def run_detection(
                 }
 
             confidence = _compute_confidence(pattern, is_ext)
+            # [D4] Apply per-user detection adjustment
+            if profile is not None:
+                from app.services.feedback_adapter import apply_detection_adjustment
+                sender_email = getattr(item, "sender_email", None)
+                confidence = Decimal(str(round(
+                    apply_detection_adjustment(float(confidence), profile, sender_email, pattern.trigger_class),
+                    3,
+                )))
             priority = _compute_priority(pattern, is_ext, trigger_text)
             class_hint = _compute_class_hint(pattern, is_ext, trigger_text)
             observe_until = _compute_observe_until(source_type, is_ext, user_config)

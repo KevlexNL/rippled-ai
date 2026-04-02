@@ -1,6 +1,6 @@
 {
-  "current_cycle": "A",
-  "current_phase": "D4-feedback-loops",
+  "current_cycle": "D",
+  "current_phase": "cycle-D-complete",
   "phase_step": "A1",
   "phase_queue": [],
   "phases_completed": [
@@ -30,12 +30,13 @@
     "cycle-c-planning",
     "D1-observation-windows",
     "D2-auto-close-config",
-    "D3-calendar-integration"
+    "D3-calendar-integration",
+    "D4-feedback-loops"
   ],
-  "last_action": "D3 calendar-as-evidence matching complete — 51 new tests, CalendarMatcher service, scorer context boost, observation window shortening, API link_type filter",
-  "last_action_time": "2026-04-02T12:00:00Z",
-  "next_action": "Spawn Claude Code for D4 interpretation — feedback loops",
-  "claude_code_session": "rippled-d3-build",
+  "last_action": "D4 feedback loops complete — 25 new tests, feedback_adapter service, Celery recompute task, pipeline integration (detector/surfacing/scorer), API endpoints, frontend action bar",
+  "last_action_time": "2026-04-02T16:00:00Z",
+  "next_action": "Cycle D complete — all 4 phases delivered. Next: plan cycle E or review.",
+  "claude_code_session": "rippled-d4-build",
   "blockers_for_kevin": [],
-  "notes": "D3 adds CalendarMatcher service matching events to commitments by entity/topic overlap. Three new link types: deadline_hint, completion_hint, context. Scorer gets context_proximity_boost (0-15 pts). Observation window shortens for imminent meetings. 51 new tests all passing, zero regressions."
+  "notes": "D4 adds user feedback loops: dismiss/confirm/mark_not_commitment actions on CommitmentRow, feedback_adapter computes per-user threshold adjustments (detection, surfacing, completion deltas), Celery recompute on every 10 events + daily sweep. All deltas capped +/-0.15, minimum 20 events guard. Cycle D (observation windows, auto-close config, calendar integration, feedback loops) is now complete."
 }

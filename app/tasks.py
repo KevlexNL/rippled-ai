@@ -125,6 +125,11 @@ celery_app.conf.update(
             "task": "app.tasks.run_stale_candidate_discard",
             "schedule": crontab(minute=0, hour="*/6"),
         },
+        # Phase D4 — daily feedback threshold recomputation
+        "recompute-feedback-thresholds-daily": {
+            "task": "app.tasks.recompute_feedback_thresholds_all",
+            "schedule": crontab(hour=3, minute=0),  # 3am UTC daily
+        },
     },
 )
 
@@ -1478,3 +1483,78 @@ def cleanup_routing_backlog() -> dict:
         list(BACKLOG_TRIGGER_CLASSES),
     )
     return {"discarded": discarded}
+
+
+@celery_app.task(name="app.tasks.recompute_feedback_thresholds")
+def recompute_feedback_thresholds(user_id: str) -> dict:
+    """Recompute per-user feedback-driven threshold adjustments — Phase D4.
+
+    Loads all UserFeedback rows for the user, computes new adjustments via
+    feedback_adapter, and writes the result to the user's UserCommitmentProfile.
+
+    Called on-demand (every N=10 feedback events) and daily via beat schedule.
+
+    Args:
+        user_id: UUID of the user whose thresholds to recompute.
+
+    Returns:
+        Dict with user_id, feedback_count, and whether adjustments were updated.
+    """
+    from sqlalchemy import select
+    from app.models.orm import UserCommitmentProfile, UserFeedback
+    from app.services.feedback_adapter import compute_threshold_adjustments
+
+    with get_sync_session() as session:
+        rows = session.execute(
+            select(UserFeedback)
+            .where(UserFeedback.user_id == user_id)
+            .order_by(UserFeedback.created_at.asc())
+        ).scalars().all()
+
+        adjustments = compute_threshold_adjustments(rows)
+
+        profile = session.execute(
+            select(UserCommitmentProfile)
+            .where(UserCommitmentProfile.user_id == user_id)
+        ).scalar_one_or_none()
+
+        if profile is None:
+            logger.info(
+                "recompute_feedback_thresholds: no profile for user %s — skipping",
+                user_id,
+            )
+            return {"user_id": user_id, "feedback_count": len(rows), "updated": False}
+
+        profile.threshold_adjustments = adjustments
+        session.flush()
+        session.commit()
+
+    logger.info(
+        "recompute_feedback_thresholds: user=%s feedback_count=%d",
+        user_id, len(rows),
+    )
+    return {"user_id": user_id, "feedback_count": len(rows), "updated": True}
+
+
+@celery_app.task(name="app.tasks.recompute_feedback_thresholds_all")
+def recompute_feedback_thresholds_all() -> dict:
+    """Recompute feedback thresholds for all users with profiles — Phase D4.
+
+    Scheduled daily at 3am UTC via Celery Beat.
+    Enqueues per-user recompute tasks.
+    """
+    from sqlalchemy import select
+    from app.models.orm import UserCommitmentProfile
+
+    with get_sync_session() as session:
+        user_ids = session.execute(
+            select(UserCommitmentProfile.user_id)
+        ).scalars().all()
+
+    enqueued = 0
+    for uid in user_ids:
+        recompute_feedback_thresholds.delay(str(uid))
+        enqueued += 1
+
+    logger.info("recompute_feedback_thresholds_all: enqueued %d user(s)", enqueued)
+    return {"enqueued": enqueued}

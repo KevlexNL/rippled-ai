@@ -40,3 +40,6 @@ export const patchDeliveryState = (id: string, state: string) =>
 
 export const skipCommitment = (id: string, reason?: string) =>
   apiPost<CommitmentRead>(`/api/v1/commitments/${id}/skip`, { reason: reason ?? null })
+
+export const submitFeedback = (id: string, action: string) =>
+  apiPost<unknown>(`/api/v1/commitments/${id}/feedback`, { action })
