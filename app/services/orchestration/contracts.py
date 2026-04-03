@@ -79,6 +79,9 @@ class EligibilityReason(str, enum.Enum):
     missing_text = "missing_text"
     invalid_normalized_signal = "invalid_normalized_signal"
     bulk_mail_content = "bulk_mail_content"
+    newsletter_sender = "newsletter_sender"
+    automated_sender_header = "automated_sender_header"
+    fragment_too_short = "fragment_too_short"
 
 
 # ---------------------------------------------------------------------------

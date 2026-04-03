@@ -8,8 +8,12 @@ from __future__ import annotations
 import re
 
 from app.connectors.shared.normalized_signal import NormalizedSignal
+from app.services.detection.profile_matcher import detect_newsletter_sender
 from app.services.orchestration.config import get_orchestration_config
 from app.services.orchestration.contracts import EligibilityReason, EligibilityResult
+
+# Minimum text length for the authored text (matches fragment gate threshold)
+_MIN_AUTHORED_TEXT_LENGTH = 10
 
 # Bulk-mail content indicators — each pattern is one "indicator category".
 # A signal is rejected when 2+ distinct categories match (single match
@@ -64,9 +68,37 @@ def check_eligibility(signal: NormalizedSignal) -> EligibilityResult:
     if not signal.signal_id:
         return EligibilityResult(eligible=False, reason=EligibilityReason.invalid_normalized_signal)
 
-    # Content-based bulk-mail filter (email only)
-    if signal.source_type == "email" and signal.latest_authored_text:
-        if _count_bulk_mail_indicators(signal.latest_authored_text) >= _BULK_MAIL_THRESHOLD:
-            return EligibilityResult(eligible=False, reason=EligibilityReason.bulk_mail_content)
+    # Email-specific filters
+    if signal.source_type == "email":
+        # Newsletter/noreply sender filter
+        sender_email = ""
+        if signal.sender and signal.sender.email:
+            sender_email = signal.sender.email
+        if sender_email and detect_newsletter_sender(sender_email):
+            return EligibilityResult(eligible=False, reason=EligibilityReason.newsletter_sender)
+
+        # List-Unsubscribe header filter
+        headers = (signal.metadata or {}).get("headers", {})
+        if headers:
+            header_keys_lower = {k.lower() for k in headers}
+            if "list-unsubscribe" in header_keys_lower:
+                return EligibilityResult(eligible=False, reason=EligibilityReason.automated_sender_header)
+
+        # Content-based bulk-mail filter
+        if signal.latest_authored_text:
+            if _count_bulk_mail_indicators(signal.latest_authored_text) >= _BULK_MAIL_THRESHOLD:
+                return EligibilityResult(eligible=False, reason=EligibilityReason.bulk_mail_content)
+
+    # Fragment gate: reject too-short authored text (applies to all source types)
+    authored = (signal.latest_authored_text or "").strip()
+    if authored and len(authored) < _MIN_AUTHORED_TEXT_LENGTH:
+        # Only reject if authored text is the sole text source (short text
+        # with substantial prior_context is still valid)
+        has_substantial_prior = bool(
+            signal.prior_context_text
+            and len(signal.prior_context_text.strip()) >= _MIN_AUTHORED_TEXT_LENGTH
+        )
+        if not has_substantial_prior:
+            return EligibilityResult(eligible=False, reason=EligibilityReason.fragment_too_short)
 
     return EligibilityResult(eligible=True, reason=EligibilityReason.ok)

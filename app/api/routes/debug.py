@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter
 from pydantic import BaseModel, Field, field_validator
 
-from app.connectors.shared.normalized_signal import NormalizedSignal
+from app.connectors.shared.normalized_signal import NormalizedParticipant, NormalizedSignal
 from app.services.orchestration.orchestrator import SignalOrchestrator
 
 router = APIRouter(prefix="/debug", tags=["debug"])
@@ -21,6 +21,8 @@ class DebugPipelineRequest(BaseModel):
     text: str = Field(..., min_length=1)
     source_type: str = "email"
     subject: str | None = None
+    sender_email: str | None = None
+    headers: dict[str, str] | None = None
 
     @field_validator("text")
     @classmethod
@@ -39,6 +41,12 @@ def run_debug_pipeline(body: DebugPipelineRequest) -> dict:
     commitment extraction, and entity extraction.
     """
     now = datetime.now(tz=timezone.utc)
+
+    sender = NormalizedParticipant(email=body.sender_email) if body.sender_email else None
+    metadata: dict = {}
+    if body.headers:
+        metadata["headers"] = body.headers
+
     signal = NormalizedSignal(
         signal_id=f"debug-{uuid.uuid4()}",
         source_type=body.source_type,
@@ -46,6 +54,8 @@ def run_debug_pipeline(body: DebugPipelineRequest) -> dict:
         authored_at=now,
         latest_authored_text=body.text,
         subject=body.subject,
+        sender=sender,
+        metadata=metadata,
     )
 
     orchestrator = SignalOrchestrator(db=None, dry_run=True)

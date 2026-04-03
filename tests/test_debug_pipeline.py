@@ -178,6 +178,76 @@ class TestSPAFallbackDoesNotInterceptAPI:
             assert "text/html" in resp.headers.get("content-type", "")
 
 
+class TestDebugPipelineSenderAndHeaders:
+    """Debug endpoint must accept sender_email and headers for eligibility checks."""
+
+    def test_newsletter_sender_rejected_via_debug(self, client):
+        """GD-E06: newsletter@substack.com must be rejected at eligibility."""
+        resp = client.post("/api/v1/debug/pipeline", json={
+            "text": "Check out our latest newsletter!",
+            "source_type": "email",
+            "sender_email": "newsletter@substack.com",
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["eligibility"]["eligible"] is False
+        assert data["eligibility"]["reason"] == "newsletter_sender"
+
+    def test_noreply_sender_rejected_via_debug(self, client):
+        """GD-E15: noreply@calendly.com must be rejected at eligibility."""
+        resp = client.post("/api/v1/debug/pipeline", json={
+            "text": "Your meeting has been scheduled.",
+            "source_type": "email",
+            "sender_email": "noreply@calendly.com",
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["eligibility"]["eligible"] is False
+        assert data["eligibility"]["reason"] == "newsletter_sender"
+
+    def test_list_unsubscribe_header_rejected_via_debug(self, client):
+        """Email with List-Unsubscribe header must be rejected."""
+        resp = client.post("/api/v1/debug/pipeline", json={
+            "text": "Some promotional content here with a real commitment maybe.",
+            "source_type": "email",
+            "sender_email": "newsletter@substack.com",
+            "headers": {"List-Unsubscribe": "<mailto:unsub@example.com>"},
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["eligibility"]["eligible"] is False
+
+    def test_fragment_rejected_via_debug(self, client):
+        """GD-E07: 'done.' must be rejected as fragment at eligibility."""
+        resp = client.post("/api/v1/debug/pipeline", json={
+            "text": "done.",
+            "source_type": "email",
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["eligibility"]["eligible"] is False
+        assert data["eligibility"]["reason"] == "fragment_too_short"
+
+    def test_normal_sender_passes_debug(self, client):
+        """Normal sender email should pass eligibility."""
+        fake_result = _fake_pipeline_result()
+
+        with patch("app.api.routes.debug.SignalOrchestrator") as MockOrch:
+            mock_instance = MagicMock()
+            mock_instance.process.return_value = fake_result
+            MockOrch.return_value = mock_instance
+
+            resp = client.post("/api/v1/debug/pipeline", json={
+                "text": "I'll send the report by Friday.",
+                "source_type": "email",
+                "sender_email": "alice@company.com",
+            })
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["eligibility"]["eligible"] is True
+
+
 class TestCandidateGateErrorDetail:
     """When candidate gate fails, error detail must be surfaced (AC4)."""
 
