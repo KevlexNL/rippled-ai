@@ -243,6 +243,53 @@ class TestEscalationEnumNormalization:
         assert r.updated_speech_act.speech_act == PipelineSpeechAct.information
 
 
+class TestOwnerResolutionNormalization:
+    """LLMs return 'none' for owner_resolution — must normalize to 'unknown'."""
+
+    @pytest.mark.parametrize("raw_value", ["none", "n/a", "na", "not_known"])
+    def test_owner_resolution_synonyms_normalize_to_unknown(self, raw_value: str):
+        r = CommitmentExtractionResult.model_validate({
+            "candidate_present": True,
+            "owner_resolution": raw_value,
+            "owner_text": "we",
+            "deliverable_text": "catch up",
+        })
+        assert r.owner_resolution == OwnerResolution.unknown
+
+    def test_valid_owner_resolutions_unchanged(self):
+        for ov in OwnerResolution:
+            r = CommitmentExtractionResult.model_validate({
+                "candidate_present": True,
+                "owner_resolution": ov.value,
+            })
+            assert r.owner_resolution == ov
+
+    def test_escalation_with_owner_resolution_none_synonym(self):
+        """Reproduces the GD-E17 bug: escalation LLM returns owner_resolution='none'."""
+        data = {
+            "resolved": True,
+            "updated_extraction": {
+                "candidate_present": True,
+                "owner_text": "we",
+                "owner_resolution": "none",
+                "deliverable_text": "catch up",
+                "timing_text": "sometime soon",
+                "evidence_span": "We should probably catch up sometime soon.",
+                "evidence_source": "latest_authored_text",
+                "owner_confidence": 0.4,
+                "deliverable_confidence": 0.9,
+                "timing_confidence": 0.7,
+                "target_confidence": 0.0,
+                "ambiguity_flags": ["collective_we"],
+                "due_precision": "vague",
+                "rationale_short": "test",
+            },
+            "rationale_short": "Resolved via escalation",
+        }
+        r = EscalationResolution.model_validate(data)
+        assert r.updated_extraction.owner_resolution == OwnerResolution.unknown
+
+
 class TestPipelineResult:
     def test_minimal(self):
         r = PipelineResult(

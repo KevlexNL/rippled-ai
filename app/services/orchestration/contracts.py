@@ -55,6 +55,13 @@ _SPEECH_ACT_SYNONYMS: dict[str, str] = {
     "info": "information",
 }
 
+_OWNER_RESOLUTION_SYNONYMS: dict[str, str] = {
+    "none": "unknown",
+    "n/a": "unknown",
+    "na": "unknown",
+    "not_known": "unknown",
+}
+
 
 def _normalize_candidate_type(v: Any) -> Any:
     if isinstance(v, str):
@@ -65,6 +72,12 @@ def _normalize_candidate_type(v: Any) -> Any:
 def _normalize_speech_act(v: Any) -> Any:
     if isinstance(v, str):
         return _SPEECH_ACT_SYNONYMS.get(v, v)
+    return v
+
+
+def _normalize_owner_resolution(v: Any) -> Any:
+    if isinstance(v, str):
+        return _OWNER_RESOLUTION_SYNONYMS.get(v, v)
     return v
 
 
@@ -86,6 +99,9 @@ class OwnerResolution(str, enum.Enum):
     unknown = "unknown"
     not_applicable = "not_applicable"
     ambiguous = "ambiguous"
+
+
+NormalizedOwnerResolution = Annotated[OwnerResolution, BeforeValidator(_normalize_owner_resolution)]
 
 
 class EvidenceSource(str, enum.Enum):
@@ -162,7 +178,7 @@ class SpeechActResult(BaseModel):
 class CommitmentExtractionResult(BaseModel):
     candidate_present: bool
     owner_text: str | None = None
-    owner_resolution: OwnerResolution = OwnerResolution.unknown
+    owner_resolution: NormalizedOwnerResolution = OwnerResolution.unknown
     deliverable_text: str | None = None
     timing_text: str | None = None
     target_text: str | None = None
