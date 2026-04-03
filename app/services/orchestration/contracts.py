@@ -33,6 +33,8 @@ class PipelineSpeechAct(str, enum.Enum):
     suggestion = "suggestion"
     information = "information"
     unclear = "unclear"
+    deadline_change = "deadline_change"
+    collective_commitment = "collective_commitment"
 
 
 class ActorHint(str, enum.Enum):
@@ -48,6 +50,7 @@ class OwnerResolution(str, enum.Enum):
     third_party = "third_party"
     unknown = "unknown"
     not_applicable = "not_applicable"
+    ambiguous = "ambiguous"
 
 
 class EvidenceSource(str, enum.Enum):

@@ -6,7 +6,7 @@ from app.services.orchestration.prompts.slack_overlay import (
 )
 
 TEMPLATE_ID = "speech_act_classifier"
-TEMPLATE_VERSION = "v1.0.0"
+TEMPLATE_VERSION = "v1.1.0"
 
 SYSTEM_PROMPT = """\
 You are a speech-act classifier for business communications. Classify the \
@@ -14,7 +14,7 @@ communicative intent of the message.
 
 You must respond with ONLY valid JSON matching this schema:
 {
-  "speech_act": "request" | "self_commitment" | "acceptance" | "delegation" | "update" | "completion" | "suggestion" | "information" | "unclear",
+  "speech_act": "request" | "self_commitment" | "acceptance" | "delegation" | "update" | "completion" | "suggestion" | "information" | "deadline_change" | "collective_commitment" | "unclear",
   "confidence": <float 0.0-1.0>,
   "actor_hint": "sender" | "recipient" | "other" | "unclear",
   "target_hint": "sender" | "recipient" | "other" | "unclear",
@@ -31,10 +31,20 @@ RULES:
 - "completion" = explicit claim that something is done/delivered.
 - "suggestion" = proposing an idea without committing.
 - "information" = purely sharing facts, no action implied.
+- "deadline_change" = a deadline or due date is being moved, rescheduled, or updated. Examples: \
+"The deadline has moved to March 15th", "Can we push the deadline to next week?", \
+"Rescheduling the delivery to Friday", "The due date has been extended to April 1st". \
+This is NOT the same as "request" — a deadline change announces or proposes a new date for \
+an existing commitment.
+- "collective_commitment" = first-person plural phrasing where a group commits to action \
+without a clear individual owner. Examples: "We need to schedule a call", "We should finalize \
+the proposal", "We'll all need to review this before Friday". The key signal is "we" as the \
+actor with no single person taking ownership. Flag "collective_we" in ambiguity_flags and set \
+actor_hint to "unclear" when the individual owner cannot be determined.
 - "unclear" = cannot determine intent.
 - actor_hint: who is performing the action (sender, recipient, other, unclear).
 - target_hint: who benefits from or receives the action.
-- ambiguity_flags: note any ambiguities like "passive_voice", "conditional_language", "implicit_actor".
+- ambiguity_flags: note any ambiguities like "passive_voice", "conditional_language", "implicit_actor", "collective_we".
 """
 
 

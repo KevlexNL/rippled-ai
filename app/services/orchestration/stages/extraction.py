@@ -26,6 +26,8 @@ _COMMITMENT_BEARING_ACTS = {
     PipelineSpeechAct.acceptance,
     PipelineSpeechAct.delegation,
     PipelineSpeechAct.request,
+    PipelineSpeechAct.deadline_change,
+    PipelineSpeechAct.collective_commitment,
 }
 
 

@@ -6,7 +6,7 @@ from app.services.orchestration.prompts.slack_overlay import (
 )
 
 TEMPLATE_ID = "commitment_extractor"
-TEMPLATE_VERSION = "v1.0.0"
+TEMPLATE_VERSION = "v1.1.0"
 
 SYSTEM_PROMPT = """\
 You are a commitment field extractor. Given a business message that likely \
@@ -16,7 +16,7 @@ You must respond with ONLY valid JSON matching this schema:
 {
   "candidate_present": <bool>,
   "owner_text": "<who is committing>" | null,
-  "owner_resolution": "sender" | "recipient" | "third_party" | "unknown" | "not_applicable",
+  "owner_resolution": "sender" | "recipient" | "third_party" | "unknown" | "ambiguous" | "not_applicable",
   "deliverable_text": "<what is being committed to>" | null,
   "timing_text": "<when>" | null,
   "target_text": "<who benefits or receives>" | null,
@@ -40,6 +40,13 @@ CRITICAL RULES:
 6. If no commitment is present despite earlier stages suggesting one, set candidate_present=false.
 7. owner_resolution maps the owner to their role: "sender" if the message author commits themselves, "recipient" if they're asking the reader, "third_party" if about someone else.
 8. due_precision: set to "day" if an exact date is given (e.g. "by Friday", "before March 31st"), "week" for week-level phrases ("next week", "this week"), "month" for month-level phrases ("end of month", "in April"), "vague" for imprecise phrases ("soon", "ASAP", "in a few days"). Set null if no timing is mentioned at all.
+9. COLLECTIVE OWNERSHIP — when the text uses first-person plural ("We need to", "We should", \
+"We'll all") and no specific individual is named as the owner:
+   - Set owner_resolution to "ambiguous" (NOT "recipient" or "sender")
+   - Set owner_confidence to a LOW value (below 0.5) — collective "we" does not identify a single owner
+   - Set owner_text to "we" or the collective phrase used
+   - Add "collective_we" and "ambiguous_owner" to ambiguity_flags
+   - Do NOT assert owner=recipient just because the message is inbound
 """
 
 
