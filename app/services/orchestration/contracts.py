@@ -7,8 +7,9 @@ before persistence and form the contract between stages.
 from __future__ import annotations
 
 import enum
+from typing import Annotated, Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, BeforeValidator, Field
 
 
 # ---------------------------------------------------------------------------
@@ -35,6 +36,40 @@ class PipelineSpeechAct(str, enum.Enum):
     unclear = "unclear"
     deadline_change = "deadline_change"
     collective_commitment = "collective_commitment"
+
+
+# ---------------------------------------------------------------------------
+# LLM synonym normalization — LLMs return creative synonyms for enum values
+# ---------------------------------------------------------------------------
+
+_CANDIDATE_TYPE_SYNONYMS: dict[str, str] = {
+    "non_candidate": "none",
+    "not_a_candidate": "none",
+    "no_candidate": "none",
+    "not_candidate": "none",
+}
+
+_SPEECH_ACT_SYNONYMS: dict[str, str] = {
+    "inform": "information",
+    "informational": "information",
+    "info": "information",
+}
+
+
+def _normalize_candidate_type(v: Any) -> Any:
+    if isinstance(v, str):
+        return _CANDIDATE_TYPE_SYNONYMS.get(v, v)
+    return v
+
+
+def _normalize_speech_act(v: Any) -> Any:
+    if isinstance(v, str):
+        return _SPEECH_ACT_SYNONYMS.get(v, v)
+    return v
+
+
+NormalizedCandidateType = Annotated[CandidateType, BeforeValidator(_normalize_candidate_type)]
+NormalizedSpeechAct = Annotated[PipelineSpeechAct, BeforeValidator(_normalize_speech_act)]
 
 
 class ActorHint(str, enum.Enum):
@@ -101,7 +136,7 @@ class EligibilityResult(BaseModel):
 # ---------------------------------------------------------------------------
 
 class CandidateGateResult(BaseModel):
-    candidate_type: CandidateType
+    candidate_type: NormalizedCandidateType
     confidence: float = Field(ge=0.0, le=1.0)
     rationale_short: str
     escalate_recommended: bool = False
@@ -112,7 +147,7 @@ class CandidateGateResult(BaseModel):
 # ---------------------------------------------------------------------------
 
 class SpeechActResult(BaseModel):
-    speech_act: PipelineSpeechAct
+    speech_act: NormalizedSpeechAct
     confidence: float = Field(ge=0.0, le=1.0)
     actor_hint: ActorHint = ActorHint.unclear
     target_hint: ActorHint = ActorHint.unclear

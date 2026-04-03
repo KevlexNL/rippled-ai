@@ -161,6 +161,88 @@ class TestEscalationResolution:
         assert r.updated_gate.confidence == 0.85
 
 
+class TestCandidateTypeNormalization:
+    """LLMs sometimes return synonym values for candidate_type that must be normalized."""
+
+    @pytest.mark.parametrize("raw_value", ["non_candidate", "not_a_candidate", "no_candidate", "not_candidate"])
+    def test_candidate_type_synonyms_normalize_to_none(self, raw_value: str):
+        r = CandidateGateResult.model_validate({
+            "candidate_type": raw_value,
+            "confidence": 0.9,
+            "rationale_short": "test",
+        })
+        assert r.candidate_type == CandidateType.none
+
+    def test_valid_candidate_type_unchanged(self):
+        for ct in CandidateType:
+            r = CandidateGateResult.model_validate({
+                "candidate_type": ct.value,
+                "confidence": 0.5,
+                "rationale_short": "test",
+            })
+            assert r.candidate_type == ct
+
+
+class TestSpeechActNormalization:
+    """LLMs sometimes return synonym values for speech_act that must be normalized."""
+
+    @pytest.mark.parametrize("raw_value,expected", [
+        ("inform", PipelineSpeechAct.information),
+        ("informational", PipelineSpeechAct.information),
+        ("info", PipelineSpeechAct.information),
+    ])
+    def test_speech_act_synonyms_normalize(self, raw_value: str, expected: PipelineSpeechAct):
+        r = SpeechActResult.model_validate({
+            "speech_act": raw_value,
+            "confidence": 0.8,
+            "rationale_short": "test",
+        })
+        assert r.speech_act == expected
+
+    def test_valid_speech_acts_unchanged(self):
+        for sa in PipelineSpeechAct:
+            r = SpeechActResult.model_validate({
+                "speech_act": sa.value,
+                "confidence": 0.5,
+                "rationale_short": "test",
+            })
+            assert r.speech_act == sa
+
+
+class TestEscalationEnumNormalization:
+    """Escalation stage returns nested models — enum normalization must work through nesting."""
+
+    def test_escalation_with_non_candidate_synonym(self):
+        data = {
+            "resolved": True,
+            "updated_gate": {
+                "candidate_type": "not_a_candidate",
+                "confidence": 0.95,
+                "rationale_short": "Not a commitment",
+                "escalate_recommended": False,
+            },
+            "rationale_short": "Resolved via escalation",
+        }
+        r = EscalationResolution.model_validate(data)
+        assert r.updated_gate.candidate_type == CandidateType.none
+
+    def test_escalation_with_inform_synonym(self):
+        data = {
+            "resolved": True,
+            "updated_speech_act": {
+                "speech_act": "inform",
+                "confidence": 0.9,
+                "actor_hint": "sender",
+                "target_hint": "recipient",
+                "rationale_short": "Informational only",
+                "ambiguity_flags": [],
+            },
+            "rationale_short": "Resolved via escalation",
+        }
+        r = EscalationResolution.model_validate(data)
+        assert r.updated_speech_act.speech_act == PipelineSpeechAct.information
+
+
 class TestPipelineResult:
     def test_minimal(self):
         r = PipelineResult(

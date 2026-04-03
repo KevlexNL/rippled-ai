@@ -20,8 +20,8 @@ You must respond with ONLY valid JSON matching this schema:
   "rationale_short": "<explanation of what you resolved>"
 }
 
-Where CandidateGateResult = {"candidate_type": str, "confidence": float, "rationale_short": str, "escalate_recommended": false}
-Where SpeechActResult = {"speech_act": str, "confidence": float, "actor_hint": str, "target_hint": str, "rationale_short": str, "ambiguity_flags": []}
+Where CandidateGateResult = {"candidate_type": "none" | "commitment_candidate" | "completion_candidate" | "ambiguous_action_candidate", "confidence": float, "rationale_short": str, "escalate_recommended": false}
+Where SpeechActResult = {"speech_act": "request" | "self_commitment" | "acceptance" | "delegation" | "update" | "completion" | "suggestion" | "information" | "deadline_change" | "collective_commitment" | "unclear", "confidence": float, "actor_hint": "sender" | "recipient" | "other" | "unclear", "target_hint": "sender" | "recipient" | "other" | "unclear", "rationale_short": str, "ambiguity_flags": []}
 Where CommitmentExtractionResult = {"candidate_present": bool, "owner_text": str|null, "owner_resolution": str, "deliverable_text": str|null, "timing_text": str|null, "target_text": str|null, "evidence_span": str|null, "evidence_source": str, "owner_confidence": float, "deliverable_confidence": float, "timing_confidence": float, "target_confidence": float, "ambiguity_flags": [], "due_precision": "day"|"week"|"month"|"vague"|null, "rationale_short": str}
 
 RULES:
