@@ -5,17 +5,25 @@ Determines if the message is worth deeper analysis using a cheap model.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from app.connectors.shared.normalized_signal import NormalizedSignal
 from app.services.orchestration.config import get_orchestration_config
 from app.services.orchestration.contracts import CandidateGateResult
 from app.services.orchestration.prompts import candidate_gate as prompt
+from app.services.orchestration.prompts.registry import get_prompt
 from app.services.orchestration.stages.llm_caller import LLMCallResult, call_llm_structured
 
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
-def execute_candidate_gate(signal: NormalizedSignal) -> LLMCallResult:
+
+def execute_candidate_gate(signal: NormalizedSignal, db: Session | None = None) -> LLMCallResult:
     """Run the candidate gate stage. Returns LLMCallResult with CandidateGateResult."""
     config = get_orchestration_config()
     model_cfg = config.model_routing.candidate_gate
+
+    system_prompt = get_prompt("candidate_gate", prompt.SYSTEM_PROMPT, db=db)
 
     user_prompt = prompt.build_user_prompt(
         latest_authored_text=signal.latest_authored_text,
@@ -26,7 +34,7 @@ def execute_candidate_gate(signal: NormalizedSignal) -> LLMCallResult:
     )
 
     result = call_llm_structured(
-        system_prompt=prompt.SYSTEM_PROMPT,
+        system_prompt=system_prompt,
         user_prompt=user_prompt,
         output_type=CandidateGateResult,
         model_name=model_cfg.primary,

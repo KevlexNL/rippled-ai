@@ -135,6 +135,11 @@ celery_app.conf.update(
             "task": "app.tasks.run_reanalysis_sweep",
             "schedule": 600.0,  # 10 minutes
         },
+        # API key health monitoring — every 4 hours
+        "monitor-api-keys": {
+            "task": "app.tasks.monitor_api_keys",
+            "schedule": crontab(minute=0, hour="*/4"),
+        },
     },
 )
 
@@ -1621,3 +1626,10 @@ def recompute_feedback_thresholds_all() -> dict:
 
     logger.info("recompute_feedback_thresholds_all: enqueued %d user(s)", enqueued)
     return {"enqueued": enqueued}
+
+
+@celery_app.task(name="app.tasks.monitor_api_keys")
+def monitor_api_keys() -> dict:
+    """Check OpenAI + Anthropic API key health, alert on failure."""
+    from app.services.api_key_monitor import run_api_key_health_checks
+    return run_api_key_health_checks()

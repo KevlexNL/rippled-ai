@@ -9,6 +9,9 @@ Endpoint overview:
   GET    /admin/review/outcomes             — surfaced commitments without feedback
   POST   /admin/review/outcomes/{id}        — submit outcome feedback
   GET    /admin/review/stats                — review queue stats
+  GET    /admin/review/prompts              — list all pipeline prompts
+  GET    /admin/review/prompts/{id}         — single prompt detail
+  PATCH  /admin/review/prompts/{id}         — update prompt override
 """
 from __future__ import annotations
 
@@ -25,6 +28,7 @@ from app.models.orm import (
     Commitment,
     DetectionAudit,
     OutcomeFeedback,
+    PromptOverride,
     SignalFeedback,
     SourceItem,
 )
@@ -375,3 +379,72 @@ async def audit_sample(
         }
         for row in rows
     ]
+
+
+# ---------------------------------------------------------------------------
+# Prompt Management
+# ---------------------------------------------------------------------------
+
+class PromptUpdateBody(BaseModel):
+    text: str
+
+
+@router.get("/prompts")
+async def list_prompts(
+    x_user_id: str = Depends(verify_admin_reviewer),
+    db: AsyncSession = Depends(get_db),
+) -> list[dict]:
+    """Return all pipeline prompts with override status."""
+    from app.services.orchestration.prompts.registry import get_all_prompts_with_overrides_async
+    return await get_all_prompts_with_overrides_async(db)
+
+
+@router.get("/prompts/{prompt_id}")
+async def get_prompt_detail(
+    prompt_id: str,
+    x_user_id: str = Depends(verify_admin_reviewer),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Return a single prompt with override status."""
+    from app.services.orchestration.prompts.registry import PROMPT_CATALOG, get_all_prompts_with_overrides_async
+
+    if prompt_id not in PROMPT_CATALOG:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+
+    all_prompts = await get_all_prompts_with_overrides_async(db)
+    for p in all_prompts:
+        if p["id"] == prompt_id:
+            return p
+    raise HTTPException(status_code=404, detail="Prompt not found")
+
+
+@router.patch("/prompts/{prompt_id}")
+async def update_prompt(
+    prompt_id: str,
+    body: PromptUpdateBody,
+    x_user_id: str = Depends(verify_admin_reviewer),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Create or update a prompt override."""
+    from app.services.orchestration.prompts.registry import PROMPT_CATALOG
+
+    if prompt_id not in PROMPT_CATALOG:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+
+    result = await db.execute(select(PromptOverride).where(PromptOverride.id == prompt_id))
+    existing = result.scalar_one_or_none()
+
+    if existing:
+        existing.text = body.text
+        existing.updated_by = x_user_id
+        existing.updated_at = func.now()
+    else:
+        override = PromptOverride(
+            id=prompt_id,
+            text=body.text,
+            updated_by=x_user_id,
+        )
+        db.add(override)
+
+    await db.flush()
+    return {"id": prompt_id, "status": "updated"}

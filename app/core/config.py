@@ -75,6 +75,10 @@ class Settings(BaseSettings):
     digest_to_email: str = ""
     sendgrid_api_key: str = ""
 
+    # Alerts (API key health monitoring)
+    alert_email_to: str = ""
+    alert_email_from: str = ""
+
     # Admin UI
     admin_secret_key: str = ""        # if empty → admin API returns 503 Service Unavailable
     admin_ui_enabled: bool = True     # killswitch for admin static serving

@@ -123,7 +123,9 @@ def run_llm_judge(db: Session) -> dict:
         source_content = audit.raw_prompt or "(no source content)"
         parsed_result = json.dumps(audit.parsed_result) if audit.parsed_result else audit.raw_response or ""
 
-        prompt = JUDGE_PROMPT.format(
+        from app.services.orchestration.prompts.registry import get_prompt
+        active_judge_prompt = get_prompt("llm_judge", JUDGE_PROMPT, db=db)
+        prompt = active_judge_prompt.format(
             source_content=source_content,
             parsed_result=parsed_result,
         )

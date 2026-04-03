@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from app.connectors.shared.normalized_signal import NormalizedSignal
 from app.services.orchestration.config import get_orchestration_config
 from app.services.orchestration.contracts import CandidateGateResult, SpeechActResult
 from app.services.orchestration.prompts import speech_act as prompt
+from app.services.orchestration.prompts.registry import get_prompt
 from app.services.orchestration.stages.llm_caller import LLMCallResult, call_llm_structured
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
 
 def execute_speech_act(
     signal: NormalizedSignal,
     gate_result: CandidateGateResult,
+    db: Session | None = None,
 ) -> LLMCallResult:
     """Run the speech-act classification stage."""
     config = get_orchestration_config()
@@ -27,7 +34,8 @@ def execute_speech_act(
         gate_confidence=gate_result.confidence,
     )
 
-    system_prompt = prompt.build_system_prompt(signal.source_type)
+    base_prompt = get_prompt("speech_act", prompt.SYSTEM_PROMPT, db=db)
+    system_prompt = prompt.build_system_prompt(signal.source_type) if base_prompt == prompt.SYSTEM_PROMPT else base_prompt
 
     return call_llm_structured(
         system_prompt=system_prompt,

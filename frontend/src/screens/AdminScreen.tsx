@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { useAuth } from '../lib/auth'
-import { apiGet, apiPost } from '../lib/apiClient'
+import { apiGet, apiPost, apiPatch } from '../lib/apiClient'
 
 const ADMIN_USER_ID = '441f9c1f-9428-477e-a04f-fb8d5e654ec2'
 
@@ -37,9 +37,25 @@ interface ReviewStats {
   total_outcome_feedback: number
 }
 
+interface PromptItem {
+  id: string
+  label: string
+  description: string
+  source_file: string
+  default_text: string
+  override_text: string | null
+  is_overridden: boolean
+  char_count: number
+  updated_at: string | null
+}
+
+interface PromptUpdateBody {
+  text: string
+}
+
 type ExtractionCorrect = 'correct' | 'partial' | 'wrong'
 type WasUseful = 'yes' | 'partial' | 'no'
-type AdminTab = 'signals' | 'outcomes'
+type AdminTab = 'signals' | 'outcomes' | 'prompts'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
@@ -537,6 +553,143 @@ function OutcomeReviewTab() {
   )
 }
 
+// ─── Prompts Tab ────────────────────────────────────────────────────────
+
+function PromptsTab() {
+  const queryClient = useQueryClient()
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editText, setEditText] = useState('')
+  const [saveMsg, setSaveMsg] = useState<string | null>(null)
+
+  const { data: prompts, isLoading } = useQuery({
+    queryKey: ['admin', 'prompts'],
+    queryFn: () => apiGet<PromptItem[]>('/api/v1/admin/review/prompts'),
+  })
+
+  const saveMutation = useMutation({
+    mutationFn: (vars: { id: string; body: PromptUpdateBody }) =>
+      apiPatch(`/api/v1/admin/review/prompts/${vars.id}`, vars.body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'prompts'] })
+      setSaveMsg('Saved')
+      setTimeout(() => {
+        setSaveMsg(null)
+        setEditingId(null)
+      }, 1200)
+    },
+  })
+
+  const items = prompts ?? []
+  const editing = editingId ? items.find(p => p.id === editingId) : null
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-2 border-[#191919] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  // ── Edit view ──
+  if (editing) {
+    return (
+      <div className="max-w-[720px] mx-auto">
+        <button
+          type="button"
+          onClick={() => { setEditingId(null); setSaveMsg(null) }}
+          className="text-[13px] text-[#2563eb] hover:text-[#1d4ed8] font-medium mb-4 inline-flex items-center gap-1"
+        >
+          &larr; Back to prompts
+        </button>
+
+        <div className="bg-white rounded-lg border border-[#e8e8e6] overflow-hidden">
+          <div className="px-5 py-4">
+            <div className="text-[15px] font-semibold text-[#191919] mb-1">{editing.label}</div>
+            <div className="text-[12px] text-[#6b7280] mb-1">{editing.description}</div>
+            <div className="text-[11px] text-[#9ca3af] mb-4">{editing.source_file}</div>
+
+            <textarea
+              value={editText}
+              onChange={e => setEditText(e.target.value)}
+              className="w-full rounded-md border border-[#e8e8e6] px-3 py-2 text-[12px] text-[#191919] font-mono leading-relaxed focus:outline-none focus:border-[#191919] resize-y"
+              rows={20}
+            />
+
+            <div className="flex items-center gap-3 mt-4">
+              <button
+                type="button"
+                onClick={() => saveMutation.mutate({ id: editing.id, body: { text: editText } })}
+                disabled={saveMutation.isPending}
+                className="bg-[#191919] text-white text-[13px] font-medium px-4 py-2 rounded-md hover:bg-[#333] transition-colors disabled:opacity-40"
+              >
+                {saveMutation.isPending ? 'Saving…' : 'Save'}
+              </button>
+
+              {editing.is_overridden && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditText(editing.default_text)
+                    saveMutation.mutate({ id: editing.id, body: { text: editing.default_text } })
+                  }}
+                  className="text-[13px] text-[#6b7280] hover:text-[#191919] font-medium px-4 py-2 rounded-md border border-[#e8e8e6] hover:border-[#d1d1cf] transition-colors"
+                >
+                  Reset to Default
+                </button>
+              )}
+
+              {saveMsg && (
+                <span className="text-[13px] text-[#15803d] font-medium">{saveMsg}</span>
+              )}
+
+              {saveMutation.isError && (
+                <span className="text-[13px] text-[#991b1b] font-medium">Failed to save</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── List view ──
+  return (
+    <div className="max-w-[720px] mx-auto">
+      <div className="text-[11px] text-[#9ca3af] mb-3">{items.length} pipeline prompts</div>
+      <div className="space-y-2">
+        {items.map(p => (
+          <button
+            key={p.id}
+            type="button"
+            onClick={() => {
+              setEditingId(p.id)
+              setEditText(p.override_text ?? p.default_text)
+              setSaveMsg(null)
+            }}
+            className="w-full text-left bg-white rounded-lg border border-[#e8e8e6] hover:border-[#d1d1cf] transition-colors overflow-hidden"
+          >
+            <div className="px-5 py-4">
+              <div className="flex items-center justify-between mb-1">
+                <div className="text-[14px] font-semibold text-[#191919]">{p.label}</div>
+                <div className="flex items-center gap-2">
+                  {p.is_overridden && (
+                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-[#fef3c7] text-[#92400e]">
+                      Overridden
+                    </span>
+                  )}
+                  <span className="text-[11px] text-[#9ca3af]">{p.char_count.toLocaleString()} chars</span>
+                </div>
+              </div>
+              <div className="text-[12px] text-[#6b7280] leading-relaxed">{p.description}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+
 // ─── AdminScreen ─────────────────────────────────────────────────────────
 
 export default function AdminScreen() {
@@ -571,6 +724,7 @@ export default function AdminScreen() {
   const tabs: { id: AdminTab; label: string }[] = [
     { id: 'signals', label: 'Signal Review' },
     { id: 'outcomes', label: 'Outcome Review' },
+    { id: 'prompts', label: 'Prompts' },
   ]
   const archActive = false // architecture tab is a separate route
 
@@ -620,7 +774,7 @@ export default function AdminScreen() {
       </div>
 
       <main className="max-w-[1100px] mx-auto px-6 pt-6 pb-12">
-        {tab === 'signals' ? <SignalReviewTab /> : <OutcomeReviewTab />}
+        {tab === 'signals' ? <SignalReviewTab /> : tab === 'outcomes' ? <OutcomeReviewTab /> : <PromptsTab />}
       </main>
     </div>
   )

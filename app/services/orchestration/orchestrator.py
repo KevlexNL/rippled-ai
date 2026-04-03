@@ -205,7 +205,7 @@ class SignalOrchestrator:
     def _run_candidate_gate(
         self, run_id: str, signal: NormalizedSignal,
     ) -> tuple[CandidateGateResult | None, str | None]:
-        llm_result: LLMCallResult = gate_executor.execute_candidate_gate(signal)
+        llm_result: LLMCallResult = gate_executor.execute_candidate_gate(signal, db=self._db)
         prompt_meta = gate_executor.get_prompt_metadata()
 
         self._logger.log_stage(
@@ -234,7 +234,7 @@ class SignalOrchestrator:
         signal: NormalizedSignal,
         gate_result: CandidateGateResult,
     ) -> tuple[SpeechActResult | None, str | None]:
-        llm_result = speech_act_executor.execute_speech_act(signal, gate_result)
+        llm_result = speech_act_executor.execute_speech_act(signal, gate_result, db=self._db)
         prompt_meta = speech_act_executor.get_prompt_metadata()
 
         self._logger.log_stage(
@@ -264,7 +264,7 @@ class SignalOrchestrator:
         gate_result: CandidateGateResult,
         speech_act_result: SpeechActResult,
     ) -> tuple[CommitmentExtractionResult | None, str | None]:
-        llm_result = extraction_executor.execute_extraction(signal, gate_result, speech_act_result)
+        llm_result = extraction_executor.execute_extraction(signal, gate_result, speech_act_result, db=self._db)
         prompt_meta = extraction_executor.get_prompt_metadata()
 
         self._logger.log_stage(
@@ -299,7 +299,7 @@ class SignalOrchestrator:
         extraction_result: CommitmentExtractionResult | None,
     ) -> tuple[EscalationResolution | None, str | None]:
         llm_result = escalation_executor.execute_escalation(
-            signal, gate_result, speech_act_result, extraction_result,
+            signal, gate_result, speech_act_result, extraction_result, db=self._db,
         )
         prompt_meta = escalation_executor.get_prompt_metadata()
 

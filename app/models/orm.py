@@ -524,6 +524,16 @@ class UserFeedback(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
+class PromptOverride(Base):
+    """Admin-managed prompt text overrides."""
+    __tablename__ = "prompt_overrides"
+
+    id: Mapped[str] = mapped_column(Text, primary_key=True)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_by: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
 class DigestLog(Base):
     __tablename__ = "digest_log"
 

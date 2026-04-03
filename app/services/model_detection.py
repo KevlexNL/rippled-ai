@@ -25,6 +25,7 @@ from app.connectors.shared.normalized_signal import NormalizedSignal
 
 logger = logging.getLogger(__name__)
 
+# TODO: wire db session for prompt override (no sync session available at classify() call site)
 _SYSTEM_PROMPT = """You are a commitment extraction engine for a workplace intelligence system.
 
 CRITICAL RULE — FOLLOW-UPS: ANY form of "follow up" is ALWAYS a commitment. This includes "follow up on [topic]", "need to follow up", "will follow up", "should follow up", "follow up on budget", "follow up on headcount", etc. Never skip these. Missing a follow-up is the #1 detection error.

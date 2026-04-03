@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from app.connectors.shared.normalized_signal import NormalizedSignal
 from app.services.orchestration.config import get_orchestration_config
 from app.services.orchestration.contracts import (
@@ -12,7 +14,11 @@ from app.services.orchestration.contracts import (
     SpeechActResult,
 )
 from app.services.orchestration.prompts import extraction as prompt
+from app.services.orchestration.prompts.registry import get_prompt
 from app.services.orchestration.stages.llm_caller import LLMCallResult, call_llm_structured
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
 # Speech acts that indicate commitment-bearing intent
 _COMMITMENT_BEARING_ACTS = {
@@ -42,6 +48,7 @@ def execute_extraction(
     signal: NormalizedSignal,
     gate_result: CandidateGateResult,
     speech_act_result: SpeechActResult,
+    db: Session | None = None,
 ) -> LLMCallResult:
     """Run the commitment field extraction stage."""
     config = get_orchestration_config()
@@ -58,7 +65,8 @@ def execute_extraction(
         candidate_type=gate_result.candidate_type.value,
     )
 
-    system_prompt = prompt.build_system_prompt(signal.source_type)
+    base_prompt = get_prompt("extraction", prompt.SYSTEM_PROMPT, db=db)
+    system_prompt = prompt.build_system_prompt(signal.source_type) if base_prompt == prompt.SYSTEM_PROMPT else base_prompt
 
     return call_llm_structured(
         system_prompt=system_prompt,

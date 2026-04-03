@@ -5,6 +5,8 @@ Uses a stronger model to resolve ambiguity when the cheap path cannot.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from app.connectors.shared.normalized_signal import NormalizedSignal
 from app.services.orchestration.config import get_orchestration_config
 from app.services.orchestration.contracts import (
@@ -14,7 +16,11 @@ from app.services.orchestration.contracts import (
     SpeechActResult,
 )
 from app.services.orchestration.prompts import escalation as prompt
+from app.services.orchestration.prompts.registry import get_prompt
 from app.services.orchestration.stages.llm_caller import LLMCallResult, call_llm_structured
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
 
 def build_uncertainty_questions(
@@ -53,10 +59,13 @@ def execute_escalation(
     gate_result: CandidateGateResult,
     speech_act_result: SpeechActResult | None = None,
     extraction_result: CommitmentExtractionResult | None = None,
+    db: Session | None = None,
 ) -> LLMCallResult:
     """Run the escalation stage with a stronger model."""
     config = get_orchestration_config()
     model_cfg = config.model_routing.escalation
+
+    system_prompt = get_prompt("escalation", prompt.SYSTEM_PROMPT, db=db)
 
     questions = build_uncertainty_questions(gate_result, speech_act_result, extraction_result)
 
@@ -72,7 +81,7 @@ def execute_escalation(
     )
 
     return call_llm_structured(
-        system_prompt=prompt.SYSTEM_PROMPT,
+        system_prompt=system_prompt,
         user_prompt=user_prompt,
         output_type=EscalationResolution,
         model_name=model_cfg.primary,
