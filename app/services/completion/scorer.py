@@ -36,6 +36,15 @@ _DELIVER_TYPES = {"send", "deliver", "introduce"}
 # Commitment types with a delivery-score penalty (-0.10)
 _REVIEW_TYPES = {"review", "investigate"}
 
+# Commitment types that require artifact signal (penalty without attachment)
+_CREATE_TYPES = {"create"}
+
+# Commitment types that benefit from thread continuity (+0.05)
+_REPLY_TYPES = {"follow_up", "update"}
+
+# Commitment types that benefit from outbound direction (+0.05)
+_OUTBOUND_TYPES = {"send", "deliver", "introduce", "follow_up", "update"}
+
 # Completion confidence multipliers by commitment_type
 _COMPLETION_MULTIPLIERS = {
     "send": 0.95,
@@ -44,6 +53,7 @@ _COMPLETION_MULTIPLIERS = {
     "review": 0.70,
     "check": 0.70,
     "investigate": 0.70,
+    "create": 0.70,
     "follow_up": 0.80,
     "update": 0.80,
     "coordinate": 0.80,
@@ -77,7 +87,15 @@ class CompletionScore:
 # ---------------------------------------------------------------------------
 
 def _compute_delivery_confidence(commitment: Any, evidence: CompletionEvidence) -> float:
-    """Compute delivery_confidence from base + adjustments."""
+    """Compute delivery_confidence from base + type-specific adjustments.
+
+    Type-specific adjustments (Phase E3 — Gap 10.2):
+    - send/deliver/introduce: +0.05 attachment bonus, +0.05 outbound bonus
+    - reply/follow_up/update: +0.05 thread continuity bonus, +0.05 outbound bonus
+    - review/investigate: -0.10 penalty (delivery signal ≠ done)
+    - create: -0.10 penalty without artifact, no penalty with attachment
+    - coordinate/schedule: standard (no additional adjustment)
+    """
     base = _BASE_DELIVERY.get(evidence.evidence_strength, 0.40)
     adjustment = 0.0
 
@@ -87,8 +105,20 @@ def _compute_delivery_confidence(commitment: Any, evidence: CompletionEvidence) 
     if evidence.has_attachment and commitment_type in _DELIVER_TYPES:
         adjustment += 0.05
 
+    # +0.05 for outbound direction on delivery/reply types
+    if evidence.direction == "outbound" and commitment_type in _OUTBOUND_TYPES:
+        adjustment += 0.05
+
+    # +0.05 for thread continuity on reply/follow_up types
+    if "thread_continuity" in evidence.matched_patterns and commitment_type in _REPLY_TYPES:
+        adjustment += 0.05
+
     # -0.10 for review/investigate types (delivery signal ≠ done)
     if commitment_type in _REVIEW_TYPES:
+        adjustment -= 0.10
+
+    # -0.10 for create types without artifact signal (requires proof of artifact)
+    if commitment_type in _CREATE_TYPES and not evidence.has_attachment:
         adjustment -= 0.10
 
     # -0.15 for external email commitment where direction is not outbound
@@ -99,7 +129,22 @@ def _compute_delivery_confidence(commitment: Any, evidence: CompletionEvidence) 
     ):
         adjustment -= 0.15
 
-    return round(max(0.0, min(1.0, base + adjustment)), 4)
+    score = base + adjustment
+
+    # Cross-channel bonus (Phase E3 — Gap 10.1):
+    # If evidence comes from a different source channel than the commitment's origin,
+    # apply a 1.10x multiplier. Cross-channel corroboration is a confidence signal.
+    origin_source = getattr(commitment, "_origin_source_type", None)
+    if origin_source and evidence.source_type and origin_source != evidence.source_type:
+        score *= 1.10
+        _cross_channel = True
+    else:
+        _cross_channel = False
+
+    # Store cross-channel flag for notes (accessed via closure in caller)
+    commitment._cross_channel_bonus = _cross_channel
+
+    return round(max(0.0, min(1.0, score)), 4)
 
 
 def _compute_completion_confidence(delivery_confidence: float, commitment_type: str) -> float:
@@ -203,6 +248,9 @@ def score_evidence(
         notes.append("has_attachment=true")
     if evidence.direction:
         notes.append(f"direction={evidence.direction}")
+    if getattr(commitment, "_cross_channel_bonus", False):
+        origin = getattr(commitment, "_origin_source_type", "unknown")
+        notes.append(f"cross_channel_bonus=1.10x (origin={origin}, evidence={evidence.source_type})")
 
     return CompletionScore(
         delivery_confidence=delivery,

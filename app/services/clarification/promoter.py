@@ -14,7 +14,9 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from app.models.enums import AmbiguityType
+import logging
+
+from app.models.enums import AmbiguityType, LifecycleState
 from app.models.orm import (
     CandidateCommitment,
     Commitment,
@@ -22,6 +24,8 @@ from app.models.orm import (
     CommitmentSignal,
 )
 from app.services.clarification.analyzer import AnalysisResult
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Fragment gate — minimum text length for promotion
@@ -95,6 +99,54 @@ _SOURCE_TYPE_TAG_MAP: dict[str, list[str]] = {
     "email": ["email"],
     "meeting": ["meeting"],
 }
+
+
+def _check_and_merge(new_commitment: Any, db: Session) -> None:
+    """Post-promotion merge check: detect if the new commitment duplicates an existing one.
+
+    Queries active/proposed commitments for the same user and runs merge detection.
+    If a merge candidate is found, executes the merge (keeping highest confidence).
+    """
+    from sqlalchemy import select as sa_select
+
+    from app.services.detection.merge_detector import execute_merge, find_merge_candidates
+
+    existing = (
+        db.execute(
+            sa_select(Commitment).where(
+                Commitment.user_id == new_commitment.user_id,
+                Commitment.id != new_commitment.id,
+                Commitment.lifecycle_state.in_([
+                    LifecycleState.active.value,
+                    LifecycleState.proposed.value,
+                    LifecycleState.needs_clarification.value,
+                ]),
+            )
+        )
+        .scalars()
+        .all()
+    )
+
+    if not existing:
+        return
+
+    candidates = find_merge_candidates(new_commitment, existing)
+    if not candidates:
+        return
+
+    # Merge with the top candidate (highest confidence)
+    best = candidates[0]
+    if float(new_commitment.confidence_commitment or 0) >= float(best.confidence_commitment or 0):
+        canonical, duplicate = new_commitment, best
+    else:
+        canonical, duplicate = best, new_commitment
+
+    execute_merge(canonical, duplicate, db)
+    logger.info(
+        "Post-promotion merge: %s merged into %s",
+        duplicate.id,
+        canonical.id,
+    )
 
 
 def _derive_context_tags(candidate: Any) -> list[str] | None:
@@ -223,5 +275,8 @@ def promote_candidate(
 
     # Mark candidate as promoted
     candidate.was_promoted = True
+
+    # Post-promotion merge check — detect duplicates across sources
+    _check_and_merge(commitment, db)
 
     return commitment

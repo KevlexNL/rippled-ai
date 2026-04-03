@@ -315,13 +315,19 @@ def run_seed_pass(user_id: str, db: Session) -> SeedPassResult:
         # Commit after each batch so partial progress is saved
         db.commit()
 
+    # Post-seed merge pass — detect and merge duplicate commitments
+    merges_performed = _run_post_seed_merge(user_id, db)
+    if merges_performed:
+        logger.info("Seed pass: merged %d duplicate commitments", merges_performed)
+
     result.duration_ms = int((time.monotonic() - start) * 1000)
     logger.info(
-        "Seed pass complete: processed=%d, skipped=%d, commitments=%d, errors=%d, duration=%dms",
+        "Seed pass complete: processed=%d, skipped=%d, commitments=%d, errors=%d, merges=%d, duration=%dms",
         result.items_processed,
         result.items_skipped,
         result.commitments_created,
         result.errors,
+        merges_performed,
         result.duration_ms,
     )
     return result
@@ -504,6 +510,57 @@ def _extract_commitments(
     return _LLMResult(commitments=[], raw_prompt=full_prompt, model=model)
 
 
+def _run_post_seed_merge(user_id: str, db: Session) -> int:
+    """Run merge detection across all proposed commitments for a user.
+
+    Compares every proposed commitment against all others to find duplicates.
+    Returns the number of merges performed.
+    """
+    from app.services.detection.merge_detector import execute_merge, find_merge_candidates
+
+    proposed = (
+        db.execute(
+            select(Commitment).where(
+                and_(
+                    Commitment.user_id == user_id,
+                    Commitment.lifecycle_state == "proposed",
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+
+    if len(proposed) < 2:
+        return 0
+
+    merges = 0
+    merged_ids: set[str] = set()
+
+    for commitment in proposed:
+        if commitment.id in merged_ids:
+            continue
+
+        others = [c for c in proposed if c.id != commitment.id and c.id not in merged_ids]
+        candidates = find_merge_candidates(commitment, others)
+
+        for candidate in candidates:
+            # Keep higher confidence as canonical
+            if float(commitment.confidence_commitment or 0) >= float(candidate.confidence_commitment or 0):
+                canonical, duplicate = commitment, candidate
+            else:
+                canonical, duplicate = candidate, commitment
+
+            execute_merge(canonical, duplicate, db)
+            merged_ids.add(duplicate.id)
+            merges += 1
+
+    if merges:
+        db.flush()
+
+    return merges
+
+
 def _create_commitment_and_signal(
     db: Session,
     user_id: str,
@@ -523,7 +580,7 @@ def _create_commitment_and_signal(
     valid_types = {
         "send", "review", "follow_up", "deliver", "investigate",
         "introduce", "coordinate", "update", "delegate", "schedule",
-        "confirm", "other",
+        "confirm", "create", "other",
     }
     commitment_type = raw_type if raw_type in valid_types else "other"
 

@@ -1,0 +1,35 @@
+Phase E3: Detection Improvements — COMPLETED
+Date: 2026-04-03
+
+Deliverables:
+1. Cross-source merge logic (Gap 4.1) — app/services/detection/merge_detector.py
+   - find_merge_candidates() with configurable similarity thresholds
+   - execute_merge() re-links signals, merges context_tags, marks duplicate discarded
+   - Post-promotion hook in promoter.py
+   - Post-seed-pass hook in seed_detector.py
+   - 16 unit tests
+
+2. Type-specific completion scoring (Gap 10.2) — app/services/completion/scorer.py
+   - send/deliver: +0.05 outbound bonus, +0.05 attachment bonus
+   - reply/follow_up: +0.05 thread continuity bonus, +0.05 outbound bonus
+   - review/investigate: -0.10 penalty (unchanged, existing)
+   - create: -0.10 penalty without artifact, no penalty with attachment
+   - create completion multiplier: 0.70
+   - Type-aware evidence strength in matcher (create without artifact → weak)
+   - 10 unit tests
+
+3. Cross-channel completion matching (Gap 10.1) — app/services/completion/detector.py
+   - Pre-loads origin source_type per commitment via _load_origin_metadata()
+   - 1.10x delivery_confidence bonus when evidence source differs from origin
+   - Cross-channel bonus recorded in score notes
+   - 6 unit tests
+
+4. Migration: add 'create' to commitment_type enum
+   - migrations/versions/y9z0a1b2c3d4_add_create_commitment_type.py
+   - app/models/enums.py CommitmentType.create added
+
+Acceptance criteria:
+- [x] Two detections of same commitment from different sources → merged, not duplicated
+- [x] Email delivery signal can close a meeting-sourced commitment
+- [x] send type completions score higher for attachment signals than other types
+- [x] Existing detection tests still pass (172 tests green, 0 regressions)

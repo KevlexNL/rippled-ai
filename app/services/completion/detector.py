@@ -43,34 +43,56 @@ _AUTO_CLOSE_CONFIDENCE_THRESHOLD = 0.75
 # Private helpers
 # ---------------------------------------------------------------------------
 
-def _load_origin_thread_ids(commitment_ids: list[str], db: Session) -> dict[str, list[str]]:
-    """Load thread_ids from origin CommitmentSignal rows for each commitment.
+def _load_origin_metadata(
+    commitment_ids: list[str], db: Session,
+) -> tuple[dict[str, list[str]], dict[str, str | None]]:
+    """Load thread_ids and source_types from origin CommitmentSignal rows.
 
-    Attaches them so the matcher can check thread continuity without a DB call.
+    Attaches them so the matcher/scorer can check thread continuity and
+    cross-channel status without a DB call.
 
     Returns:
-        Mapping commitment_id -> list of thread_ids from origin signals.
+        (thread_id_map, source_type_map):
+        - thread_id_map: commitment_id -> list of thread_ids from origin signals
+        - source_type_map: commitment_id -> earliest origin source_type (or None)
     """
     if not commitment_ids:
-        return {}
+        return {}, {}
 
     from app.models.enums import SignalRole
 
     rows = db.execute(
-        select(CommitmentSignal.commitment_id, SourceItem.thread_id)
+        select(
+            CommitmentSignal.commitment_id,
+            SourceItem.thread_id,
+            SourceItem.source_type,
+            SourceItem.occurred_at,
+        )
         .join(SourceItem, CommitmentSignal.source_item_id == SourceItem.id)
         .where(
             CommitmentSignal.commitment_id.in_(commitment_ids),
             CommitmentSignal.signal_role == SignalRole.origin.value,
-            SourceItem.thread_id.isnot(None),
         )
     ).all()
 
-    result: dict[str, list[str]] = {cid: [] for cid in commitment_ids}
-    for commitment_id, thread_id in rows:
+    thread_map: dict[str, list[str]] = {cid: [] for cid in commitment_ids}
+    # Track earliest origin per commitment for source_type
+    earliest: dict[str, tuple[datetime | None, str | None]] = {}
+
+    for commitment_id, thread_id, source_type, occurred_at in rows:
         if thread_id:
-            result[commitment_id].append(thread_id)
-    return result
+            thread_map[commitment_id].append(thread_id)
+
+        # Track earliest origin signal's source_type
+        prev_time, _ = earliest.get(commitment_id, (None, None))
+        if prev_time is None or (occurred_at is not None and occurred_at < prev_time):
+            earliest[commitment_id] = (occurred_at, source_type)
+
+    source_type_map: dict[str, str | None] = {
+        cid: earliest.get(cid, (None, None))[1] for cid in commitment_ids
+    }
+
+    return thread_map, source_type_map
 
 
 # ---------------------------------------------------------------------------
@@ -103,11 +125,12 @@ def run_completion_detection(source_item_id: str, db: Session) -> dict:
     if not active_commitments:
         return {"transitions_made": 0, "signals_written": 0, "status": "no_active_commitments"}
 
-    # Pre-load origin thread_ids and attach to each commitment for thread matching
+    # Pre-load origin metadata (thread_ids + source_type) for matcher/scorer
     commitment_ids = [c.id for c in active_commitments]
-    thread_id_map = _load_origin_thread_ids(commitment_ids, db)
+    thread_id_map, source_type_map = _load_origin_metadata(commitment_ids, db)
     for commitment in active_commitments:
         commitment._origin_thread_ids = thread_id_map.get(commitment.id, [])
+        commitment._origin_source_type = source_type_map.get(commitment.id)
 
     # Match → score → update
     matches = find_matching_commitments(source_item, active_commitments)

@@ -161,6 +161,7 @@ class CommitmentType(str, enum.Enum):
     delegate = "delegate"
     schedule = "schedule"
     confirm = "confirm"
+    create = "create"
     other = "other"
 
 

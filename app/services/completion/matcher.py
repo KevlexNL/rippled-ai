@@ -167,6 +167,7 @@ def _compute_evidence_strength(
     has_attachment: bool,
     direction: str | None,
     has_recipient: bool,
+    commitment_type: str | None = None,
 ) -> str:
     """Classify evidence strength based on matched dimensions.
 
@@ -174,14 +175,25 @@ def _compute_evidence_strength(
     - strong: deliverable + (thread OR outbound-attachment with recipient)
     - moderate: deliverable OR thread OR recipient
     - weak: delivery keyword only (no secondary dimensions)
+
+    Phase E3 type-aware adjustment:
+    - create type: without attachment, downgrade moderate → weak (requires artifact)
     """
     outbound_with_attachment = has_attachment and direction == "outbound"
 
     if has_deliverable and (has_thread or (outbound_with_attachment and has_recipient)):
-        return "strong"
-    if has_deliverable or has_thread or has_recipient:
-        return "moderate"
-    return "weak"
+        strength = "strong"
+    elif has_deliverable or has_thread or has_recipient:
+        strength = "moderate"
+    else:
+        strength = "weak"
+
+    # Type-aware downgrade: create/revise/prepare types require artifact proof
+    ct = (commitment_type or "").lower()
+    if ct == "create" and not has_attachment and strength == "moderate":
+        strength = "weak"
+
+    return strength
 
 
 # ---------------------------------------------------------------------------
@@ -254,6 +266,7 @@ def find_matching_commitments(
             has_attachment=source_item.has_attachment,
             direction=source_item.direction,
             has_recipient=has_recipient,
+            commitment_type=commitment.commitment_type,
         )
 
         matched_patterns: list[str] = []
