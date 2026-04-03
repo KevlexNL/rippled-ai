@@ -782,20 +782,23 @@ def run_reanalysis_sweep(limit: int = 50) -> dict:
     if not candidate_ids:
         return {"enqueued": 0}
 
-    for cid in candidate_ids:
-        run_model_detection_pass.delay(str(cid))
-        enqueued += 1
-
-    # Clear the flag for processed candidates
+    # Clear flag and reset model_called_at so model detection will re-process.
+    # Without resetting model_called_at, run_model_detection_pass skips
+    # candidates that were already classified (silent no-op).
     with get_sync_session() as db:
         db.execute(
             update(CommitmentCandidate)
             .where(CommitmentCandidate.id.in_(candidate_ids))
-            .values(flag_reanalysis=False)
+            .values(flag_reanalysis=False, model_called_at=None)
         )
         db.commit()
 
-    logger.info("Reanalysis sweep: enqueued %d candidates for re-classification", enqueued)
+    for cid in candidate_ids:
+        run_model_detection_pass.delay(str(cid))
+        enqueued += 1
+        logger.info("Reanalysis sweep: enqueued candidate %s for re-classification", cid)
+
+    logger.info("Reanalysis sweep: enqueued %d candidates total", enqueued)
     return {"enqueued": enqueued}
 
 
